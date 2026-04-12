@@ -1,0 +1,120 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+    #listTbl th,#listTbl td {padding:5px;}
+    #listTbl th {min-width:100px;}
+    #listTbl td {min-width:150px;}
+    .order-info .container {padding: 15px;}
+    .container {width: 95%;}
+    .order-info li {list-style: none;}
+    .textalignC {text-align: center;}
+--></style>
+
+<script>
+    /* function ckSelectMenu(e){
+        const selected = $("input[name='lunch_menu_id']:checked");
+        if(selected.length>0){ // 選択
+        }else{ // 未選択
+            const menus = $("input[name='lunch_menu_id']");
+            if(menus.length>0){
+                const sorted = menus.get().sort((item)=>{
+                    const match = item.id.match(/lunch_menu_id_(\d+)/);
+                    if(match){return Number(match[1]) *-1}else{return 999}
+                })
+                const defMenu = sorted[0];
+                defMenu.checked = true;
+            }
+        }
+    }
+    $(function(){
+        const form = document.querySelector("form[name='inform']");
+        if(form){
+            form.addEventListener("submit", function(event){ckSelectMenu(event)});
+        }
+    }) */
+</script>
+
+<% } %>
+<div class="listC"><%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %></div>
+<div id="field1">
+    <div class="order-info">
+        <div class="container">
+            <table id="listTbl" class="soloidline" style="width:100%;">
+                <tr>
+                    <th class="listTitle">対象日</th>
+                    <td><%= @t_date.strftime("%m月%d日") %></td>
+                </tr>
+                <tr>
+                    <th class="listTitle">従業員氏名</th>
+                    <td><%= @user_info[:name] %></td>
+                </tr>
+                <% unless @order.new_record? %>
+                <tr>
+                    <th class="listTitle">昼食配送先</th>
+                    <td><%= @location.select{|txt,key| key == @order[:lunch_location_id]&.to_s}.first&.first %></td>
+                </tr>
+                <% unless @order.lunch_menu_id.blank? || @order.lunch_menu_id==-1 %>
+                <tr>
+                    <th class="listTitle">昼食メニュー</th>
+                    <td><%= @menu.select{|txt,key| key == @order[:lunch_menu_id]&.to_s}.first&.first %></td>
+                </tr>
+                <% end %>
+                <% end %>
+                <% if @messages.length > 0 %><%= content_tag :tr do  %>
+                    <%= content_tag :th,"備考",:class=>"listTitle" %>
+                    <%= content_tag :td do %>
+                        <% @messages.each do |message|%>
+                            <%= content_tag :li, message %>
+                        <% end %>
+                    <% end %>
+                <% end %><% end %>
+            </table>
+            <ul class='listC' style="display:none;">
+                <li><%= content_tag :span,@t_date.strftime("%m月%d日"),class: "span" %> <%= @user_info[:name] %></li>
+                <% unless @order.new_record? %>
+                <li>場所：<%= @location.select{|txt,key| key == @order[:lunch_location_id]&.to_s}.first&.first %></li>
+                <li><%= @menu.select{|txt,key| key == @order[:lunch_menu_id]&.to_s}.first&.first %></li>
+                <% end %>
+            </ul>
+        </div>
+
+        <div class="container">
+            <%= form_tag({:controller=>:lunch_orders, :action=>:update},{:method=>:put,:name => 'inform'}) do %>
+                <div class="radiobox textalignC" style="margin-top:10px;">
+                    <% @location.each{|txt,key| %>
+                    <%= radio_button_tag(:lunch_location_id,key,(key == @order[:lunch_location_id].to_s),{:disabled=>@lock,:class=>"radiobutton"}) %>
+                    <%= content_tag(:label,txt,:for=>"lunch_location_id_#{key}") %>
+                    <% }unless @location.blank? %>
+                    </div>
+                    <div class="radiobox textalignC" style="margin-top:10px;">
+                    <% if @menu.present? && @menu.size > 1 %>
+                    <% @menu.each{|txt,key| %>
+                    <%= radio_button_tag(:lunch_menu_id,key,(key == @order[:lunch_menu_id].to_s),{:disabled=>@lock,:class=>"radiobutton"}) %>
+                    <%= content_tag(:label,txt,:for=>"lunch_menu_id_#{key}") %>
+                    <% } %>
+                    <% elsif @menu.present? && @menu[0].present?  %>
+                        <%= @menu[0][0] %>
+                        <%= hidden_field_tag(:lunch_menu_id,@menu[0][1]) %> 
+                    <% end %>
+                    </div>
+                    <br />
+                    <div class="listC">
+                    <%= submit_tag(:submit, :value=>"注文変更",:class=>"btn") %>
+                </div>
+                <%= hidden_field_tag :t_date,@t_date %> 
+            <% end %>
+        </div>
+    </div>
+</div>
+<br />
+<div id="field1">
+    <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,99 @@
+:root {
+    --alert-msg-color: #ff6666;
+}
+.ess {color:black;}
+
+div#field1 {position:related;}
+div.listTitle{text-align: center;}
+
+#overlay,#select-form-wrapper {display: none;position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0, 0, 0, 0.5);z-index: 999;}
+.grid-box {
+    display: grid;place-content: center;text-align:center;
+    /* grid-template-columns: repeat(6, clamp(14%,14%,80px)); */
+    grid-template-columns: clamp(13%,13%,80px) clamp(8%,8%,50px) clamp(20%,20%,80px) clamp(13%,13%,80px) clamp(8%,8%,50px) clamp(20%,20%,80px);
+    grid-auto-rows: 45px;
+    gap: 0px;
+    max-width: 1000px;
+}
+.grid-box * {box-sizing:border-box;margin:0px;padding-top:6px;}
+.grid-box .grid-item {border:solid 1px black;}
+.grid-box .grid-item.head-crt {background-color:lightblue;}
+.grid-box .grid-item.head-nxt {background-color:orange;}
+.grid-box .grid-item.day {background-color:lightyellow;}
+.grid-box .grid-item.vac {cursor:pointer;line-height: 18px;}
+.grid-box .grid-item.vac[data-lock-flg="1"] {background-color:lightgray;}
+.grid-box .grid-item:hover.vac {background-color:yellow;}
+/* .grid-box .grid-item.vac.hol-wk {background-color:pink;} */
+
+div#select-form {
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0px 0px 40px #666666;
+    z-index:9999;
+    width: 100%;                                                
+    max-width: 500px;
+}
+
+/* div#select-form.lock::before {
+    text-align: center;
+    line-height: 100%;
+    content: "公休予定未確定により休暇登録できません。";
+    display: block;
+    background-color: black;
+    opacity: 0.8;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    box-sizing: border-box;
+    padding-top: 10rem;
+} */
+
+
+div#select-form tr>* {padding:6px}
+
+
+div#select-form tr {display: table-row;}
+div#select-form tr.hiddenRow {display: none;}
+
+div#select-form tr>th {min-width:130px;}
+div#select-form tr>th.ess::after {content:'*'; color:red; font-weight:700;}
+div#select-form tr>td#d_app_origin_date.active_msg::after {
+    content: '変更の場合は、変更先の日付にて再登録してください';
+    color: var(--alert-msg-color);display: block;font-size: 1rem;
+}
+div#select-form tr>td#d_app_origin_date2.active_msg::after {
+    content: '変更の場合は、管理者へ依頼してください';
+    color: var(--alert-msg-color);display: block;font-size: 1rem;
+}
+div#select-form tr>td#d_app_origin_date2.active_msg.future::after {
+    content: '変更の場合は、取消後に再申請してください';
+}
+div#select-form tr>td>select {min-width: 200px; width:auto; font-size: 1.3rem;padding: 2px;}
+div#select-form #d_vacation_type>div.radiobox,
+div#select-form #d_vacation_type2>div.radiobox {text-align:left;}
+div#select-form #d_vacation_type2>div.radiobox>label {
+    display: inline-block;
+    line-height: initial;
+}
+
+div#select-form .btn {
+    width: 30%;
+    font-size: 16px;
+    padding: 8px 24px;
+}
+div#select-form .btn.submit-btn {background-color: #007bff;color: white;}
+div#select-form .btn.submit-btn[disabled] {background-color: #007bff8e;cursor: auto; opacity: 0.6;}
+div#select-form .btn.cancel-btn {background-color: #dc3545;color: white;}
+div#select-form .btn.close-btn {background-color: #6c757d;color: white;}
+.alert-msg-box {max-width:1000px; margin:15px auto;text-align:center;}
+.alert-msg {margin:0;padding:2px 20px;background-color:#ffd7de;color:var(--alert-msg-color);width:auto;}
+
+
+
+.no-wrap {white-space: nowrap;}
+

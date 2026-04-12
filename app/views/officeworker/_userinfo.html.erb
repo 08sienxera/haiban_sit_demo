@@ -1,0 +1,16 @@
+<% if session[UserSessionKey].present? %>
+  <div class="h1_right">
+    <%= session[UserSessionKey][:branch_name] %>　
+    <%= session[UserSessionKey][:name] %><br />
+    <ul class="top_icons">
+    <%= content_tag(:li,link_to(content_tag(:l,nil,:class=>"fa-solid fa-gear"),"JavaScript:openSettingMenu();")) if @user_menu_visible.nil? || @user_menu_visible %>
+    </ul>
+    <nav class="setting_menu">
+      <ul>
+        <%= link_to(content_tag(:li,"パスワード変更"),edit_operator_user_path(0)) %>
+        <%= link_to(content_tag(:li,"設定変更"), "#") %> 
+        <%= link_to(content_tag(:li,"ログアウト"),{:controller=>"/login",:action=>:logout}) %>
+      </ul>
+    </nav>
+  </div>
+<% end %>

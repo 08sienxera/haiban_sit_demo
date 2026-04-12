@@ -1,0 +1,134 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+  <% @branche_color.each{|cd,color| %>
+  <%= "div.wkABranche#{cd}{background-color:#{color};}" %>
+  <% } %>
+  div.box{width:140px;float:left;margin:0 2px 1px 0;}
+  div.box:hover{background-color: yellow}
+  div.listBox{width:100%;height:300px;overflow-y: scroll;}
+--></style>
+<%= javascript_tag do %>
+  // 検索実行
+  function doSerch(){
+    var fobj=document.serch;
+    if(SiCheck(fobj)){
+      $('#serch > input[name="registered[]"]').remove();
+      $("#registeredBox div.box").each(function(){
+        $(fobj).append("<input type='hidden' name='registered[]' value='"+$(this).attr("id").replace(/^box_/,"")+"'>");
+      });
+      $("#userSerchBtn").prop("disabled", true);
+      $.ajax({
+        url: fobj.action,
+        type: fobj.method,
+        data: $(fobj).serialize(),
+        cache: false,
+        dataType: 'html',
+      }).done(function(data) {
+        $("#targetBox").html(data);
+      }).fail(function() {
+        alert('検索エラー');
+      }).always(function() {
+        $("#userSerchBtn").prop("disabled", false);
+      });
+    }
+  }
+  //候補者⇔対象者移動
+  function BoardGroupWokersSetTarget(robj){
+    if($(robj).parent().attr("id") == "targetBox"){
+      $("#registeredBox").append($(robj));
+    }else{
+      $("#targetBox").append($(robj));
+    }
+    BoardGroupWokersRecountUser();
+  }
+  //候補者(全員)→対象者移動
+  function BoardGroupWokersSetAll(){
+    $("#registeredBox").append($("#targetBox div.box"));
+    BoardGroupWokersRecountUser();
+  }
+  //候補者←対象者(全員)移動
+  function BoardGroupWokersSetDelete(){
+    $("#targetBox").append($("#registeredBox div.box"));
+    BoardGroupWokersRecountUser();
+  }
+  //候補者、対象者の数更新
+  function BoardGroupWokersRecountUser(){
+    $("#targetCount").text($("#targetBox div.box").length);
+    $("#registeredCount").text($("#registeredBox div.box").length);
+  }
+  //更新実行
+  function BoardGroupWokersDoUpdate(){
+    $('#inform > input[name="login_id[]"]').remove();
+    fobj = $("#inform");
+    $("#registeredBox div.box").each(function(){
+      fobj.append("<input type='hidden' name='login_id[]' value='"+$(this).attr("id").replace(/^box_/,"")+"'>");
+    });
+    fobj.submit();
+  }
+<% end %>
+<% } %>
+<div id="field2">
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+  <table width="95%" border="0" cellpadding="0" cellspacing="0" class="soloidline">
+  <tr>
+    <%= content_tag("th", BoardGroup.human_attribute_name(:name),:class=>"listTitle",:style=>"width:25%") %>
+    <%= content_tag("td", @board_group[:name],:class=>"listL") %>
+  </tr>
+  </table>
+  <br />
+  <%= render :partial => "manager/user_serch", :locals=>{:action=>{:action=>:show}} %>
+  <br />
+  <table border="0" cellpadding="0" cellspacing="0" class="soloidline">
+  <tr>
+    <%= content_tag("th","候補者(#{content_tag(:span,@target_list.size,:id=>"targetCount")}名)".html_safe,:class=>"listTitle",:style=>"width:440px;") %>
+    <%= content_tag("td",nil,:class=>"listTitle",:style=>"width:50px;") %>
+    <%= content_tag("th","対象者(#{content_tag(:span,@registered_list.size,:id=>"registeredCount")}名)".html_safe,:class=>"listTitle",:style=>"width:440px;") %>
+  </tr>
+  <tr>
+    <td class="listC">
+      <div id="targetBox" class="listBox">
+      <% if @target_list.blank? %>
+      候補者を検索してください
+      <% else ; @target_list.each{|user| %>
+      <% woker = user.woker_for %>
+      <%= content_tag(:div,"#{user[:name]}(#{woker.blank? ? "非配番" : @ss.list_to_str("wk_branch_cd","#{woker[:branch_cd]}")})",
+            :class=>"box wkABranche#{(woker.blank? ? "" : woker[:branch_cd])}",:id=>"box_#{user[:login_id]}",:onclick=>"BoardGroupWokersSetTarget(this)")%>
+      <% } ; end ; %>
+      </div>
+    </td>
+    <td class="listC">
+    </td>
+    <td class="listC">
+      <div id="registeredBox" class="listBox">
+      <% if @registered_list.blank? %>
+        対象者は未登録です
+      <% else ; %>
+        <% # 対象者一覧(Wokerモデル) %>
+        <% @wokers.each{|woker| %>
+          <% next if woker.user.blank? %>
+          <%= content_tag(:div,"#{woker.user[:name]}(#{@ss.list_to_str("wk_branch_cd","#{woker[:branch_cd]}")})",
+            :class=>"box wkABranche#{(woker[:branch_cd])}",:id=>"box_#{woker[:login_id]}",:onclick=>"BoardGroupWokersSetTarget(this)") %>
+        <% } %>
+        <% # 対象者一覧(Woker無しのUserモデル) %>
+        <% @registered_list.each{|user| %>
+          <% next if user.user.blank? %>
+          <% next if @wokers.pluck(:login_id).include?(user.user.login_id) %>
+          <% woker = user.user.woker_for %>
+          <%= content_tag(:div,"#{user.user[:name]}(#{woker.blank? ? "非配番" : @ss.list_to_str("wk_branch_cd","#{woker[:branch_cd]}")})",
+            :class=>"box wkABranche#{(woker.blank? ? "" : woker[:branch_cd])}",:id=>"box_#{user.user[:login_id]}",:onclick=>"BoardGroupWokersSetTarget(this)") %>
+        <% } %>
+      <% end ; %>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <%= content_tag("td",submit_tag(:submit, :value=>"全て対象に",:type=>'button',:onclick=>"BoardGroupWokersSetAll();"),:class=>"listC") %>
+    <%= content_tag("td",submit_tag(:submit, :value=>"保存",:type=>'button',:onclick=>"BoardGroupWokersDoUpdate();"),:class=>"listC") %>
+    <%= content_tag("td",submit_tag(:submit, :value=>"全て非対象に",:type=>'button',:onclick=>"BoardGroupWokersSetDelete();"),:class=>"listC") %>
+  </tr>
+  </table>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+  <%= form_tag({:action=>:update},{:method=>:put,:id => 'inform'}){ %>
+  <% } %>
+</div>

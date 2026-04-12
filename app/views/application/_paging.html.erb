@@ -1,0 +1,10 @@
+<% unless datas.nil? %>
+  <div class="pagination_box">
+    <%= content_tag(:div,I18n.t("unit.count",:count=>datas.total_entries),{:class=>"pagination_total_area"}) %>
+    <%= content_tag(:div,will_paginate(datas, 
+        :previous_label => I18n.t("btn_labels.previous_label"), 
+        :next_label => I18n.t("btn_labels.next_label")),
+      {:class=>"pagination_area"}) %>
+  </div>
+  <%= content_tag(:div,"",{:class=>"clear"}) %>
+<% end %>

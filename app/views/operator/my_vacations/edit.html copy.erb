@@ -1,0 +1,230 @@
+
+<% content_for(:head){ %>
+<%= javascript_tag do %>
+    function iCheck(fobj){
+        var strErrorMassage="";
+    <% @cc.getparamkey.each{|key| %>
+        <%= @cc.get_input_js(key) %>
+        <% if @cc.getparamdata(key,"inputFlg") == 1 %>
+            <% case key %>
+            <% when "origin_date" %>
+                <% if @wh[:wh_flg]==1 %>
+            <%= "strErrorMassage += CheckDateTerm2(fobj.elements['#{@cc.getgname}[#{key}]'],'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                <% else %>
+                if(getRadioVal(fobj.elements['<%= @cc.getgname %>[base_no]']) == "7"){
+            <%= "strErrorMassage += check_ess(fobj.elements['#{@cc.getgname}[#{key}]'],'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                }
+                <% end %>
+            <% when "at_work" %>
+                if(getRadioVal(fobj.elements['<%= @cc.getgname %>[base_no]']) == "6"){
+            <%= "strErrorMassage += check_Checkradio(fobj.elements['#{@cc.getgname}[#{key}]'],1,'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                }
+            <% end %>
+        <% end %>
+    <% }unless @cc.blank? %>
+        if(strErrorMassage==""){return true;}
+        else{alert(strErrorMassage);return false;}
+    }
+    <%# 取り下げ実行 %>
+    function goDelete(){
+        if(confirm("取り下げします。よろしいですか？")){document.delform.submit();}
+    }
+    <% unless @cc.blank? %>
+    <%# 承認実行 %>
+    function goApproval(){
+        var fobj = document.inform;
+        if(iCheck(fobj)){
+            fobj.elements['<%= @cc.getgname %>[sts]'].value = 1;
+            fobj.submit();
+        }
+    }
+    <%# 差戻 %>
+    function goRemand(){
+        var fobj = document.inform;
+        if(iCheck(fobj)){
+            <%= "strErrorMassage = check_ess(fobj.elements['reason'],'#{@cc.getparamdata("reason","title")}');".html_safe %>
+            if(strErrorMassage==""){
+                fobj.elements['<%= @cc.getgname %>[sts]'].value = 2;
+                fobj.submit();
+            }else{alert(strErrorMassage);}
+        }
+    }
+    <%# 休暇種別選択→補助情報表示制御 %>
+    function setVacationTypeBaseNo(robj){
+        var fobj = document.inform;
+        if(fobj){
+            var base_no_obj = fobj.elements['<%= @cc.getgname %>[base_no]'];
+            if(base_no_obj){
+                var display = {"at_work":"none","origin_date":"none","leav_time":"none"};
+                switch(getRadioVal(base_no_obj)){
+                case "2" : display["leav_time"] = ""; break;
+                case "6" : display["at_work"] = ""; break;
+                case "7" : display["origin_date"] = ""; break;
+                }
+                for(key in display){
+                    $("#row_"+key).css("display",display[key]);
+                }
+            }
+        }
+    }
+    <%# 休日出勤｜承諾/拒否選択→補助情報表示制御 %>
+    function setApprovalValue(){
+        <% if @wh[:wh_flg]==1 %>
+            const iform = document.inform
+            const rbs = document.getElementsByName('approval')
+            const tr_reason = document.getElementById('tr_reason')
+            const tr_origin_date = document.getElementById('tr_origin_date')
+            const text_reason = document.getElementById('reason')
+            const text_origin_date = document.getElementById('origin_date')
+
+            if(rbs[0].checked==true){
+                //iform.elements['<%= @cc.getgname %>[sts]'].value = 1;
+                text_reason.value = "";
+                tr_reason.style.display = "none";
+                tr_origin_date.style.display = "";
+            }else{
+                //iform.elements['<%= @cc.getgname %>[sts]'].value = 2;
+                text_origin_date.value = "";
+                tr_reason.style.display = "";
+                tr_origin_date.style.display = "none";
+            }  
+        <% end %>
+
+    }
+    <%# 初期表示制御 %>
+    $(function(){
+        setVacationTypeBaseNo();
+        setApprovalValue();
+    });
+<% end #unless @cc.blank?  %>
+<% end %>
+<% } %>
+<style>
+    th {
+        font-weight: normal;
+        width: 30%;
+        padding: 5px;
+    }
+    .itable {max-width: 600px;width: 100%;}
+    .itable textarea {width: 100%;height:90px}
+    .itable input[type='text'] {width: 150px;}
+    .btn {padding:5px 20px;}
+    p {text-align:center;}
+
+</style>
+
+
+<div id="field1">
+    <table width="95%" border="0" cellpadding="0" cellspacing="0" class="soloidline">
+    <tr>
+        <td class="listTitle" width="25%">対象日</td>
+        <td class="listL"><%= render :partial => "t_date_box",:locals=>{:day_info=>@wh,:note=>"",:today=>Date.today,:tbl_class=>"nosoloidline",:day_title=>""} %></td>
+    </tr>
+    <tr>
+        <td class="listTitle" width="25%">公休／平日</td>
+        <td class="listL"><%= content_tag(:span,@wh.str_wh_flg,:class=>@wh.hd_style) %></td>
+    </tr>
+    <tr>
+        <td class="listTitle" width="25%">状況</td>
+        <td class="listL"><%= @vacation.str_sts %></td>
+    </tr>
+    </table><br />
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+
+
+<%= button_to("txt",{:controller=>:home,:action=>:top,},{:method=>"get",:class=>"btn"}) %>
+
+<% if @wh[:wh_flg]==1 %>
+<!-- 休日出勤登録 -->
+    <% case @vacation[:sts] %>
+        <% when 0 %>
+            <%= form_tag({:action=>:update},{:method=>:put,:name => 'inform'}){ %>
+                <%= hidden_field(@cc.getgname,"sts",{:value=>@vacation[:sts]}) %>
+                <p><span class='ess'>*</span>は必須項目です。</p>
+                <table class='itable'>
+                    <tr>
+                        <th>承諾/拒否<span class='ess'>*</span></th>
+                        <%= content_tag :td do %>
+                            <div id="radio_approval">
+                            <%= radio_button_tag('approval', 'accept', checked = true, :onclick=>"setApprovalValue();") %>
+                            <%= content_tag(:label,"承諾する",:for=>"approval_accept") %>
+                            <%= radio_button_tag('approval', 'refuse', checked = false, :onclick=>"setApprovalValue();") %>
+                            <%= content_tag(:label,"拒否する",:for=>"approval_refuse") %>
+                            </div>
+                        <% end %>
+                        <td>
+                    </tr>
+                    <tr id='tr_origin_date'>
+                        <th>振替日<span class='ess'>*</span></th>
+                        <td><%= content_tag(:input,nil,:id=>'origin_date',:type=>'text',:value=>@vacation.origin_date,onclick: "alert('Hello, world!')") %></td>
+                    </tr>
+                    <tr id='tr_reason'>
+                        <th>差戻理由<span class='ess'>*</span></th>
+                        <td><%= content_tag(:textarea,nil,id:'reason') %>
+                    </tr>
+
+                </table>
+                    
+                <br />
+                <div class="listC">
+                <%= submit_tag(:submit, :value=>"登録",:type=>'button',:onclick=>"goInput(this);",:class=>"btn") %>
+                </div>
+            <% } %>
+
+        <% when 1 %>
+            <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+        <% when 2 %>
+            <%= form_tag({:action=>:update},{:method=>:put,:name => 'inform'}){ %>
+            <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+            <% } %>
+            <br />
+            <div class="listC">
+            <%= submit_tag(:submit, :value=>"取り下げ",:type=>'button',:onclick=>"goDelete(this);",:id=>"delete_btn") %>
+            </div>
+    <% end %>
+<% else %>
+<!-- 休暇申請登録 -->
+    <%= form_tag({:action=>:update},{:method=>:put,:name => 'inform'}){ %>
+    <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+    <% if @cc.getparamdata("base_no","inputFlg") != 1 %>
+    <%= hidden_field(@cc.getgname,"base_no",{:value=>@vacation[:base_no]}) %>
+    <% end %>
+    <%= hidden_field(@cc.getgname,"sts",{:value=>@vacation[:sts]}) %>
+    <% } %>
+    <br />
+    <% if @vacation.new_record? %>
+        <div class="listC">
+        <%= submit_tag(:submit, :value=>"申請",:type=>'button',:onclick=>"goInput(this);",:id=>"update_btn") %>
+        </div>
+    <% else ; case @vacation[:sts] %>
+        <% when 0 #未承認→承認 %>
+        <div class="listC">
+        <p>メモ：変更or取り下げ</p>
+        <%= submit_tag(:submit, :value=>"変更",:type=>'button',:onclick=>"goInput(this);",:id=>"update_btn") %>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <%= submit_tag(:submit, :value=>"取下",:type=>'button',:onclick=>"goDelete(this);",:id=>"update_btn") %>
+        </div>
+        <% when 1 #承認済み-> 表示のみ%>
+        <div class="listC">
+        <p>メモ：表示のみ</p>
+        <%= submit_tag(:submit, :value=>"差戻",:type=>'button',:onclick=>"goRemand(this);",:id=>"update_btn") if false%>
+        </div>
+        <% when 2 #差戻→承認%>
+        <div class="listC">
+        <p>メモ：理由表示と変更or取り下げ</p>
+        <%= submit_tag(:submit, :value=>"変更",:type=>'button',:onclick=>"goInput(this);",:id=>"update_btn") %>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <%= submit_tag(:submit, :value=>"取下",:type=>'button',:onclick=>"goDelete(this);",:id=>"update_btn") %>
+        </div>
+    <% end ; end %>
+<% end %>
+    <br />
+    <%= render :partial => "operator/back_to_top" %>
+</div>
+<%= form_tag({:action=>:destroy},{:method=>:delete,:name => 'delform'}) {%>
+    <%= hidden_field_tag(:t_date,@t_date.strftime("%y%m%d")) %>
+<% } unless @vacation.new_record? %>
+
+
+
+

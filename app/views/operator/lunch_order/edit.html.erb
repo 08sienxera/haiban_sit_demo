@@ -1,0 +1,121 @@
+<% content_for(:head){%>
+<style type="text/css">
+    <!--
+    #locationNoteLine {
+        color: red;
+        text-align: center;
+        padding: 5px;
+    }
+
+    .no-wrap {
+        white-space: nowrap;
+    }
+
+    .btn.order-btn {
+        font-size: 16px;
+        padding: 8px 32px;
+        width: 30%;
+        max-width: 200px;
+        background-color: #007bff;
+        color: white;
+    }
+
+    .menu-init {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    .menu-wrap {
+        opacity: 0;
+        transform: translateY(-30px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+    }
+
+    .menu-wrap.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    -->
+</style>
+<%= javascript_tag do %>
+    $(function(){
+        setParentWindowFrameSize("#lunchOrderBox",35)
+        var lunchLocationObj = new Object;
+        lunchLocationObj.value = '<%= @my_order[:lunch_location_id] %>';
+        selectLunchLocation(lunchLocationObj);
+        setTimeout(()=>{
+            $("div.menu-wrap").removeClass("menu-init")
+        },10)
+    });
+
+    let t = null;
+    var location_note = <%= @location_note.to_json.html_safe %>;
+    const subWinRedirect = (event,target_link)=>{
+        if(window!==window.parent){
+            event.preventDefault();
+            let url = target_link.href
+            window.parent.location.href = url
+        }
+    }
+    function selectLunchLocation(robj){
+        const menuWrap = $("div.menu-wrap");
+        if(robj.value=="-1" || robj.value==""){
+            menuWrap.removeClass("show")
+        }else{
+            menuWrap.addClass("show")
+        }
+        if(location_note[robj.value]){
+            $("#locationNoteLine").text(location_note[robj.value]);
+        }else{
+            $("#locationNoteLine").text("　");
+        }
+    }
+<% end } %>
+<div id="field2">
+    <div class="listC" style="margin-top:13px;"><%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %></div>
+    <% order_state = @order_sts[:value]; order_msg = @order_sts[:msg]; msg_color = @order_sts[:color] %>
+    <% box_title = "昼食注文" ; box_title+="（※#{@order_sts[:vname]}です。）" if @order_sts[:vname].present? %>
+    <div style="margin-top:10px;padding:10px;"><%= render :partial => "operator/id_date_box",:locals=>{:title=>box_title,:t_date=>@t_date,:hd_style=>@hd_style} %></div>
+    <%= content_tag(:div,order_msg,:class=>'order_msg',:style=>"text-align:center; font-weight:bold;font-size:0.9em;color:#{msg_color}") if order_state!=2 %>
+    <%= form_tag({:action=>:update},{:method=>:put,:name => 'inform'}){ %>
+    <% if order_state==2 || order_state==4 %>
+    <div class="order_history">
+        <% order_location = @location.find{|txt,key| key.to_i == @my_order[:lunch_location_id]} %>
+        <div style="font-size:1.4rem;"><%= order_location.nil? ? order_msg : order_location[0] %></div>
+        <div><%= @menu.select{|txt,key| key == @my_order[:lunch_menu_id]&.to_s}.first&.first || "" %></div>
+        <%= content_tag(:div,nil,:id=>"locationNoteLine") %>
+    </div>
+    <% else %>
+    <div class="radiobox location-wrap" style="margin-top:10px;">
+        <% label_class = "radiobutton-label no-wrap" %>
+        <% @location.each{|txt,key| %>
+        <%= raw('<br/>') if key == "-1" %>
+        <%= radio_button_tag(:lunch_location_id,key,(key == @my_order[:lunch_location_id].to_s),
+            {:disabled=>@lock,:class=>"radiobutton",:onclick=>"selectLunchLocation(this)"}) %>
+        <%= content_tag(:label,txt,:for=>"lunch_location_id_#{key}",:class=>'no-wrap') %>
+        <% }unless @location.blank? %>
+    </div>
+    <div class="radiobox menu-wrap menu-init" style="margin-top:10px;">
+        <% if @menu.present? && @menu.size > 1 %>
+        <% @menu.each{|txt,key| %>
+        <%= radio_button_tag(:lunch_menu_id,key,(key == @my_order[:lunch_menu_id].to_s),{:disabled=>@lock,:class=>"radiobutton"}) %>
+        <%= content_tag(:label,txt,:for=>"lunch_menu_id_#{key}",:class=>'no-wrap') %>
+        <% } %>
+        <% elsif @menu.present? && @menu[0].present?  %>
+        <%= @menu[0][0] %>
+        <%= hidden_field_tag(:lunch_menu_id,@menu[0][1]) %>
+        <% end %>
+    </div>
+    <%= content_tag(:div,nil,:id=>"locationNoteLine") %>
+    <div class="listC">
+        <%= submit_tag(:submit, :value=>@order_sts[:btn],:class=>"btn order-btn") %>
+    </div>
+    <% end %>
+    <% } %>
+    <div class="order_history">
+        <%= link_to("今月の注文数 #{@order_history[:this].length} | 先月の注文数 #{@order_history[:last].length}",
+                {:action=>:history,:t_date=>@t_date.strftime("%Y%m%d")},:onclick=>"subWinRedirect(event,this)") %>
+    </div>
+    <%= render :partial => "operator/back_to_top" %>
+</div>

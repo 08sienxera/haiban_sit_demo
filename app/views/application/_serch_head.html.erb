@@ -1,0 +1,22 @@
+<% content_for(:head){ %>
+  <%= javascript_tag do %>
+    function SiCheck(fobj){
+      var strErrorMassage="";
+    <% ss.getparamkey.each{|key| %>
+      <% if ss.getparamdata(key,"noserch").blank? %>
+        <%= ss.get_input_js(key) %>
+        <%= ss.get_input_js("#{key}_e") if ss.has_key?("#{key}_e") %>
+      <% end %>
+    <% }unless ss.blank? %>
+      if(strErrorMassage==""){return true;}
+      else{alert(strErrorMassage);return false;}
+    }
+    <% unless tab_keys.blank? %>
+      function set_tab(key,tab_val){
+        var fobj = document.serch;
+        fobj.elements[key].value = tab_val;
+        doSerch();
+      }
+    <% end %>
+  <% end %>
+<% } %>

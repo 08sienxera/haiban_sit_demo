@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="Keywords" content="norobot" />
+    <meta name="Robots" content="noindex,nofollow" />
+    <meta name="googlebot" content="noarchive" />
+    <meta name="Robots" content="noarchive" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= favicon_link_tag("favicon.ico") %>
+    <%= favicon_link_tag("apple-touch-icon.png",{:rel => 'apple-touch-icon',:sizes => '128x128',:type => 'image/png'}) %>
+    <%= stylesheet_link_tag 'application' %>
+    <%= stylesheet_link_tag 'operator' %>
+    <% @inc_css.each{|css| %><%= stylesheet_link_tag css %><%} unless @inc_css.nil? %>
+    <%= javascript_include_tag 'application' %>
+    <%= javascript_include_tag 'operator/common' %>
+    <% @inc_js.each{|js| %><%= javascript_include_tag js %><%} unless @inc_js.nil? %>
+    <%= yield(:head) %>
+    <%= content_tag(:title,@title) %>
+</head>
+<div id="my_body">
+    <a name="top" id="top">
+    <div id="header" >
+        <h1>
+        <% if @header_link_enable.nil? || @header_link_enable %>
+            <%= content_tag(:div,link_to(image_tag("apple-touch-icon.png" ,:title=>I18n.t('sys_common.sys_title'),:alt=>I18n.t('sys_common.sys_title')),{:controller=>"operator/home",:action=>:menu}),{:class=>"h1_left"})%>
+        <% else %>
+            <%= content_tag(:div,image_tag("apple-touch-icon.png" ,:title=>I18n.t('sys_common.sys_title'),:alt=>I18n.t('sys_common.sys_title')),{:class=>"h1_left"})%>
+        <% end %>
+        <div class='sys-title'>
+        <%= content_tag(:div,I18n.t('sys_common.sys_title'),{:class=>"h1_left h100p title-main"}) %>
+        <%= content_tag(:div,@title,{:class=>"h1_center h100p title-sub"}) %>
+        </div>
+        <%= render :partial => "operator/userinfo" %>
+        </h1>
+    </div>
+    </a>
+    <%= content_tag(:div,nil,{:class=>"clear"}) %>
+    <div id="main">
+        <%= yield %>
+    </div>
+    <%= content_tag(:div,content_tag(:p,I18n.t('sys_common.copy_right',:yyyy=>Date.today.strftime("%Y")).html_safe,{:id=>"bottom"}),{:id=>"footer"}) %>
+</div>
+</body>
+</html>

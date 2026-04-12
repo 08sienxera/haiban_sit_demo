@@ -1,0 +1,164 @@
+/*共通ＣＳＳ*/
+body{background-color : #FFFFFF;}
+body,td,th,input,textarea{font-size:10pt;}
+body,td,th{font-family:'メイリオ',Meiryo,'Hiragino Kaku Gothic Pro','ＭＳ Ｐゴシック',sans-serif;}
+
+form,body,pre{ margin: 0px; }
+#my_body{
+    margin: 0 auto;
+    width: 100% ;
+    position: relative;
+}
+/*ヘッダ部*/
+#header h1{
+    margin: 0 auto;
+    border-top:1px solid #000099;
+    border-bottom:1px solid #000099;
+    background-color:#0168B1;
+    color:#FFFFFF;
+    height:35px;
+}
+#header h1 a div.sys_title{
+    color:#FFFFFF;
+}
+
+#header div.h1_left{float:left;}
+#header div.h1_left img{height:35px;width:35px;}
+
+#header div.h1_center{
+    float:left;
+    margin:10px 50px 5px;
+    font-size: 14pt;
+}
+#header div.h1_right{
+    float:right;
+    text-align:center;
+    font-size:10pt;
+    margin:15px 20px 5px 5px;
+}
+/*メイン*/
+#main #field1{
+    font-size:10pt;
+    margin:1.0em;
+}
+#main #field1 #spage{height:100px;}
+#main #field1 #space{height:70px;}
+#main #field1 table,div{margin:0 auto;}
+#main #field2 table,div{margin:0 auto;}
+table.nocenter{margin:5px 0 0;}
+
+/*フッタ部*/
+#footer #bottom{
+    margin: 15px auto 0;
+    border-top:1px solid #000099;
+    /* border-bottom:1px solid #000099; */
+    /* background-color:#CCCCCC; */
+    text-align: right;
+}
+
+/** 以下ページネイト用スタイル */
+.pagination_box{width:95%;clear:both;margin-bottom:2px;margin-top:2px;}
+.pagination_total_area {float:left;text-align:left;margin-left:10px;}
+.pagination_area {float:right;text-align:right;margin-right:10px;}
+.pagination {padding: 1px;margin: 1px;display: inline;line-height: 24px;}
+.pagination a {padding: 0px 5px 0px 5px;margin: 1px;border: 1px solid #aaaadd;text-decoration: none;color: #000099;}
+.pagination a:hover, .pagination a:active {border: 1px solid #000099;color: #000;}
+.pagination span.current {padding: 0px 5px 0px 5px;margin: 1px;border: 1px solid #000099;font-weight: bold;background-color: #000099;color: #FFF;}
+.pagination span.disabled {padding: 0px 5px 0px 5px;margin: 1px;border: 1px solid #eee;color: #000;}
+
+/** タブ **/
+#tablist{font-weight:bold;}
+#tablist div.left{margin-right:5px;}
+#tablist span{padding:5px;border: 1px #000000 solid;display: block;}
+#tablist a{padding:5px;border: 1px #000000 solid;display: block;color:white;background-color:#6699CC;text-decoration: none;}
+#tablist a:hover{color:black;background-color:yellow}
+
+/*共通*/
+div.input table{margin: 0px auto;}
+.err ,.ess{color: #FF0000;font-weight: bold;}
+.left{float:left;}
+.right{float:right;}
+.clear{clear:both;}
+table.soloidline{background-color : #FFFFFF;border-collapse: collapse;border: 1px #000000 solid;}
+.soloidline td { border: 1px #000000 solid;}
+.soloidline th { border: 1px #000000 solid;}
+.soloidline hr {margin: 3px auto;padding: 0px;border-width: 1px 0px 0px 0px;border-color: #000000;height: 1px;}
+table.nosoloidline{border: 0px #000000 none;}
+.nosoloidline td { border: 0px #000000 none;}
+.nosoloidline th { border: 0px #000000 none;}
+table.main_tbl{width:98%;margin: 0 auto;}
+
+.listTitle{white-space: nowrap;background-color:#FFEEFF;padding:2px;text-align:center;font-weight:bold;}
+.listTitle2{background-color:#7fffbf;}
+.listL{padding:1px 2px;text-align:left;white-space: nowrap;}
+.listC{padding:1px 2px;text-align:center;white-space: nowrap;}
+.listR{padding:1px 2px;text-align:right;white-space: nowrap;}
+.listT{vertical-align:top;}
+.listB{vertical-align:bottom;}
+td.cell_alt{background-color : #FFCC99;}
+.box{border:1px solid #000000;}
+.ulbox{border-bottom:1px solid #000000;vertical-align:bottom;}
+.btnBox{margin: 0 auto;width: 95%;text-align:center;}
+.links{margin-top: 10px;width:98%;border-top:1px solid #000000;font-size:10pt;text-align:center;padding-top:0.5em;}
+.col-cell0{color:red;}
+.col-cell6{color:blue;}
+.text-vertical{writing-mode: vertical-rl;}
+/*検索*/
+div.serchform{position:absolute;top:100px;left:400px;z-index:10;border:3px solid #6BB501;background-color:#FFFFFF;text-align:left;}
+input.btn{width:140px;}
+input.ck_btn{margin: 0px;padding: 0px;}
+td.disabled{background-color:#DDDDDD;}
+tr.selectlist:hover{background-color : #FFFF00;cursor:pointer;}
+th.selectcell:hover{cursor:pointer;}
+
+span.cont_time_box{margin-left: 25px;border: black 1px solid;padding: 3px;}
+div.cont_tbl{margin-left: 25px;}
+
+/*休暇テーブルＣＳＳ*/
+div.hcaltable{display: table;border-collapse: collapse; margin-left:0;}
+/* div.hcaltable{display: table;border-collapse: collapse;} */
+div.hcaltable div.hcalRow{display: table-row;}
+div.hcaltable div.hcalRow div.hcalCell{display: table-cell;}
+div.hcaltable div.hcalRow div.hcalVCell{border: 1px solid black;padding: 2px;overflow:hidden;min-height:20px;}
+
+div.hcalAlertCell{background-color:yellow;}
+div.hcalErrCell{background-color:red;}
+div.hcalFutureCell:hover{color:black;background-color:#6BB501}
+div.hcalPastCell{background-color:gray;}
+div.hcalAuthCell{font-weight: bold;}
+div.hcalInfoBox{position: absolute;margin: 1.5em 0 1.5em 15px;padding: 3px 5px;min-width: 40px;max-width: 100%;font-size: 16px;background: #FFF;border: solid 3px green;box-sizing: border-box;border-radius: 8px;}
+div.hcalInfoBox:before {content: "";position: absolute;top: 50%;left: -24px;margin-top: -12px;border: 12px solid transparent;border-right: 12px solid #FFF;z-index: 2;}
+div.hcalInfoBox:after {content: "";position: absolute;top: 50%;left: -30px;margin-top: -14px;border: 14px solid transparent;border-right: 14px solid green;z-index: 1;}
+
+/*ヘルプ画面*/
+#help{display:none;position:absolute;border:3px solid #6BB501;background-color: #FFFFFF;width:600px;height:400px;top:100px;left:200px;z-index:12;}
+div.help_title{font-weight:bold;margin:5px;font-size: 12pt;}
+#relode{display:none;position:absolute;border:3px solid #6BB501;background-color: #FFFFFF;width:400px;height:150px;top:200px;left:300px;z-index:13;}
+#msgBox{position: absolute;top:30px; margin: 1.5em 0 1.5em 15px;padding: 30px 5px;width: 98%;min-height:300px;background: white;border: solid 3px green;text-align:center;display:none;}
+
+/* popupBox */
+div.popupBox {position: absolute;display: none;background-color: #FFFFFF;border: 3px #6BB501 solid;padding: 5px;}
+
+/* チェックボックスのボタン化*/
+div.checkboxBtn{display: inline-block;}
+div.checkboxBtn .btn{display: none;}
+div.checkboxBtn label {background-color: darkgray;border-radius: 10px;padding: 1px 3px;border: 1px solid silver;user-select: none;}
+div.checkboxBtn .btn:checked + label{background-color: yellow;font-weight:bolde;}
+
+
+/*デモ用*/
+li{margin: 3px;}
+li.level1{margin-bottom: 20px;}
+
+/*pw変更ボタン*/
+a.pw_btn{color: #000000;padding: 2px;background-color:#E6E6FA;border: 1px solid #000000;text-decoration: none;}
+/* バッジ（タグ） */
+.badge {display: inline-block;padding: .25em .4em;font-size: 75%;font-weight: 700;line-height: 1;text-align: center;white-space: nowrap;vertical-align: baseline;border-radius: .25rem;}
+.badge-primary {color: #fff;background-color: #428fe2;}
+.badge-danger {color: #fff;background-color: #dc3545;}
+
+/* 改行制御関係 */
+/* 改行コードで改行させる */
+.libr {white-space:pre-line;line-height:1;}
+/* 文字途中で改行させない */
+.no-wrap {white-space: nowrap;}

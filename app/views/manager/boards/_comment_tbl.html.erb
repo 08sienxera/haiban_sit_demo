@@ -1,0 +1,39 @@
+<% content_for(:head){ %>
+  <style type="text/css"><!--
+    .comment_container{margin-top:25px}
+    .comment_container>h2{margin:0px}
+  --></style>
+<% } %>
+
+<% if @dataline.present? %>
+<div class='comment_container'>
+<table border=0 cellpadding=3 cellspacing=0 class='soloidline'>
+  <h2 class='listC head-border'>コメント</h2>
+  <tr>
+  <%= content_tag(:td,:class=>"listTitle",:style=>"vertical-align:top;") do %>
+    <span style="display:block;">コメント</span>
+    <%= button_tag "追加",:style=>"margin-top:10px",:onclick=>"showCommentForm();" %>
+  <% end %>
+  <td>
+  <div style="height:200px;overflow:auto;">
+  <% @dataline.board_comment.each{|comment| %>
+    <div id="board_comment_<%= comment.id %>">
+      <% if comment.created_uid == session[:user][:login_id] %>
+        <%= link_to "#",:id=>"modComLi_#{comment[:id]}",:onclick=>"showCommentForm(#{comment.id})" do %>
+            <i class="fa-regular fa-pen-to-square"></i>
+        <% end %>
+      <% end %>
+      <strong><%= comment.comment_title_str %></strong><br/>
+      <span class="libr"><%= comment.comment %></span>
+      <%= content_tag :hr if @dataline.board_comment.last != comment%>
+    </div>
+  <% } %>
+  </div>
+  </td>
+  </tr >
+</table>
+</div>
+<% end %>
+
+
+

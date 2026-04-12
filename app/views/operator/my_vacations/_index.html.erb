@@ -1,0 +1,261 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+div.listTitle{text-align: center;}
+div.hcaltable{display: table;border-collapse: collapse;}
+div.hcaltable div.hcalRow{display: table-row;}
+div.hcaltable div.hcalRow div.hcalCell{display: table-cell;}
+div.hcaltable div.hcalRow div.hcalVCell{border: 1px solid black;padding: 2px;overflow:hidden;min-height:20px;}
+
+div.hcalAlertCell{background-color:yellow;}
+div.hcalErrCell{background-color:red;}
+div.hcalFutureCell:hover{color:black;background-color:#6BB501}
+div.hcalPastCell{background-color:gray;}
+div.hcalAuthCell{font-weight: bold;}
+div.hcalInfoBox{position: absolute;margin: 1.5em 0 1.5em 15px;padding: 3px 5px;min-width: 40px;max-width: 100%;font-size: 16px;background: #FFF;border: solid 3px green;box-sizing: border-box;border-radius: 8px;}
+div.hcalInfoBox:before {content: "";position: absolute;top: 50%;left: -24px;margin-top: -12px;border: 12px solid transparent;border-right: 12px solid #FFF;z-index: 2;}
+div.hcalInfoBox:after {content: "";position: absolute;top: 50%;left: -30px;margin-top: -14px;border: 14px solid transparent;border-right: 14px solid green;z-index: 1;}
+
+--></style>
+<%= javascript_tag do %>
+    $(function(){
+        if(window != window.parent){
+            $("#header,#footer,#backHomeBtn").css("display","none");
+            $("a.showLink").attr("target","_parent");
+            <% if @top_message[:v_work].present? %>
+                doSetMessage('<%= @top_message[:v_work][:text] %>','<%= @top_message[:v_work][:url] %>');
+            <% end %>
+        };
+    });
+<% end %>
+<% } %>
+<% vacation_alert_flg =false %>
+<% sum_datas={:date_alert=>{},:menbers_count=>{},:branch_count=>{:total=>{:vacation=>0,:continuous=>0}}} #ページ内集計用%>
+<div id="field1">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <%= render :partial => "t_month_box",:locals=>{:day_info=>@_tarm,:today=>@today,:tbl_class=>"",:day_title=>""} %>
+<% if @calendar[:menbers].present? %>
+<div id="hcalBox">
+<div class="hcaltable" id="hcalTbl">
+    <div class="hcalRow"><%# タイトル行%>
+        <div class="hcalCell">
+            <div id="hcalTitle1"><%# 氏名タイトル %>
+                <div class="hcaltable">
+                        <div class="hcalRow"><div class="hcalCell hcalVCell listTitle">氏名</div></div>
+                </div class="hcaltable">
+            </div>
+        </div class="hcalCell">
+        <div class="hcalCell">
+            <div id="hcalTitle2"><%# 日付タイトル %>
+                <div class="hcaltable">
+                        <div class="hcalRow">
+                        <% wk_date = @t_tarm[:length][:begin_date]
+                            while wk_date <= @t_tarm[:length][:end_date] do
+                                wh = @calendar[:wh][wk_date] %>
+                        <%= content_tag(:div,wk_date.strftime("%d"),:class=>"hcalCell hcalVCell listTitle col-cell#{wh[:wh_flg]==1 ? "0" : wk_date.strftime("%w")}")%>
+                        <% wk_date += 1; end %>
+                        </div class="hcalRow">
+                </div class="hcaltable">
+            </div>
+        </div class="hcalCell">
+        <div class="hcalCell">
+            <div id="hcalTitle3"><%# 集計タイトル %>
+                <div class="hcaltable">
+                        <div class="hcalRow">
+                            <div class="hcalCell hcalVCell listTitle listL">公休</div>
+                            <!--div class="hcalCell hcalVCell listTitle listL">連勤</div-->
+                        </div>
+                </div class="hcaltable">
+            </div>
+        </div class="hcalCell">
+    </div class="hcalRow"><%# タイトル行%>
+    <div class="hcalRow"><%# データ行%>
+        <div class="hcalCell">
+            <div id="hcalData1"><%# 氏名データ %>
+                <div class="hcaltable">
+                    <% branch_cd=nil; @calendar[:menbers].each{|menber| @calendar[:member_count][:total]+=1;@calendar[:member_count][menber["branch_cd"]]+=1; sum_datas[:menbers_count][menber["login_id"]]={:vacation=>0,:v_work=>0,:continuous=>0} %>
+                    <%= content_tag(:div,content_tag(:div,menber["name"],:class=>"hcalCell hcalVCell listL"),:class=>"hcalRow branchGroup_#{(@my_id==menber["id"] ? "me" : "oth")}",:id=>"user_Group_#{menber["login_id"]}" )%>
+                    <% branch_cd=menber["branch_cd"] }; branche_info = @calendar[:branche][branch_cd]; sum_datas[:branch_count][branch_cd]={:vacation=>0,:continuous=>0} %>
+            </div class="hcaltable">
+            </div id="hcalData1"><%# 氏名データ %>
+        </div class="hcalCell">
+        <div class="hcalCell">
+            <div id="hcalData2" onscroll="doHcalScroll(this);"><%# 作業員×日付毎データ %>
+                <div class="hcaltable">
+                    <% branch_cd=nil; @calendar[:menbers].each{|menber| vacations = @calendar[:vacations][menber["login_id"]] %>
+                    <div class="hcalRow branchGroup_<%= (@my_id==menber["id"] ? "me" : "oth") %>" id="user_Group_<%=menber["login_id"]%>">
+                        <%  continuous = 0
+                            #前月分の連勤数をチェック
+                            wk_date = @t_tarm[:length][:begin_date] - Vacation::OverWorkLimit - 1
+                            while wk_date < @t_tarm[:length][:begin_date] do
+                                wh = @calendar[:wh][wk_date]
+                                vacation = (vacations.blank? ? nil : vacations[wk_date])
+                                if vacation.nil?
+                                    if wh.present? && wh[:wh_flg]==1 #公休日
+                                        continuous = 0 unless wk_date.strftime("%w") == "0"
+                                    else
+                                        continuous += 1
+                                    end
+                                else
+                                    case vacation[:base_no]
+                                    when 1 ; continuous += 1 #公休日出勤
+                                    when 2 ; continuous += 1 #早退=出勤
+                                    else   ; continuous = 0
+                                    end
+                                end
+                                wk_date += 1
+                            end
+                            wk_date = @t_tarm[:length][:begin_date]
+                            while wk_date <= @t_tarm[:length][:end_date] do
+                                wh = @calendar[:wh][wk_date]
+                                cell_class = "hcalCell hcalVCell"; cell_text = "　"; onclick=""
+                                pop_text = ""; onmouseover=nil,onmouseout=nil
+                                vacation = (vacations.blank? ? nil : vacations[wk_date])
+                                if vacation.nil?
+                                    if wh[:wh_flg]==1 #公休日
+                                        continuous = 0 unless wk_date.strftime("%w") == 0
+                                    else
+                                        continuous += 1
+                                    end
+                                else
+                                    cell_class << " listC"
+                                    cell_text = vacation.str_col_vacation_type(@calendar[:type_list])
+                                    if vacation[:sts] == 0 && vacation[:base_no] != 1 #未承認かつ出勤依頼以外
+                                        cell_class << " hcalAlertCell"
+                                        sum_datas[:date_alert][menber["branch_cd"]] ||= {}
+                                        sum_datas[:date_alert][menber["branch_cd"]][wk_date] = true
+                                    elsif vacation[:sts] == 2 && vacation[:base_no] == 1 #差戻かつ出勤依頼
+                                        cell_class << " hcalAlertCell"
+                                        sum_datas[:date_alert][menber["branch_cd"]] ||= {}
+                                        sum_datas[:date_alert][menber["branch_cd"]][wk_date] = true
+                                    end
+                                    cell_class << " hcalAuthCell" if vacation.is_authorize?
+                                    case vacation[:base_no]
+                                    when 1 #公休日出勤
+                                        continuous += 1
+                                        sum_datas[:menbers_count][menber["login_id"]][:v_work] +=1
+                                        pop_text = "→#{vacation[:origin_date].try(:strftime,"%m/%d")}" if vacation[:origin_date].present?
+                                    when 2 #早退
+                                        continuous += 1
+                                        pop_text = vacation[:leav_time]
+                                    when 6 #公休
+                                        continuous = 0
+                                        sum_datas[:menbers_count][menber["login_id"]][:vacation] +=1
+                                    when 7 #振休
+                                        continuous = 0
+                                        pop_text = vacation[:origin_date].try(:strftime,"%m/%d")
+                                    else #他休暇申請あり
+                                        continuous = 0
+                                    end
+                                end
+                                if continuous > Vacation::OverWorkLimit
+                                    #cell_class << " hcalErrCell"
+                                    # todo OverWorkLimitを超えたら親フレームにメッセージ送信
+                                    vacation_alert_flg = true
+                                elsif wk_date < @today
+                                    cell_class << " hcalPastCell"
+                                end
+                                if menber["id"] == @my_id
+                                    cell_class << " hcalFutureCell"
+                                    onclick = "JavaScript:goVacationsEdit('#{wk_date.strftime("%Y%m%d")}',#{wh[:wh_flg]},#{vacation.present?});"
+                                end
+                                if pop_text.present?
+                                    onmouseover = "popVacationInfo(this,'#{pop_text}');"
+                                    onmouseout= "$('#hcalInfoBox').css('display','none');"
+                                end
+                                sum_datas[:menbers_count][menber["login_id"]][:continuous] = continuous if sum_datas[:menbers_count][menber["login_id"]][:continuous] < continuous
+                            %>
+
+                        <%= content_tag(:div,cell_text.html_safe,:class=>cell_class,:onclick=>onclick.html_safe,:onmouseover=>onmouseover,:onmouseout=>onmouseout)%>
+                        <% wk_date += 1; end %>
+                    </div>
+                    <% branch_cd=menber["branch_cd"];sum_datas[:branch_count][branch_cd][:vacation] += sum_datas[:menbers_count][menber["login_id"]][:vacation] }; %>
+                </div class="hcaltable">
+            </div id="hcalData2"><%# 作業員毎カレンダーデータ %>
+        </div class="hcalCell">
+        <div class="hcalCell">
+            <div id="hcalData3"><%# 従業員ごと集計 %>
+                <div class="hcaltable">
+                    <% branch_cd=nil; @calendar[:menbers].each{|menber| %>
+                    <div class="hcalRow branchGroup_<%= (@my_id==menber["id"] ? "me" : "oth") %>" id="user_Group_<%=menber["login_id"]%>">
+                    <%= content_tag(:div,sum_datas[:menbers_count][menber["login_id"]][:vacation],:class=>"hcalCell hcalVCell listR") %>
+                    </div>
+                    <% branch_cd=menber["branch_cd"]; }; sum_datas[:branch_count][:total][:vacation] += sum_datas[:branch_count][branch_cd][:vacation] %>
+                </div class="hcaltable">
+            </div id="hcalData3"><%# 従業員ごと集計 %>
+        </div class="hcalCell">
+    </div class="hcalRow"><%# データ行%>
+    <div class="hcalRow"><%# 集計行%>
+        <div class="hcalCell">
+            <div id="hcalSum1"><%# タイトル %>
+                <div class="hcaltable">
+                        <%= content_tag(:div,content_tag(:div,"休暇者数 #{link_to("▼","JavaScript:hcaltableOpenBranche('oth')")}".html_safe,:class=>"hcalCell hcalVCell listTitle listL",:id=>"BrancheSumRow_oth"),:class=>"hcalRow")%>
+                        <div class="hcalRow"><div class="hcalCell hcalVCell listL">出勤者数  </div></div>
+                </div class="hcaltable">
+            </div>
+        </div class="hcalCell">
+        <div class="hcalCell">
+            <div id="hcalSum2"><%# 集計×日付毎データ %>
+                <div class="hcaltable">
+                    <div class="hcalRow"><%# 全集計行(公休者数) %>
+                        <% wk_date = @t_tarm[:length][:begin_date]
+                            while wk_date <= @t_tarm[:length][:end_date] do
+                                wh = @calendar[:wh][wk_date]
+                                if wh[:wh_flg]==1
+                                    #公休日=申請数＝出勤者数
+                                    cell_text = (@calendar[:member_count][:total] - @calendar[:counts][:total][wk_date].to_i)
+                                else
+                                    #平日=申請数＝公休者数
+                                    cell_text = @calendar[:counts][:total][wk_date].to_i
+                                end
+                        %>
+                        <%= content_tag(:div,cell_text,:class=>"hcalCell hcalVCell listR")%>
+                        <% wk_date += 1; end %>
+                    </div>
+                    <div class="hcalRow"><%# 全集計行(出勤者数) %>
+                        <% wk_date = @t_tarm[:length][:begin_date]
+                            while wk_date <= @t_tarm[:length][:end_date] do
+                                wh = @calendar[:wh][wk_date]
+                                if wh[:wh_flg]==1
+                                    #公休日=申請数＝出勤者数
+                                    cell_text = @calendar[:counts][:total][wk_date].to_i
+                                else
+                                    #平日=申請数＝公休者数
+                                    cell_text = (@calendar[:member_count][:total] - @calendar[:counts][:total][wk_date].to_i)
+                                end
+                        %>
+                        <%= content_tag(:div,cell_text,:class=>"hcalCell hcalVCell listR")%>
+                        <% wk_date += 1; end %>
+                    </div>
+                </div class="hcaltable">
+            </div>
+        </div class="hcalCell">
+        <div class="hcalCell">
+            <div id="hcalSum3"><%# 総集計データ %>
+                <div class="hcaltable">
+                    <% 2.times{ %>
+                    <div class="hcalRow">
+                    <%= content_tag(:div,"-",:class=>"hcalCell hcalVCell listTitle") %>
+                    </div>
+                    <% } %>
+                </div class="hcaltable">
+            </div>
+        </div class="hcalCell">
+
+    </div class="hcalRow"><%# 集計行%>
+</div>
+</div id="hcalBox">
+<% else %>
+配番作業員の登録がありません。
+<% end %>
+<%= render :partial => "operator/back_to_top" %>
+</div>
+
+<% if vacation_alert_flg && @is_current_month %>
+    <%= javascript_tag do %>
+        doSetMessage('<%= @top_message[:reg_vacation][:text] %>','<%= @top_message[:reg_vacation][:url] %>');
+    <% end %>
+<% elsif !@current_month%>
+    <%= javascript_tag do %>
+        doRemoveMessage('<%= @top_message[:reg_vacation][:text] %>');
+    <% end %>
+<% end %>

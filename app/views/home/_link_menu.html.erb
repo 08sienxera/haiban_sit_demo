@@ -1,0 +1,89 @@
+    <table border="0" cellpadding="5" cellspacing="0" style="width:90%">
+        <% menu_list.each_with_index{|linkdata,idx| %>
+        <%= content_tag(:tr,content_tag(:td,content_tag(:span,linkdata[0],:class=>"title"),{:valign=>"top",:class=>"menu",:colspan=>4})) %>
+        <% case idx %>
+        <% when 1 %>
+        <% f1_count = link=linkdata[1].filter{|link| link[:link]&.start_with?('javascript:dlFile(document.f1') || false}.length %>
+        <tr>
+            <td colspan=4>
+                <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f1"){ %>
+                <div class="box">
+                    <div class="listC">
+                        対象日：<%= text_field_tag(:t_date,(Date.today+1).strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                        <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                            <% 0.upto(f1_count-1){|index| link=linkdata[1][index] %>
+                            <%= render :partial => "manager/home/menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                            <% } %>
+                        </table>
+                        <%= hidden_field_tag(:mord) %>
+                    </div>
+                </div>
+                <%} %>
+                <br />
+                <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f2"){ %>
+                <div class="box">
+                    <div class="listC">
+                        対象日：<%= text_field_tag(:t_date,(Date.today-1).strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                        <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                            <% f1_count.upto(linkdata[1].size-1){|index| link=linkdata[1][index] %>
+                            <%= render :partial => "manager/home/menu_btn" , :locals=>{:link=>link,:index=>index-f1_count} %>
+                            <% } %>
+                        </table>
+                        <%= hidden_field_tag(:mord) %>
+                    </div>
+                </div>
+                <%} %>
+            </td>
+        </tr>
+        <% when 2 %>
+        <tr>
+            <td colspan=4>
+                <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f3"){ %>
+                <div class="box">
+                    <div class="listC">
+                        対象期間：
+                        <%= text_field_tag(:t_s_date,@current_monthly[:length][:begin_date].strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                        ～
+                        <%= text_field_tag(:t_e_date,@current_monthly[:length][:end_date].strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                        <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                            <% links = linkdata[1].filter{|link| link[:aggr_type]=="free"} %>
+                            <% (4-links.size%4).times{|n| links<<{}} %>
+                            <% links.each_with_index{|link,index| %>
+                            <%= render :partial => "manager/home/menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                            <% } %>
+                        </table>
+                        <%= hidden_field_tag(:mord) %>
+                        <%= hidden_field_tag(:t_date,(Date.today-1).strftime("%Y/%m/%d")) %>
+                    </div>
+                </div>
+                <%} %>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=4>
+                <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f4"){ %>
+                <div class="box">
+                    <div class="listC">
+                        対象月：<%= text_field_tag(:m_yyyy,@current_monthly[:year].to_s,:size=>6,:class=>'reqFld',:onchange=>"") %>年
+                        <%= text_field_tag(:m_mm,@current_monthly[:month].to_s,:size=>4,:class=>'reqFld',:onchange=>"") %>月
+                        <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                            <% links = linkdata[1].filter{|link| link[:aggr_type]=="monthly"} %>
+                            <% (4-links.size%4).times{|n| links<<{}} %>
+                            <% links.each_with_index{|link,index| %>
+                            <%= render :partial => "manager/home/menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                            <% } %>
+                        </table>
+                        <%= hidden_field_tag(:mord) %>
+                        <%= hidden_field_tag(:t_date,(Date.today-1).strftime("%Y/%m/%d")) %>
+                    </div>
+                </div>
+                <%} %>
+            </td>
+        </tr>
+        <% else %>
+        <% linkdata[1].each_with_index{|link,index| %>
+        <%= render :partial => "manager/home/menu_btn" , :locals=>{:link=>link,:index=>index} %>
+        <% } unless linkdata[1].blank? %>
+        <% end %>
+        <% } unless menu_list.blank? %>
+    </table>

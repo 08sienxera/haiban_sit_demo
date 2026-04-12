@@ -1,0 +1,57 @@
+<%= render :partial => "serch_head" , :locals=>{:ss=>@ss,:tab_keys=>@tab_keys} %>
+<div id="field1">
+  <table width="95%" border="0" cellpadding="0" cellspacing="0" class="soloidline">
+  <tr>
+    <%= content_tag(:th,"公開対象",:class=>"listTitle",:style=>"width:25%;") %>
+    <%= content_tag(:td,@board.board_group.try(:name),:class=>"listL") %>
+  </tr>
+  <tr>
+    <%= content_tag(:th,"掲示期間",:class=>"listTitle",:style=>"width:25%;") %>
+    <%= content_tag(:td,@board.view_tarm_str("%Y/%m/%d"),:class=>"listL") %>
+  </tr>
+  <tr>
+    <%= content_tag(:th,"カテゴリ",:class=>"listTitle",:style=>"width:25%;") %>
+    <%= content_tag(:td,@board.board_category.try(:name),:class=>"listL") %>
+  </tr>
+  <tr>
+    <%= content_tag(:th,"件名",:class=>"listTitle",:style=>"width:25%;") %>
+    <%= content_tag(:td,@board[:subject],:class=>"listL") %>
+  </tr>
+  <tr>
+    <%= content_tag(:th,"状況",:class=>"listTitle",:style=>"width:25%;") %>
+    <%= content_tag(:td,"#{@board[:confirmation_count]}/#{@board[:target_count]}",:class=>"listL") %>
+  </tr>
+
+</table><br />
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td valign="bottom" class="listL" style="width:80%;">
+    <%= render :partial => 'tablist' , :locals=>{:cc=>@cc,:ss=>@ss,:tab_keys=>@tab_keys} %></td>
+    <%= content_tag("td",
+        (render :partial => 'serch', :locals=>{:ss=>@ss,:action=>{:action=>:show},:serch_options=>@serch_options}),
+      {:valign=>"bottom",:class=>"listR"}) unless @ss.nil? %>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <table class='soloidline'>
+        <tr>
+        <%= content_tag(:th,"従業員No",:class=>"listTitle") %>
+        <%= content_tag(:th,"グループ",:class=>"listTitle") %>
+        <%= content_tag(:th,"従業員",:class=>"listTitle") %>
+        <%= content_tag(:th,"状況",:class=>"listTitle") %>
+        </tr>
+        <% @datas.each{|dataline|  %>
+        <tr>
+        <%= content_tag(:td,dataline["login_id"],:class=>"listL") %>
+        <%= content_tag(:td,(dataline[:branche_cd].blank? ? "" : @ss.list_to_str("branch_cd","#{dataline[:branche_cd]}")),:class=>"listC") %>
+        <%= content_tag(:td,dataline.user ? dataline.user[:name] : "(不明なユーザ)",:class=>"listL") %>
+        <%= content_tag(:td,(dataline[:confirmation_m_at].blank? ? "<b style='color:red'>未読</b>" : "既読").html_safe,:class=>"listC") %>
+        </tr>
+        <% } %>
+    </table>
+    <%= render :partial => "paging" , :locals=>{:datas=>@datas} %>
+  </div>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

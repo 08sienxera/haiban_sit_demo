@@ -1,0 +1,12 @@
+<% content_for :head do %>
+<%= javascript_tag do %>
+    function iCheck(fobj){
+      var strErrorMassage="";
+    <% cc.getparamkey.each{|key| %>
+      <%= cc.get_input_js(key) %>
+    <% }unless cc.blank? %>
+      if(strErrorMassage==""){return true;}
+      else{alert(strErrorMassage);return false;}
+    }
+  <% end %>
+<% end %>

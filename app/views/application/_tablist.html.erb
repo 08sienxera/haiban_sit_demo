@@ -1,0 +1,24 @@
+<% if tab_keys.present? && ss.present? %>
+<table width="95%" border="0" cellpadding="5" cellspacing="0" id="tablist">
+  <% tab_keys.each{|tab_key| %>
+  <tr><td class="listL">
+    <%
+    tablist = cc.getparamdata(tab_key,"list") unless cc.nil?
+    tablist = ss.getparamdata(tab_key,"list") if tablist.blank? && ss.present?
+    tablist.unshift([':all','']) if tablist.is_a?(Array) && tablist.index([':all','']).nil?
+    now_val = ss.getparamdata(tab_key,"value") unless ss.nil?
+    tablist.each{|text,key|
+      text = "全て" if key == "" && text == ":all"
+      if key == now_val
+        html = content_tag("span",text).html_safe
+      else
+        html = link_to(text,"JavaScript:set_tab('#{tab_key}','#{key}')").html_safe
+      end
+    %>
+      <%= content_tag("div",html,:class=>"left") %>
+    <% } %>
+    <%= content_tag("p","",:class=>"clear") %>
+    </td></tr>
+  <% } %>
+</table>
+<% end %>

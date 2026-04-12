@@ -1,0 +1,8 @@
+<% if session[UserSessionKey].present? %>
+  <div class="h1_right">
+    <%= form_tag({:controller=>"/login",:action=>:logout},{:method=>:get}){ %>
+    ログイン者：<%= session[UserSessionKey][:name] %>&nbsp;
+    <%= submit_tag(:submit,{:value=>"ログアウト"}) %>
+    <% } %>
+  </div>
+<% end %>

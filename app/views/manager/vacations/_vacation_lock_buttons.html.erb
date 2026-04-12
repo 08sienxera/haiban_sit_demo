@@ -1,0 +1,10 @@
+<% vacation_lock_buttons.each do |cd,text_url| %>
+<% text,url,pushable,clazz,t_branch = text_url.values_at(:button_text,:request_url,:pushable,:class,:t_branch) %>
+<% clazz << (" " + "inactive") unless pushable %>
+<%= form_with(:url=>url,:method=>:post,:class=>"#{clazz}") do %>
+<%= hidden_field_tag(:t_year,t_year) %>
+<%= hidden_field_tag(:t_month,t_month) %>
+<%= hidden_field_tag(:t_branch_cd,t_branch) %>
+<%= submit_tag(text,:disabled=>!pushable) %>
+<% end %>
+<% end %>

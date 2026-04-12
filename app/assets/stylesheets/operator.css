@@ -1,0 +1,168 @@
+/*共通ＣＳＳ*/
+/* html,body{width:100vw;} */
+body{background-color : #FFFFFF;}
+body,td,th,input,textarea{font-size:16pt;}
+body,td,th{font-family:'メイリオ',Meiryo,'Hiragino Kaku Gothic Pro','ＭＳ Ｐゴシック',sans-serif;}
+form,body,pre{ margin: 0px; }
+#my_body{margin: 0 auto;width: 100% ;position: relative;}
+
+.listL{padding:1px 2px;text-align:left;white-space: nowrap;}
+.listC{padding:1px 2px;text-align:center;white-space: nowrap;}
+.listR{padding:1px 2px;text-align:right;white-space: nowrap;}
+.fleft{float:left;}
+.fright{float:right;}
+.fclear{clear:both;}
+table.soloidline{background-color : #FFFFFF;border-collapse: collapse;border: 1px #000000 solid;}
+.soloidline td { border: 1px #000000 solid;}
+.soloidline th { border: 1px #000000 solid;}
+.soloidline hr {margin: 3px auto;padding: 0px;border-width: 1px 0px 0px 0px;border-color: #000000;height: 1px;}
+table.nosoloidline{border: 0px #000000 none;}
+.nosoloidline td { border: 0px #000000 none;}
+.nosoloidline th { border: 0px #000000 none;}
+.err ,.ess{color: #FF0000;font-weight: bold;}
+.col-cell0{color:red;}
+.col-cell6{color:blue;}
+.h100p{height:100%;}
+/*ヘッダ部*/
+#header h1{
+    margin: 0 auto;
+    border-top:1px solid #000099;
+    border-bottom:1px solid #000099;
+    background-color:#0168B1;
+    color:#FFFFFF;
+    height:50px;
+}
+#header div.h1_left{float:left;}
+#header div.h1_left img{height:50px;width:50px;}
+
+#header div.h1_center{float:left;margin-left:55px;}
+#header div.h1_right{float:right;text-align:center;font-size:13pt;margin:3px 20px 3px 5px;}
+#header div.h1_right a:link, #header div.h1_right a:visited, #header div.h1_right a:hover, #header div.h1_right a:active{color: white;text-decoration: none;}
+#header div.h1_right ul.top_icons{float:right;margin:0;}
+#header div.h1_right ul.top_icons li{display: inline-block;margin: 0 10px 0 0;}
+#header nav.setting_menu{display:none;position:absolute;top:50px;right:4px;z-index:10;border:1px solid black;background-color:#0168B1;text-align:center;}
+#header nav.setting_menu ul{padding:0;margin:0;}
+#header nav.setting_menu li{padding:5px;margin:0;list-style-type: none;}
+#header nav.setting_menu li:not(:last-child){border-bottom:1px solid black;}
+#header nav.setting_menu li:hover{background-color : #000099;cursor:pointer;}
+
+/*スマホ用*/
+@media screen and (max-width: 767px) {
+    #header div.h1_center{font-size:16pt;margin-top:15pt;}
+}
+@media screen and (max-width: 450px){
+    .sys-title > .title-main {
+        display: none;
+    }
+}
+
+
+/*メイン*/
+#main #field1{margin:1.0em;}
+#main #field1 #spage{height:100px;}
+#main #field1 #space{height:70px;}
+#main #field1 table,div{margin:0 auto;}
+#main #field2 table,div{margin:0 auto;}
+#main l{font-size:20pt;}
+table.nocenter{margin:5px 0 0;}
+div.order_history {max-width: 250px;text-align: center  ;}
+div.order_history ul  {list-style: none;padding: 0;}
+div.order_history > *{
+    text-align: center;
+    font-size: 1.0rem;
+    color: #444;
+    margin: 10px auto;
+}
+
+
+/*フッタ部*/
+#footer #bottom{margin: 15px auto 0;border-top:1px solid #000099;border-bottom:1px solid #000099;background-color:#CCCCCC;text-align: right;font-size:8pt;}
+
+/*Topページ*/
+div.box{width:98%;margin: 5px auto;border: 1px solid black;padding-bottom: 3px;}
+div.box div.title{background: #0168B1;color:#FFFFFF;font-weight: bold;padding:7px;margin-bottom:3px;}
+div.box div.title a:link, div.box div.title a:visited, div.box div.title a:hover, div.box div.title a:active {
+    color:#FFFFFF;text-decoration: none;
+}
+
+/* Topページ Box */
+iframe.topBox{margin:0 auto;width:99%;}
+#msgBox{display:none;}
+#msgBox.active{display:block;}
+#msgBox ul{list-style:none;margin:5px;}
+/* #msgBox li{display:none} */
+/* #msgBox li a:link, #msgBox li a:visited,#msgBox li a:active{text-decoration:none;color:black;} */
+/* #messageTarget {padding: 0;width: 500px;text-align: center;margin: 0 auto;} */
+#messageTarget > li> a {text-decoration: none;color: black;}
+#messageTarget > li> a:hover {
+    color: blue;
+    transition: 0.3s;
+    text-decoration: underline;
+}
+#lunchOrderBox{height:300px;}
+#boardsBox{height:300px;}
+#vacationsBox{height:250px;}
+
+/** 以下ページネイト用スタイル */
+.pagination_box{width:95%;clear:both;margin-bottom:2px;margin-top:2px;}
+.pagination_total_area {float:left;text-align:left;margin-left:10px;}
+.pagination_area {float:right;text-align:right;margin-right:10px;}
+.pagination {padding: 1px;margin: 1px;display: inline;line-height: 24px;}
+.pagination a {padding: 0px 5px 0px 5px;margin: 1px;border: 1px solid #aaaadd;text-decoration: none;color: #000099;}
+.pagination a:hover, .pagination a:active {border: 1px solid #000099;color: #000;}
+.pagination span.current {padding: 0px 5px 0px 5px;margin: 1px;border: 1px solid #000099;font-weight: bold;background-color: #000099;color: #FFF;}
+.pagination span.disabled {padding: 0px 5px 0px 5px;margin: 1px;border: 1px solid #eee;color: #000;}
+
+/* 現場作業員　汎用テーブルデザイン */
+table.operator_table {width:100%;margin: 20px;border-collapse: collapse;}
+table.operator_table tr {border: 1px solid #777777;}
+table.operator_table tr>* {border-right: 1px solid #777777;}
+table.operator_table tr th {font-weight: normal;background-color: #C2EEFF;width: 25%;}
+table.operator_table tr td {padding:8px 10px;}
+
+
+
+/* 他共通 */
+#backHomeBtn{width:98%;margin: 5px auto;padding: 5px;display:block;border-radius:10px;}
+div.radiobox{padding: 5px 3px;text-align: center;line-height: 220%;}
+div.radiobox .radiobutton {display: none;}
+div.radiobox label{background-color: darkgray;border-radius: 10px;padding: 3px 8px;border: 1px solid silver;}
+div.radiobox .radiobutton:checked + label {background-color: gainsboro ;border: 1px solid gold;}
+
+.btn{border-radius:7px;border: solid 1px #333;cursor: pointer;}
+.btn-destroy{background-color: #f1a899;}
+.btn-update{background-color: #C2EEFF;}
+.btn.disabled{cursor: auto;background-color: grey;opacity: 0.6;}
+
+.flex {display: flex;}
+.flex.f-spacebetween {justify-content: space-between;align-items: center;}
+
+/*改行コードで改行させる*/
+.libr {white-space:pre-line;line-height:1;}
+
+/* ログイン者ボックス */
+div#loginUserBox {
+    font-size: 1.9rem;
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    margin-top: 10px;
+    margin-bottom :10px;
+}
+div#loginUserBox .loginUser {margin:0 5px}
+div#loginUserBox .button_to .btn{
+    margin-left: 10px;
+    padding: 5px;
+    font-size: 22px;
+}
+
+@media screen and (max-width: 450px) {
+    #loginUserBox {justify-content: space-between}
+    div#loginUserBox div.loginUser {
+        display: flex;
+        flex-direction: column;
+        font-size: 1.4rem;
+    }
+    div#loginUserBox .button_to{margin-right: 10px;}
+    div#loginUserBox .button_to .btn{font-size: 20px;}
+}

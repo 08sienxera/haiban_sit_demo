@@ -1,0 +1,98 @@
+<% content_for(:head){%>
+
+
+<style type="text/css"><!--
+<% @branches.each{|cd,bdata|%>
+    <%= "div.wkABranche#{cd}, input.wkABranche#{cd}{background-color:#{bdata[:color]};}"%>
+<% } unless @branches.blank? %>
+    <%= 'input.disabled[class^="wkABranche"]}{background-color:gray;}'%>
+    <%= "div.wkABrancheCom{background-color:violet;}"%>
+    <%= "div.wkABranche{background-color:whitesmoke ;}"%>
+    <% @machine_bgc_class.each{|color|%>
+    <%= "div.wkAMachineBGC#{color.gsub("#","")}{background-color:#{color};}"%>
+    <% } unless @machine_bgc_class.blank? %>
+--></style>
+<%= javascript_tag do %>
+
+var t_date = '<%= @t_date[:t_date].strftime("%Y/%m/%d") %>'
+<%  competence_a = Woker::CompetenceKey.map{|key| [Woker.human_attribute_name("competence_#{key}"),key]} %>
+var Competence = <%= competence_a.to_json.html_safe %>;
+var strCompetence = <%= competence_a.to_h{|v,k| [k,v]}.to_json.html_safe %>;
+var RegularITime = '<%= Cargo::RegularITime %>';
+var RegularSTime = '<%= Cargo::RegularSTime %>';
+var RegularETime = '<%= Cargo::RegularETime %>';
+var hasData = <%= @cargo.present? %>;
+var managerFlg = <%= @manager_flg %>;
+var cargo_lock_request_info = <%= @cargo_lock_request_info.to_json.html_safe %>;
+
+<% end } %>
+<div id="field1">
+  <%= content_tag(:div,@alert_msg,:style=>"color:white;background-color:red;width:95%;height:25px;text-align:center;padding:5px",:id=>"doNumberingAltBox") unless @can_edit%>
+  <table width="95%" border="0" cellpadding="5" cellspacing="0" id="tDateTbl">
+  <tr>
+    <td class="listL" style="width:40%">
+    <%= render :partial => "t_date_box",:locals=>{:day_info=>@t_date,:note=>"",:today=>@today,:tbl_class=>"",:day_title=>""} %>
+    </td>
+  </tr>
+  </table>
+
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <% #メイン配番フォーム  %>
+    <%= form_tag({:action=>:update,:id=>@t_date[:t_date].strftime("%Y%m%d")},:method=>:put,:name => 'inform'){ %>
+    <%= wk_a_head(@def_tbl_setting) %>
+    <%= wk_a_body(@def_tbl_setting,@cargo,@wokers,@woker_names,@machines,@machine_names,@branches) %>
+    <%= wk_a_foot(@wokers,@machines,@branches,@msgs,@vacation_types) %>
+    <%= hidden_field_tag(:cargo_count,@cargo.size) %>
+    <% } %>
+    <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+    <% #画面文字サイズ適用用フォーム  %>
+    <%= form_tag(nil,{:name => :setting_data,:style=>"display:none"}){ %>
+    <%= hidden_field_tag(:def_font_size,@def_font_size) %>
+    <%= hidden_field_tag(:str_tbl_setting,@def_tbl_setting.to_json) %>
+    <% } %>
+    <% #力量更新用フォーム  %>
+    <%= form_tag({:action=>:set_competence},{:name => :set_competence_form,:style=>"display:none"}){ %>
+    <%= hidden_field_tag(:woker_id,nil) %>
+    <%= hidden_field_tag(:competence_key,nil) %>
+    <%= hidden_field_tag(:level,nil) %>
+    <% } %>
+    <% #言付け用フォーム  %>
+    <div id="msgFormBox" style="display:none">
+        <%= form_tag({:action=>:set_msg},{:name => :set_msg_form}){ %>
+        <table class="soloidline">
+        <tr>
+        <%= content_tag(:td, "対象",:class=>"listTitle") %>
+        <%= content_tag(:td,nil,:class=>"listL",:id=>"msgFormTo") %>
+        </tr>
+        <tr>
+        <%= content_tag(:td, "発信者名",:class=>"listTitle") %>
+        <%= content_tag(:td, text_field_tag(:created_uname,session[UserSessionKey][:name],:size=>30,:maxlength=>64,:style=>"ime-mode:active;"),:class=>"listL") %>
+        </tr>
+        <tr>
+        <%= content_tag(:td, "言付け",:class=>"listTitle") %>
+        <%= content_tag(:td, text_area_tag(:msg,nil,:rows=>8,:style=>"ime-mode:active;width:98%;"),:class=>"listL") %>
+        </tr>
+        <tr><td class="listC" colspan=2>
+        <%= submit_tag(:button, :value=>'送信',:type=>'button',:onclick=>"wkASendMsg(this)",:class=>"wkABtn") %>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <%= submit_tag(:button, :value=>'閉じる',:type=>'button',:onclick=>"wkACloseMsgFormBox()",:class=>"wkABtn") %>
+        </tr>
+        </table>
+        <%= hidden_field_tag(:work_date,@t_date[:t_date].strftime("%Y/%m/%d")) %>
+        <%= hidden_field_tag(:login_id,nil) %>
+        <%= hidden_field_tag(:user_id,nil) %>
+        <% } %>
+    </div>
+    <% #自動配番フォーム %>
+    <%= form_tag({:action=>:create},{:name => :create_form}){ %>
+        <%= hidden_field_tag(:work_date,@t_date[:t_date].strftime("%Y%m%d")) %>
+        <%= hidden_field_tag(:mord,nil) %>
+    <% } %>
+    
+    <% #ロックフォーム %>
+    <%= form_tag({:controller=>@cargo_lock_request_info[:controller],:action=>@cargo_lock_request_info[:action]},:method=>:post,:name=>:lock_form,:onsubmit=>"return false; wkACargoLock(this)") do %>
+        <%= hidden_field_tag("work_date",@cargo_lock_request_info[:work_date]) %>
+        <%= hidden_field_tag("request_user",@cargo_lock_request_info[:login_id]) %>
+    <% end %>
+    <%= content_tag(:div,nil,:id=>"msgBox")%>
+</div>

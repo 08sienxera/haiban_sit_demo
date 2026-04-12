@@ -1,0 +1,175 @@
+<% content_for(:head){ %>
+  <%= javascript_tag do %>
+    userList = <%= @user_list.to_json.html_safe %>
+    boardGroupTargetReqUrl = '<%= @get_board_target_req_url %>'
+
+    <% # 添付ファイル制御関係 %>
+    $(function(){initFBox();});
+    // 添付ファイル項目の初期化
+    function initFBox(){
+      // レイアウト関係
+      const initfBoxView = () => {
+        var fBoxs = document.querySelectorAll("div[id^='fup_box_<%= @cc.getgname %>_file_name']");
+        for(const f of fBoxs){
+          f.addEventListener('dragover', function(e){
+            e.preventDefault();
+            f.style.backgroundColor='#e1e7f0';
+          });
+          f.addEventListener('dragleave', function(e){
+            e.preventDefault();
+            f.style.backgroundColor='';
+          });
+          f.addEventListener('drop', function(e){
+            e.preventDefault();
+            f.style.backgroundColor='';
+          });
+        }
+      };
+      // 処理関係
+      const initfBoxProc = ()=>{
+        var fBoxs = document.querySelectorAll("div[id^='fup_box_<%= @cc.getgname %>_file_name']");
+        var fForm = document.getElementById('<%= @cc.getgname %>_file_name');
+        for(const f of fBoxs){
+          f.addEventListener('drop', function(e){
+            e.preventDefault();
+            var files = e.dataTransfer.files;
+            setFilesToInput(f,files);
+          });
+          f.addEventListener('change', function(e){
+            e.preventDefault();
+            var files = e.target.files;
+            setFilesToInput(f,files);
+          });
+        }
+      }
+      const setFilesToInput = (target,files)=>{
+        const match = target.id.match(/fup_box_Board_in_file_name(\d*)/);
+        if(!match) return;
+        const ti = match[1]==="" ? 1 : Number(match[1]);
+        const filesArray = Array.from(files);
+        for(let i=0; i<filesArray.length; i++){
+          const file = filesArray[i];
+          const idSuf = ti+i===1 ? "" : String(ti+i);
+          const tInput = document.querySelector("input#Board_in_file_name" + idSuf);
+          
+          if(!tInput) return;
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          tInput.files = dataTransfer.files;
+        }
+      };
+
+      initfBoxView();
+      initfBoxProc();
+    }
+
+
+
+  <% end %>
+  <style type="text/css"><!--
+    .essF::after {
+      content:'*';
+      color: red;
+    }
+    div#field2 {position: relative;}
+    div.flt_form {
+      position: absolute;
+      list-style: none;
+      width: 350px;
+      height: 400px;
+      border : solid 2px #aaaaaa;
+      top: 50%;   left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0px;
+      background-color: #ffffff;
+      box-shadow: 0px 0px 17px #333333;
+      display: none;
+    }
+    div.flt_form .of_scroll {overflow:scroll;}
+    div#user_select_form {}
+    div.flt_form li[id^="user_"] { font-weight:normal; }
+    div.flt_form li[id^="user_"].selected { font-weight:bold; }
+    div.flt_form li[id^="user_"]:hover { background-color:yellow; }
+    div.flt_form li[id^="user_"].selected::after { content: "　✓"; font-weight:bold; }
+    div.flt_form li{ list-style: none; cursor: pointer;}
+    div#user_select_form li.parent_list::before{
+      content: "＞";
+      width: 1rem;
+      height: 1rem;
+      display:inline-block;
+      transition: transform 0.1s;
+    }
+    div#user_select_form li.parent_list.expand::before{ transform: rotate(90deg); }
+    div#board_group_select_form #in_board_group {margin-left:20px; margin-top:10px}
+    div#board_group_select_form ul {height:75%;}
+    #board_targets {width:150px; margin-top:5px;}
+  --></style>
+<% } %>
+<%= hidden_field_tag(:board_target,@board_target) %>
+<div class="listC">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'msg'} %>
+</div>
+<div id="user_select_form" class="flt_form" >
+  <ul style="height:83%;" class="of_scroll">
+    <% (@user_list ||{}).each do |auth,list| %>    
+      <% auth_str,auth_cd = auth.split("_") %>
+      <%= content_tag(:li,:id=>"li_parent_#{auth_cd}",:class=>"parent_list",:style=>'font-weight: bold;', :onclick=>"toggleTree(this)") do %>
+      <%= "#{auth_str}<span style='font-weight:normal'>(#{content_tag(:span, '0', class: 'user_count')} / #{list.size} 人)</span>".html_safe %>
+        <ul id="user_list_<%= auth_cd.to_s %>">
+        <% list.each do |user| %>
+          <%= content_tag(:li,user[1],:id=>"user_#{auth_cd.to_s}_#{user[0]}",:class=>user[2] ? "user selected" : "user",:onclick=>'toggleSelect(this,event)') %>
+        <% end %>
+        </ul>
+        <hr>
+      <% end %>
+    <% end %>
+  </ul>
+  <%= button_tag("とじる",:id=>'close-btn',:style=>'margin: 0 auto;display: block;',:onclick=>'closeForm(event,"user")') %>
+</div>
+<div id="board_group_select_form" class="flt_form" >
+  <% @board_group_list||={} %>
+  <%= select_tag("in_board_group",options_for_select([["選択してください",0]] + @board_group_list.keys.map{|key| key.split("_")})) %>
+  <% @board_group_list.each do |bg_key,list| %>    
+    <% bg_name,bg_id = bg_key.split("_") %>
+    <%= content_tag(:ul,:id=>"bg_#{bg_id}",:class=>"bg_list of_scroll", :style=>"display:none;") do %>
+        <% list.each do |user| %>
+          <%= content_tag(:li,user[1],:id=>"user_#{bg_id.to_s}_#{user[0]}",:class=>"user selected",:onclick=>'') %>
+        <% end %>
+    <% end %>
+  <% end %>
+  <%= button_tag("選択反映",:id=>'close-btn',:style=>'margin: 5px auto;display: block;',:onclick=>'closeForm(event,"group")') %>
+</div>
+
+
+<table border=0 cellpadding=3 cellspacing=0 class=soloidline  >
+<% @cc.getparamkey.each{|key| %>
+<% ess_flg = @cc.getparamdata(key,"essFlg"); def_class = ess_flg==1 ? "essF " : "" %>
+<% case key %>
+<% when "important_flg" %>
+  <tr>
+  <%= content_tag(:td,@cc.getparamdata(key,"title"),:class=>def_class+="listTitle") %>
+  <%= content_tag(:td,mkhtmlform(@cc.getgname,key,@cc.getparam(key)),:class=>"listL") %>
+  </tr>
+<% when "view_s_dt","view_e_infin","view_e_dt"%>
+  <tr>
+  <%= content_tag(:td,@cc.getparamdata(key,"title"),:class=>def_class+="listTitle") %>
+  <td class="listL">
+  <%= mkhtmlform(@cc.getgname,key,@cc.getparam(key)) %>
+  </td></tr>
+<% when "board_group_id" %>
+  <%= mkhtmlform(@cc.getgname,key,@cc.getparam(key)) %>
+
+<% when "mail_send" ; # なにもしない %>
+<% else %>
+  <tr>
+  <%= content_tag(:td,@cc.getparamdata(key,"title"),:class=>def_class+="listTitle") %>
+  <%= content_tag(:td,mkhtmlform(@cc.getgname,key,@cc.getparam(key)),:class=>"listL",:colspan=>3) %>
+  </tr >
+<% end %>
+
+<% } %>
+</table>
+
+
+

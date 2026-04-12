@@ -1,0 +1,93 @@
+<% content_for(:head){ %>
+<style type="text/css">
+    <!--
+    table.lunch_tbl tr td {
+        vertical-align: top;
+    }
+
+    table.lunch_tbl td.location {
+        width: 60%;
+        border-bottom: 1px solid black;
+        height: 1em;
+    }
+
+    div.lunch_box {
+        margin: 5px auto;
+        border: 1px solid black;
+        padding-bottom: 3px;
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    div.lunch_box {
+        width: 280px
+    }
+
+    div.lunch_box.total {
+        background-color: #fff7dc;
+        border: 2px solid;
+        box-sizing: border-box;
+    }
+
+    ul.UsersBox {
+        margin: 0;
+        font-size: 10px;
+        overflow-y: scroll;
+        min-height: 100px;
+        max-height: 190px;
+    }
+
+    ul.UserBox li {
+        margin: 0px;
+    }
+    -->
+</style>
+<%= javascript_tag do %>
+var tab_key = '<%= @def_branche_cd %>'; //タブ表示初期値
+<% end %>
+<% } %>
+<div id="field1">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <table class="main_tbl">
+        <tr>
+            <td class="listL" style="width:30%">
+                <%= render :partial => "t_date_box",:locals=>{:day_info=>@order_totall[:day_info],:note=>"(#{@order_totall[:vendor].try(:name)})",:today=>@today,:tbl_class=>"",:day_title=>""} %>
+            </td>
+            <td class="listC" id="tablist">
+                <%= content_tag("div",link_to("全体","JavaScript:lunchOrdersSelectTab('total')",:id=>"tab_total"),:class=>"left") unless @skip_total%>
+                <% @order_totall[:branches].each{|branche_nm,branche_cd| %>
+                <%= content_tag("div",link_to("#{branche_nm}","JavaScript:lunchOrdersSelectTab('#{branche_cd}')",:id=>"tab_#{branche_cd}"),:class=>"left") %>
+                <% } unless @order_totall[:branches].blank? %>
+                <%= content_tag("p","",:class=>"clear") %>
+            </td>
+            <td class="listR" style="width:20%">
+                <% if @order_totall[:lock].has_key?("") &&  @order_totall[:lock][""] %>
+                <%= content_tag("div",button_to("〆解除",{:action=>:create},{:method=>:post,:params=>{:t_date=>@t_date,:branche_cd=>"",:lock_flg=>0}}),:id=>"close_btn_total") %>
+                <% else %>
+                <%= content_tag("div",button_to("注文〆",{:action=>:create},{:method=>:post,:params=>{:t_date=>@t_date,:branche_cd=>"",:lock_flg=>1}}),:id=>"close_btn_total") %>
+                <% end %>
+                <% @order_totall[:branches].each{|branche_nm,branche_cd| %>
+                <% if @order_totall[:lock].has_key?("") &&  @order_totall[:lock][""] %>
+                <%= content_tag("div","【全体〆済】",:id=>"close_btn_#{branche_cd}") %>
+                <% elsif @order_totall[:lock].has_key?(branche_cd) &&  @order_totall[:lock][branche_cd] %>
+                <%= content_tag("div",button_to("〆解除",{:action=>:create},{:method=>:post,:params=>{:t_date=>@t_date,:branche_cd=>branche_cd,:lock_flg=>0}}),:id=>"close_btn_#{branche_cd}") %>
+                <% else %>
+                <%= content_tag("div",button_to("注文〆",{:action=>:create},{:method=>:post,:params=>{:t_date=>@t_date,:branche_cd=>branche_cd,:lock_flg=>1}}),:id=>"close_btn_#{branche_cd}") %>
+                <% end %>
+                <% } %>
+                <% if @order_totall[:lock].has_key?("") &&  @order_totall[:lock][""] %>
+                <%= content_tag("div","【全体〆済】",:id=>"close_btn_") %>
+                <% end %>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <% @order_totall[:orders].each{|branche_cd,order| %>
+                <%= render :partial => 'manager/lunch_orders/order_info' ,:locals=>{:t_date=>@t_date,:branche_cd => branche_cd,:order=>order,:locations=>@order_totall[:locations],:menu=>@order_totall[:menu]} %>
+                <% } %>
+            </td>
+        </tr>
+    </table>
+    <br />
+    <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

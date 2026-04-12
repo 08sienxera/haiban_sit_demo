@@ -1,0 +1,40 @@
+<%= render :partial => "serch_head" , :locals=>{:ss=>@ss,:tab_keys=>@tab_keys} %>
+<div id="field1">
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td valign="bottom" class="listL" style="width:80%;">
+    <%= render :partial => 'tablist' , :locals=>{:cc=>@cc,:ss=>@ss,:tab_keys=>@tab_keys} %></td>
+    <%= content_tag("td",
+        (render :partial => 'serch', :locals=>{:ss=>@ss,:action=>@serch_action,:serch_options=>@serch_options}),
+      {:valign=>"bottom",:class=>"listR"}) unless @ss.nil? %>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <%= form_tag({:action=>nil},{:name => 'list'}) do %>
+    <%= printlisttable() %>
+    <% end %>
+    <%= render :partial => "paging" , :locals=>{:datas=>@datas} %>
+  </div>
+  <br />
+
+  <table border="0" cellpadding="5" cellspacing="0" style="width:60%">
+    <tr>
+    <% if @my_setting[:new_copy] %>
+      <td class="listC">
+        <%= form_tag({:action=>:copy,:id=>"id"},{:method=> 'get',:name=>"cpform"}) do %>
+        <%= submit_tag(:submit, :value=>I18n.t("btn_labels.copy"),:type=>'button',:onclick=>"goCopy();") %>
+        <% end %>
+      </td>
+    <% end %>
+    <%= content_tag("td",
+        button_to(I18n.t("btn_labels.new"),  {:action => :new},  {:method=>:get,:class=>"css_btn"}),
+      {:class=>"listC"}) if @my_setting[:new_in] %>
+    <%= content_tag("td",
+        button_to(I18n.t("btn_labels.csv"),  {:action => :csv_in},  {:method=>:get,:class=>"css_btn"}),
+      {:valign=>"bottom",:class=>"listC"}) if @my_setting[:csv_in] %>
+    </tr>
+  </table>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

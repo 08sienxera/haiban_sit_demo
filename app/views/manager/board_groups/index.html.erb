@@ -1,0 +1,50 @@
+<%= render :partial => "serch_head" , :locals=>{:ss=>@ss,:tab_keys=>@tab_keys} %>
+<div id="field1">
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td valign="bottom" class="listL" style="width:80%;">
+    <%= render :partial => 'tablist' , :locals=>{:cc=>@cc,:ss=>@ss,:tab_keys=>@tab_keys} %></td>
+    <%= content_tag("td",
+        (render :partial => 'serch', :locals=>{:ss=>@ss,:action=>@serch_action,:serch_options=>@serch_options}),
+      {:valign=>"bottom",:class=>"listR"}) unless @ss.nil? %>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <table class='soloidline'>
+        <tr>
+        <%= content_tag(:th,I18n.t("activerecord.attributes.board_group.name"),:class=>"listTitle") %>
+        <%= content_tag(:th,I18n.t("activerecord.attributes.board_group.desp_index"),:class=>"listTitle") %>
+        <%= content_tag(:th,"メンバー",:class=>"listTitle") %>
+        </tr>
+      <% if @datas.blank? %>
+        <%= content_tag(:tr,content_tag(:td,I18n.t("system_alert.not_fund"),:class=>"err",:colspan=>4))%>
+      <% else %>
+      <% @datas.each{|data_line| %>
+        <tr>
+        
+        <%= content_tag(:td,link_to(data_line[:name],:action=>:edit,:id=>data_line[:id]),:class=>"listL") %>
+        <%= content_tag(:td,data_line[:desp_index],:class=>"listR") %>
+        <td class="listC">
+        <% if data_line.can_mod_group_type? %>
+          <%= button_to("設定",{:controller=>:board_group_wokers,:action=>:edit,:id=>data_line[:id]},{:method=>:get})%>
+        <% else %>
+        -
+        <% end %>
+        </td>
+        </tr>
+      <% } %>
+      <% end %>
+    </table>
+    <%= render :partial => "paging" , :locals=>{:datas=>@datas} %>
+  </div>
+  <br />
+
+  <table border="0" cellpadding="5" cellspacing="0" style="width:60%">
+    <tr>
+    <%= content_tag("td",button_to(I18n.t("btn_labels.new"),  {:action => :new},  {:method=>:get,:class=>"css_btn"}),{:class=>"listC"})  %>
+    </tr>
+  </table>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

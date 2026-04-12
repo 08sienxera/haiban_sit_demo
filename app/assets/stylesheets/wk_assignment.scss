@@ -1,0 +1,91 @@
+$font-size: 10;
+#wkAhead,#wkAbody,#wkAfoot{margin:0 auto;font-size:#{$font-size}px;}
+#wkAbody .hcalCell{vertical-align: top;}
+#wkAfoot{border: 1px solid black;}
+#wkAButtons{width:100%;}
+#wkAWorkers,#wkAMachines,#wkAAbsentee{width:100%;display:none;max-height:250px;overflow-y:scroll}
+#msgFormBox{position: absolute;zindex:10;;margin: 1.5em 0 1.5em 15px;padding: 3px 5px;top: 20%;left: 20%;background: white;border: solid 3px green;}
+#createFormBox{position: absolute;zindex:20;margin: 1.5em 0 1.5em 15px;padding: 150px 5px;top: 5%;left: 5%;background: white;border: solid 3px green;width:90%;height:90%;text-align:center;}
+
+div.hcaltable{display: table;border-collapse: collapse;}
+div.hcaltable div.hcalRow{display: table-row;}
+div.hcaltable div.hcalRow div.hcalCell{display: table-cell;}
+div.hcaltable div.hcalRow div.hcalVCell{border: 1px solid black;padding: 0;overflow:hidden;height:inherit;}
+
+div.hcalTitleCell{background-color:lightgray;text-align: center;}
+div.hcalAlertCell{background-color:gold;}
+div.hcalFutureCell:hover{color:black;background-color:yellow}
+div.hcalPastCell{background-color:gray;}
+div.ioAlert{color:gray;text-align:right;text-decoration:none;}
+div.ioAlert::before{content: "⊞";display: inline-block;width: 12px;height: 12px;}
+div.addPanelRowBtn{color:gray;text-align:right;text-decoration:underline;cursor:pointer;}
+div.mcNm{overflow:hidden;text-align:left;}
+div.mcNm::before{content: none;}
+div.allowanceAlert{color:red;text-align:right;}
+table.wkATbl{margin:0 auto;}
+table.wkATbl tr.wkACargoMachineRow{background-color:#f6ffef;}
+// table.wkATbl tr.wkACargoMachineRow{background-color:#fafff6;}
+table.wkATbl tr.wkACargoWorkerRow{background-color:white;}
+input[type=text].wkAtimeField{ime-mode:disabled;padding:0;width:#{$font-size*2.5}px;}
+input[type=text].wkAnoteField{ime-mode:auto;padding:0;width:100%;}
+input[type=button].fontSizeBtn{padding: 0;border:1px solid gray;margin-right:10px;}
+input[type=button].wkABtn{border:1px solid gray;margin-right:10px;}
+input[type=button].wkABtn.btnAutoAssignment{margin-right: 50px;padding: 1px 21px;}
+div.wkAPanel{display:inline-block;overflow:hidden;text-align:center;user-select: none;}
+div.wkAPanelock{background: image-url("lock.png") left center no-repeat;}
+div.wkAPanelOver{background-color:darkgray;}
+
+div#wkAWorkers,div#wkAMachines{
+    div.wkAPanel.wkAIsHoliday {background-color:dimgray;color:black;}
+    div.wkAPanel.wkAIsAssigned{background-color:dimgray;color:white;}
+    div.wkAPanel.selectKeep   {background-color: yellow;color: darkviolet;}
+}
+div.wkAIsErr{background-color:red;}
+div.wkAWorkerTitle{text-align: center;}
+div.wkAMachineTitle{text-align: center;}
+div.wkAInfoBox{position: absolute;margin: 1.5em 0 1.5em 15px;padding: 3px 5px;min-width: 40px;max-width: 100%;background: white;border: solid 3px green;box-sizing: border-box;border-radius: 8px;}
+div.wkAInfoBox:before {content: "";position: absolute;top: 15px;left: -24px;margin-top: -12px;border: 12px solid transparent;border-right: 12px solid white;z-index: 2;}
+div.wkAInfoBox:after {content: "";position: absolute;top: 15px;left: -30px;margin-top: -14px;border: 14px solid transparent;border-right: 14px solid green;z-index: 1;}
+div.wkAInfoBox span.competenceStar:hover{cursor:pointer;color: blue;}
+div.wkAErrorMsgBox{border-color:red;display:none;text-align: left;}
+div.wkAErrorMsgBox:after{border-right: 14px solid red;}
+
+div.radiobox{display: inline-block;text-align: center;}
+div.radiobox .radiobutton {display: none;}
+div.radiobox label{background-color: darkgray;border-radius: 10px;padding: 2px 2px;border: 1px solid silver;}
+div.radiobox .radiobutton:checked + label {background-color: yellow;font-weight:bolde;}
+
+div.viewselectbutton-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+div.viewselectbutton-wrapper>div {
+    display: none !important;
+}
+div.viewselectbutton-wrapper>div.active {
+    display: inherit !important;
+}
+
+span[class^="trigger"] {
+    cursor : pointer;
+}
+
+// 最大表示・通常表示用
+.vm-w100 {width:100%;}
+.vm-disp-none {display:none;}
+.vm-marg-none,
+#main #field1.vm-marg-none {margin:0;}
+
+
+// コピペ機能
+// 行／列　コピー状態　→　オレンジ背景
+.selectedColCopy,.selectedRowCopy{background-color: orange;}
+// 行／列　選択状態　　→　黄色背景
+.selectedCol,.selectedRow{background-color: yellow;}
+
+
+
+//　2画面モード用
+//　閉じるボタンを非表示
+input[type="submit"][value="閉じる"].dispNone{pointer-events: none; opacity: 0;}

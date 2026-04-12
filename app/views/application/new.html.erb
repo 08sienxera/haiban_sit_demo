@@ -1,0 +1,12 @@
+<%= render :partial => "input_head" , :locals=>{:cc=>@cc} %>
+<div id="field2">
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+  <%= form_tag({:action=>:create},{:multipart => @my_setting[:multipart_flg],:name => 'inform'}){ %>
+  <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+  <div id="map" style="display:none">Map</div>
+  <br />
+  <%= content_tag("div",submit_tag(:submit, :value=>I18n.t("btn_labels.create"),:type=>'button',:onclick=>"goInput(this)"),{:class=>"listC"})  %>
+  <br />
+  <% } %>
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

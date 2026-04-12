@@ -1,0 +1,192 @@
+<% content_for(:head){%>
+<style type="text/css"><!--
+.flex {display:flex;} 
+table.comment_section {border-collapse: collapse;}
+table.comment_section tr>*{text-align:left;padding:5px}
+table.comment_section tr th{color:#333;border-top:1px solid #333;font-weight:600;}
+table.comment_section tr th a{text-decoration:none;}
+table.comment_section tr td{padding-left:1.2em;border-bottom:1px solid #333;}
+table.comment_section tr td textarea {
+    border: none;
+    resize: none;
+    outline: none;
+    width: 100%;
+}
+div.comment-box {width: 95%;margin:20px auto}
+div.comment-box textarea {width:100%;border-radius: 10px;}
+div.comment-box.com-big textarea {height: 5em;margin:0;}
+
+div.button-container {display:flex;}
+div.button-container.d-none {display:none;}
+.submit-btn {
+    cursor: pointer;
+    padding: 20px;
+    font-size: 1.4rem;
+    display: block;
+    margin: 2rem auto;
+    width: 260px;
+    border-radius: 50px;
+}
+#create-btn,#update-btn {background-color: lightgreen;}
+#cancel-btn {background-color: lightgray;}
+#delete-btn {background-color: #f1a899;}
+table.operator_table tr th {font-weight: normal;background-color: #eff;width: 15%;border-right:1px dotted #777777;}
+#file-link::before {
+    content: 'ダウンロード';
+    display: inline-block;
+    border: solid 1px black;
+    font-size: 0.8rem;
+    margin-right: 16px;
+    background-color: blanchedalmond;
+    color: black;
+    border-radius: 8px;
+    padding: 1px 4px;
+    position:relative;
+    top:-3px;
+}
+--></style>
+<%= javascript_tag do %>
+    const confirmBoard = ()=>{
+        event.preventDefault();
+        const form = document.getElementsByName('confirmation-form')[0];
+        fetch(form.action, {
+            method: form.method,
+            body: new FormData(form)
+        }).then(response => {
+            let statusCode = response.status;
+            if (statusCode === 200) {
+                let btn = document.getElementById('cofirm-btn');
+                btn.classList.add('disabled');
+                btn.setAttribute('disabled',true);
+                btn.textContent='確認済みです';
+            } else {
+                alert('確認報告の更新に失敗しました (' + statusCode + ')');
+            }
+        }).catch(error => {
+            alert('確認報告の更新に失敗しました: ' + error.message);
+        });
+    }
+    const cancel = ()=>{
+        let className = 'd-none';
+        document.getElementById('buttons_at_create').classList.remove(className);
+        document.getElementById('buttons_at_update').classList.add(className);
+        document.getElementById('comment-input-box').value = null;
+        let idFields = document.querySelectorAll("#board_comment_id");
+        idFields.forEach((f)=>{f.value=null});
+    };
+    const setValueToComBox = (t)=>{
+        let className = 'd-none';
+        event.preventDefault();
+        let commentId = t.id.substr(t.id.indexOf("_",0)+1);
+        let idFields = document.querySelectorAll("#board_comment_id");
+        idFields.forEach((f)=>{f.value=commentId});
+        document.getElementById('comment-input-box').value = document.getElementById(`modComTxt_${commentId}`).value ;
+        document.getElementById('buttons_at_create').classList.add(className);
+        document.getElementById('buttons_at_update').classList.remove(className);
+    };
+    const doCreate = ()=>{
+        let inputbox = document.getElementById('comment-input-box');
+        let form = document.getElementById('createform');
+        form.querySelector('#board_comment_body').value = inputbox.value
+        form.submit();
+    };
+    const doUpdate = ()=>{
+        let inputbox = document.getElementById('comment-input-box');
+        let form = document.getElementById('updateform');
+        form.querySelector('#board_comment_body').value = inputbox.value
+        form.submit();
+    };
+    const doDestroy = ()=>{
+        let form = document.getElementById('deleteform');
+        if(confirm("コメントを削除しますか？")){
+            form.submit();
+        }
+    };
+
+<% end } %>
+<div id="field2" style="max-width:1500px">
+<div class="listC">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'msg'} %>
+</div>
+<table style="width:100%;margin-top:20px;" class="operator_table">
+    <% @boardInformation.each do |attribute| %>
+        <tr>
+            <%= content_tag :th,attribute[:head] %>
+            <% if attribute[:key]=="body" %>
+                <%= content_tag :td,:class=>""<<" #{attribute[:style_class]}" do %>
+                    <%= content_tag :p,attribute[:text][0],:class=>"libr" %>
+                        <%= img_previous(@board) %>
+                    <%= content_tag :p,attribute[:text][1],:class=>"libr" %>
+                <% end %>
+                <% next %>
+            <% end %>
+            <%= content_tag :td,attribute[:text],:class=>""<<" #{attribute[:style_class]}" %>
+        </tr>
+    <% end %>
+    <% if @board.has_file? %>
+        <tr>
+            <th class='listTitle'>添付ファイル</th>
+            <td>
+                <%= file_download_links(@board) %>
+            </td>
+        </tr>
+    <% end %>
+
+</table>
+<%= form_tag({:controller=>"worker_common/board_targets",:action=>:update,:id=>@board_target.id},{:method=>:put,:name => 'confirmation-form'}) do %>
+    <% if @board_target.confirmation_m_at.present? %>
+        <%= button_tag("確認済みです",:id=>'cofirm-btn',:class=>'btn submit-btn disabled',:disabled=>true) %>
+    <% else %>
+        <%= button_tag("確認しました",:id=>'cofirm-btn',:class=>'btn submit-btn btn-update',:onclick=>"confirmBoard()") %>
+    <% end %>
+<% end %>
+<table style="width:100%;margin-top:20px;" class="comment_section">
+    <% @board_comments.each do |comment| %>
+        <tr id='comment_<%= comment[:id] %>'>
+            <%= content_tag :th do %>
+                <i class="fa-solid fa-comments"></i>
+                <% if comment[:is_mine] %>
+                    <%= link_to "#",:id=>"modComLi_#{comment[:id]}",:onclick=>"setValueToComBox(this);" do %>
+                        <i class="fa-regular fa-pen-to-square"></i>
+                    <% end %>
+                <% end %>
+                <%= comment[:poster] %>
+            <% end %>
+        </tr>
+        <tr>
+            <%= content_tag :td,comment[:body],:id=>"modComTxt_#{comment[:id]}",:class=>"libr" %>
+        </tr>
+    <% end %>
+</table>
+
+<% if false %>
+/* 作業員のコメント追加機能を削除（非表示） */
+    <div class="flex comment-box com-big">
+        <lavel class="fas fa-comments "></lavel>
+        <%= text_area_tag(:comment,nil,:id=>'comment-input-box') %>
+    </div>
+
+    <div class='button-container' id='buttons_at_create'>
+        <%= button_tag "追加する",:id=>"create-btn",:class=>"submit-btn",:onclick=>"doCreate();" %>
+    </div>
+    <div class='button-container d-none' id='buttons_at_update'>
+        <%= button_tag "変更する",:id=>"update-btn",:class=>"submit-btn",:onclick=>"doUpdate();" %>
+        <%= button_tag "中止する",:id=>"cancel-btn",:class=>"submit-btn",:onclick=>"cancel();" %>
+        <%= button_tag "削除する",:id=>"delete-btn",:class=>"submit-btn",:onclick=>"doDestroy();" %>
+    </div>
+
+    <%= form_with model:@board_comment,url:{:controller=>"operator/board_comments",:action=>:create,:board_id=>@board.id},:method=>:post,:id=>"createform",:local=> true do |form| %>
+        <%= hidden_field_tag(:board_comment_body,'') %>
+    <% end %>
+    <%= form_with model:@board_comment,url:{:controller=>"operator/board_comments",:action=>:update,:id=>0},:method=>:put,:id=>"updateform",:local=> true do |form| %>
+        <%= hidden_field_tag(:board_comment_id,'') %>
+        <%= hidden_field_tag(:board_comment_body,'') %>
+    <% end %>
+    <%= form_with model:@board_comment,url:{:controller=>"operator/board_comments",:action=>:destroy,:id=>0},:method=>:delete,:id=>"deleteform",:local=> true do |form| %>
+        <%= hidden_field_tag(:board_comment_id,'') %>
+    <% end %>
+<% end %>
+
+<%= button_to("掲示一覧に戻る",{:controller=>:boards,:action=>:index},{:method=>:get,:id=>'backHomeBtn',:class=>"btn btn-update"}) %>
+<%= button_to("Topに戻る",{:controller=>:home,:action=>:menu},{:method=>:get,:id=>'backHomeBtn',:class=>"btn btn-update",:style=>"background-color:#ffa500b5;"}) %>

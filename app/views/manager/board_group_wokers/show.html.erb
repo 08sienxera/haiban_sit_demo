@@ -1,0 +1,6 @@
+<% if @target_list.blank? %>
+検索条件に合致するユーザは登録されていません。
+<% else ; @target_list.each{|user| %>
+<%= content_tag(:div,"#{user[:name]}(#{user.woker.blank? ? "非配番" : @ss.list_to_str("wk_branch_cd","#{user.woker[:branch_cd]}")})",
+    :class=>"box wkABranche#{(user.woker.blank? ? "" : user.woker[:branch_cd])}",:id=>"box_#{user[:login_id]}",:onclick=>"BoardGroupWokersSetTarget(this)")%>
+<% } ; end ; %>

@@ -1,0 +1,28 @@
+<%= render :partial => "input_head" , :locals=>{:cc=>@cc} %>
+<div id="field2">
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+  <%= form_tag({:action=>:update},{:method=>:put,:multipart => @my_setting[:multipart_flg],:name => 'inform'}){ %>
+  <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+  <%= hidden_field_tag(:change_pw,@change_pw) if @my_setting[:table].model_name.name == "Admin" %>
+  <% } %>
+  <div id="map" style="display:none">Map</div>
+  <br />
+  <div class="listC">
+  <% if @my_setting[:destroy] %>
+  <%= submit_tag(:submit, :value=>I18n.t("btn_labels.destroy"),:type=>'button',
+          :onclick=>"goDelete();",:id=>"delete_btn") %>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <% end %>
+  <%= submit_tag(:submit, :value=>I18n.t("btn_labels.update"),:type=>'button',
+          :onclick=>"goInput(this);",:id=>"update_btn") %>
+  </div>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+<% if @my_setting[:destroy] %>
+  <%= form_tag({:action=>:destroy},{:method=>:delete,:name => 'delform'}) {} %>
+<% end %>
+<%#パスワード変更用js追加%>
+<% unless @change_pw.nil? %>
+  <%= render :partial => "change_pw" %>
+<% end %>

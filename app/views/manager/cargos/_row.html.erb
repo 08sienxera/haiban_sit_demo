@@ -1,0 +1,45 @@
+<% 
+  cc.setgname("#{Cargo.model_name.name}_in_#{desp_no}")
+  cc.setdbdata(dataline)
+  cc.setparam('desp_index','value',desp_no)
+%>
+<div class="hcalRow selectlist" onclick="setInput(this)" id="row_<%= desp_no%>">
+  <%= content_tag(:div,manager_cargo_print_index_data(cc,"work_no",desp_no),:class=>"hcalCell hcalVCell listR",:style=>"width:25px") %>
+  <div class="hcalCell hcalVCell listL" style="width:110px">
+  <%= manager_cargo_print_index_data(cc,"move_no",desp_no) %>
+  <%= manager_cargo_print_index_data(cc,"work_name",desp_no) %>
+  </div>
+  <div class="hcalCell hcalVCell listL" style="width:110px">
+  <%= manager_cargo_print_index_data(cc,"work_cd",desp_no) %>
+  <%= manager_cargo_print_index_data(cc,"cargo_name",desp_no) %>
+  </div>
+  <div class="hcalCell hcalVCell listL" style="width:60px">
+  <%= manager_cargo_print_index_data(cc,"work_place",desp_no) %>
+  <%= manager_cargo_print_index_data(cc,"i_time",desp_no) %>
+  </div>
+  <div class="hcalCell hcalVCell listC" style="width:45px">
+  <%= manager_cargo_print_index_data(cc,"s_time",desp_no) %>
+  <%= manager_cargo_print_index_data(cc,"e_time",desp_no) %>
+  </div>
+  <div class="hcalCell hcalVCell listL" style="width:60px">
+  <%= manager_cargo_print_index_data(cc,"machine_nm",desp_no) %>
+  <div style="display:none">
+  <% %w[id cargo_request_id work_date desp_index quantity io_flg note dirt_flg matter1 matter2 momo_fm momo_dm momo_mc momo_wi momo_dr momo_wk ob_np hh_np rk_np wk_np].each{|key| %>
+  <%= mkhtmlform(cc.getgname,key,cc.getparam(key)) %>
+  <% } %>
+  </div>
+  </div>
+  <% ["fm","dm","wm","cr"].each{|key|%>
+    <%= content_tag(:div,manager_cargo_print_index_data(cc,"#{key}_m",desp_no),:class=>"hcalCell hcalVCell listR",:style=>"width:25px") %>
+  <% } %>
+  <% ["ld","bh","sl","bl","lf","sc","tl"].each{|key|%>
+    <%= content_tag(:div,manager_cargo_print_index_data(cc,"#{key}_m",desp_no),:class=>"hcalCell hcalVCell listR",:style=>"width:25px;border-right-style:none;") %>
+    <%= content_tag(:div,manager_cargo_print_index_data(cc,"#{key}_s",desp_no),:class=>"hcalCell hcalVCell listR",:style=>"width:25px;border-left-style:none;") %>
+  <% } %>
+  <%= content_tag(:div,manager_cargo_print_index_data(cc,"ot_m",desp_no),:class=>"hcalCell hcalVCell listR",:style=>"width:25px") %>
+  <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:id=>"row_dr_sum_#{desp_no}",:style=>"width:30px") %>
+  <% ["hd","db","hs","sn","eg","ot"].each{|key|%>
+    <%= content_tag(:div,manager_cargo_print_index_data(cc,"#{key}_w",desp_no),:class=>"hcalCell hcalVCell listR",:style=>"width:25px") %>
+  <% } %>
+  <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:id=>"row_wk_sum_#{desp_no}",:style=>"width:30px") %>
+</div>

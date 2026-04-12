@@ -1,0 +1,80 @@
+<% content_for(:head){ %>
+    <%= javascript_include_tag('operator/common')%>
+    <%= javascript_tag do %>
+    
+    $(function(){ //ロード時
+        syncChildWindowWithParent();
+    })
+    
+    function iCheck(fobj){
+        var strErrorMassage="";
+        <% @cc.getparamkey.each{|key| %>
+        <%= @cc.get_input_js(key) %>
+        <% }unless @cc.blank? %>
+        if(strErrorMassage==""){fobj.submit();}
+        else{alert(strErrorMassage);return false;}
+    }
+    <% end %>
+    <style type="text/css"><!--
+
+    @media screen and (max-width: 450px){
+        .sys-title > .title-main {
+            display: block;
+        }
+        #main #field1 * {
+            box-sizing: border-box;
+        }
+        #main #field1 {
+            margin: 0;
+            width: 100%;
+        }
+        #main #field1 .input table {
+            width:100%;
+            margin: 0;
+        }
+        .input table tr td {
+            display: block;
+            width: 98%;
+        }
+        .input table tr td:first-child {
+            margin-bottom: 3px;
+        }
+        .input table tr td input {
+            width: 100%;
+            padding: 5px;
+            height: 45px;
+        }
+        .input table tr td.login-btn {
+            margin-top: 25px;
+        }
+    }
+    --></style>
+    <% } %>
+    
+<div id="field1">
+    <div id="spage"></div>
+    <%= form_tag({:action=>:login_attempt},{:name => 'inform'}){ %>
+        <div class="listC">
+            <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msgs],:style_class=>'err'} %>
+            <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+            <p>
+                <div class="input">
+                    <table border=0 cellpadding=3 cellspacing=8  >
+                        <% @cc.getparamkey.each{|key|
+                            data = @cc.getparam(key)%>
+                            <tr>
+                                <%= content_tag(:td,data['title'],:class=>"listL") %>
+                                <%= content_tag(:td,mkhtmlform(@cc.getgname,key,data),:class=>"listL in-field") %>
+                            </tr>
+                        <% } unless @cc.blank? %>
+                        <%= content_tag(:tr,content_tag(:td,
+                            submit_tag(:submit, :value=>'ログイン',:type=>'button',:onclick=>"goInput()"),:class=>"listC login-btn",:colspan=>2))%>
+                        <%= content_tag(:tr,content_tag(:td,
+                            link_to(icon("fas","caret-right")+"パスワードを忘れた方はこちら",:action=>:remind),:class=>"listR",:colspan=>2))%>
+                    </table>
+                </div>
+            </p>
+        </div>
+    <% } %>
+    <div id="spage"></div>
+</div>

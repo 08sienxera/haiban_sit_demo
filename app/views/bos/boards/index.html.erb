@@ -1,0 +1,76 @@
+<% content_for(:head){%>
+    <style type="text/css"><!--
+    a.showLink{}
+    div.checkboxBtn a {text-decoration:none;color:black;}
+
+--></style>
+<%= javascript_include_tag "childWindow.js" %>
+<%= javascript_tag do %>
+    function doSearch(){
+        $input = document.getElementById("searchInputBox");
+        let current_Url = location.href;
+        let suffix ='';
+        if(current_Url.match(/^http:\/\/[^?]*$/)){
+            suffix = "?";
+        }else if(current_Url.match(/^http:\/\/[^?]*\?[^&]+$/)){
+            suffix = "&";
+        }else{
+            suffix = "&";
+        };
+        window.location.href = location.href + suffix + `search=${$input.value}`;
+    };
+    $(function(){
+        if(window != window.parent){
+            let div = document.querySelector('div#field2');
+            let height = div.clientHeight+30;
+            window.parent.setHeight("#boardBox", height);
+        };
+    });
+
+<% end } %>
+<div id="field2">
+    <div class="listC"><%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %></div>
+
+    <div style="display: flex;justify-content: space-between;margin: 0;width: 100%;">
+        <div class="checkboxBtn fleft">
+            <% @radio_settings.each do |setting| %>
+                <%= content_tag :input,nil,:name=>'bbs_serch_sts',:value=>setting[:value],:type=>"radio",:class=>'btn',:id=>"bbs_serch_sts_#{setting[:value]}",:checked=>setting[:checked] %>
+                <%= content_tag :label,link_to(setting[:name],{:controller=>@view_controller,:action=>:index,:target=>setting[:target]}),:for=>"bbs_serch_sts_#{setting[:value]}" %>
+            <% end %>
+        </div>
+        <div class="radiobox fright">
+            <lavel class="fa-solid fa-magnifying-glass" style="cursor:pointer;" onclick="doSearch()"></lavel><input value="<%= @search_word ? @search_word : ''%>" id="searchInputBox" size=15 onchange="doSearch()"/>
+        </div>
+    </div>
+    <br class="fclear" />
+
+    <% if @boards.present? %>
+        <table width="98%" class="operator_table soloidline">
+            <tr>
+                <% %w(重要 カテゴリ 件名 掲示者 掲示日).each do |w|  %>
+                    <%= content_tag :th,w,:class=>'listTitle' %>
+                <% end %>
+            </tr>
+            <% @boards.each do |board| %>
+                <% 
+                c_user = @c_users.find{|u| u.login_id==board.created_uid}
+                b_category = board.board_category
+                next if c_user.blank? || b_category.blank?
+                %>
+                <%= content_tag :tr do %>
+                    <%= content_tag :td,board.important_str,:class=>"listC err" %>
+                    <%= content_tag :td,b_category.name,:class=>"listC" %>
+                    <%= content_tag :td,link_to(board.subject,url_for(:controller=>@view_controller,:action=>:show,:id=>board.id),{:class=>"showLink"}),:style=>"padding-left:1rem;" %>
+                    <%= content_tag :td,c_user.name,:class=>"listC",:style=>"color:#{board.created_uid==@user.login_id ? "red" : "black"};" %>
+                    <%= content_tag :td,board.view_s_dt.strftime('%Y年%-m月%-d日'),:class=>"listC" %>
+                <% end %>
+            <% end %>
+        </table>
+    <br />
+    <%= render :partial => "paging" , :locals=>{:datas=>@boards} %>
+    <% else %>    
+        <p style="text-align: center;color: red;">※対象はありません※</p>
+    <% end %>
+    <br />
+    <%= render :partial => 'links' , :locals=>{:back_links => @links} %>
+</div>

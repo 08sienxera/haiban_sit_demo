@@ -1,0 +1,26 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+td.menu{font-size:12pt;text-align: left;line-height: 130%;white-space: nowrap;}
+span.title{display: block;color:#FFFFFF;background-color: #0168B1;font-weight:bold;text-align: center;}
+--></style>
+<% } %>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+<div id="field1">
+  <div>
+    <table border="0" cellpadding="5" cellspacing="0" style="width:90%">
+      <% @linkdata.each{|title,links| %>
+        <%= content_tag(:tr,content_tag(:td,content_tag(:span,title,:class=>"title"),{:valign=>"top",:class=>"menu",:colspan=>4})) %>
+        <% links.each_with_index{|link,index| %>
+          <%= "<tr>".html_safe if (index % 4) == 0 %>
+          <% if link.blank? %>
+            <%= content_tag(:td,nil,{:valign=>"top",:class=>"menu",:style=>"width:25%"}) %>
+          <% else %>
+            <%= content_tag(:td,link_to(link[:title],link[:link]),{:valign=>"top",:class=>"menu",:style=>"width:25%"}) %>
+          <% end %>
+          <%= "</tr>".html_safe if (index % 4) == 3 %>
+        <% } unless links.blank? %>
+      <% } unless @linkdata.blank? %>
+    </table>
+    <br />
+  </div>
+</div>

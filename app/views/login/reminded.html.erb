@@ -1,0 +1,23 @@
+
+<% content_for(:head){ %>
+    <% if @data[:has_mail_address] %>
+        <meta http-equiv="refresh" content="10;URL=<%= login_login_index_url %>">
+    <% else %>
+        <%= javascript_tag do %>
+            document.addEventListener("DOMContentLoaded", function() {
+                alert('<%= @data[:message] %>');
+                window.location.href = '<%= login_login_index_url %>';            
+            });
+        <% end %>
+    <% end %>
+<% } %>
+
+<div id="field1">
+    <div id="spage"></div>
+    <div class="listC">
+        <p>
+        <%= @data[:message] %>
+        </p>
+        <%= link_to(icon("fas","caret-right")+"ログイン画面に移動する。(※10秒後に自動遷移します)",:action=>:login) if @data[:has_mail]%> 
+    </div>
+</div>

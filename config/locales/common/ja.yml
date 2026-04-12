@@ -1,0 +1,71 @@
+ja:
+    sys_common:
+        comp_name: 正興
+        sys_title: 配番システム（デモ
+        copy_right: "Copyright &copy; 2024 - %{yyyy}. SEIKO IT SOLUTION Co., LTD."
+    unit:
+        count: "%{count}件"
+        amount: "%{count}円"
+    page_titles:
+        menu: "メニュー"
+        index: "%{name} 一覧"
+        new: "%{name} 新規登録"
+        edit: "%{name} 更新"
+        csv_in: "%{name} CSV一括登録"
+        serch: "%{name} 検索"
+        admin: "%{name} 管理"
+        wk_menu: "業務メニュー"
+        cargos: "作業予定"
+        wk_assignment: "配番表"
+    btn_labels:
+        new: "新規登録"
+        create: "登録"
+        update: "更新"
+        copy: "コピーして作成"
+        destroy: "削除"
+        csv: "CSV一括登録"
+        setting: "設定"
+        preview: "プレビュー"
+        previous_label: "≪前へ"
+        next_label: "次へ≫"
+        reset: "リセット"
+        add: "追加"
+        link_to: "%{to}へ"
+    system_errors:
+        login: "入力されたログインIDとパスワードが一致しません。"
+        session: "セッションが切れました。再度ログインしてください。"
+        page_link: 画面遷移が不正のため終了します。
+        update: "登録/更新/削除処理に失敗しました。"
+        validate: "パラメータが不正です。"
+        file_nothng: "ファイルがありません。"
+        file_null: "ファイルが空です。"
+        file_size: "ファイルサイズが大きすぎます。%{max_size}Mb以下のファイルを指定してください。"
+        csv_parse: "CSVの読み込みに失敗しました。ファイルを確認してください。"
+        csv_format: "CSVの項目数が異なります。"
+        csv_validate: "%{row}行目：%{msg}"
+        csv_ck_over: "エラー件数が10件を超えたため、残りのデータチェックは行いません。"
+        csv_exception: "CSVの登録に失敗しました。ファイル形式を確認してください。"
+        exception: "例外が発生しました。"
+        ip : このクライアントからのアクセスは現在許可されていません。
+    system_alert:
+        not_fund: "対象データがありません。"
+        allrady_exists: "%{name}[%{val}]は既に登録されています。"
+        allrady_canceled: "この登録は既に取消されています。"
+        is_ess: "%{pint}は必須項目です。"
+        blank_wh_calendar: "公休日が未設定です。"
+    system_messages:
+        create: "%{name}を登録しました。"
+        create_b: "登録しました。"
+        update: "%{name}を更新しました。"
+        update_b: "更新しました。"
+        destroy: "%{name}を削除しました。"
+        destroy_b: "削除しました。"
+        exec: "%{name}を%{done}しました。"
+        skip: "%{name}は登録されていません。処理をスキップします。"
+        csv_i: "%{count}件登録し"
+        csv_u: "%{count}件更新し"
+        csv_end: "%{i}%{u}ました"
+        fail: "%{name}に失敗しました。"
+        logout: "ログアウトしました。"
+        not_fund: "対象データがありません。"
+

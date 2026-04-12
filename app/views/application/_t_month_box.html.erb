@@ -1,0 +1,12 @@
+<table border="0" cellpadding="0" cellspacing="0" class="<%= tbl_class %>" style="width:100%;margin: 0 auto 5px;" id="tDateTbl">
+    <% t_tarm = day_info || @t_tarm %>
+    <tr>
+        <%= content_tag(:td,day_title,:class=>"listTitle",:style=>"width:25%") if day_title.present? %>
+        <td class="listC"  style="width:50%">
+            <%= link_to(icon("fa-solid","angle-left"),{:t_date=>(t_tarm[:length][:begin_date]-1).strftime("%Y%m%d")})%>
+            <%= "#{t_tarm[:year]}年#{t_tarm[:month]}月度(#{t_tarm[:length][:begin_date].strftime("%Y/%m/%d")}～#{t_tarm[:length][:end_date].strftime("%Y/%m/%d")})" %>
+            <%= link_to(icon("fa-solid","angle-right"),{:t_date=>(t_tarm[:length][:end_date]+1).strftime("%Y%m%d")})%>
+        </td>
+        <td class="listC" style="width:25%"><%= button_to("当月",nil,{:method=>:get,:params=>{:t_date=>today.strftime("%Y%m%d")}})%></td>
+    </tr>
+</table>

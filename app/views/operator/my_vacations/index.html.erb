@@ -1,0 +1,217 @@
+<% content_for(:head){ %>
+<%= stylesheet_link_tag 'operator_vacation' %>
+<style type="text/css">
+    <!--
+    -->
+</style>
+<%= javascript_tag do %>
+    const SundayContinuedHolidayLimit = 2 //日曜連動休暇　取得上限
+    let acquirableVacationDays = <%=@acquirable_vacation_days%>
+    let reservedVacationDays = <%=@reserved_vacation_days%>
+    let baseno6Nglist = <%=Vacation::BaseNo6NgList.to_json.html_safe%>
+    let lHolUnsetFlg = <%=@l_hol_unset_flg%>
+    let adjacentVacationDays = 0
+    let whFlgList = <%= @wh_flg_list.to_json.html_safe %>
+    let sandwich = <%= @sandwich.to_json.html_safe %>
+    let postUrl = '<%= @post_url %>'
+    let unusedVacationsStr = <%= @unused_vacations_str.to_json.html_safe %>;
+
+    function ckMonthlyLock(month){
+        if(Number(month)==<%= @tarm[0][:month]%>){
+            return <%= @tarm[0][:locked] %>
+        }
+        if(Number(month)==<%= @tarm[1][:month]%>){
+            return <%= @tarm[1][:locked] %>
+        }
+        return null;
+    }
+
+    $(function(){
+        setParentWindowFrameSize("#vacationsBox")
+        if(window != window.parent){
+            $("a.showLink").attr("target","_parent");
+            <% @top_message.each do |msg,url| %>
+                doSetMessage('<%= msg %>','<%= url %>');
+            <% end %>
+        };
+    });
+
+<% end %>
+<% } %>
+<% vacation_alert_flg =false %>
+<!-- 休暇申請フォーム -->
+<div id="select-form-wrapper" onclick="closeForm();" style='display: none;position: fixed;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0, 0, 0, 0.5);z-index: 999;'>
+    <div id="select-form" class="<%= @tarm[0][:locked] ? "" : "lock" %>" style="display:none;">
+        <table class="soloidline">
+            <% @sform_setting.each do |row_setting| %>
+            <tr>
+                <%= content_tag(:th,row_setting[:title],id:"h_#{row_setting[:key]}",class:(row_setting[:ess]==1 ? "ess" : "")) %>
+                <% case row_setting[:key] %>
+                <% when "vacation_day" %>
+                <%= content_tag(:td,row_setting[:value],id:"d_#{row_setting[:key]}",data:{vgroup:row_setting[:group]}) %>
+                <% when "com_vacation_day" %>
+                <%= content_tag(:td,content_tag(:input,nil,id:"i_#{row_setting[:key]}",**row_setting[:event],size:row_setting[:size],data:{ess:row_setting[:ess]}),id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"),vgroup:row_setting[:group]}) %>
+                <% when "vacation_type" %>
+                <%= content_tag(:td,id:"d_#{row_setting[:key]}",data:{vgroup:row_setting[:group]}) do %>
+                <div class="radiobox">
+                    <% row_count=1 ; row_setting[:value].each{|txt,cd| %>
+                    <%= radio_button_tag("vacation_type",cd,(false),
+                            {:class=>"radiobutton",:onclick=>"selectChange(this.value)"}) %>
+                    <%= content_tag(:label,txt,:for=>"vacation_type_#{cd}",:class=>'no-wrap') %>
+                    <!--<%= "<br>".html_safe if row_count % 5 ==0 %>-->
+                    <% row_count += 1 ;} %>
+                </div>
+                <% end %>
+                <% when "vacation_type2" %>
+                <%= content_tag(:td,id:"d_#{row_setting[:key]}",data:{vgroup:row_setting[:group]}) do %>
+                <div class="radiobox">
+                    <% row_count=1 ; row_setting[:value].each{|txt,cd| %>
+                    <%= radio_button_tag("vacation_type",cd,(false),
+                            {:class=>"radiobutton",:onclick=>"selectChange(this.value)"}) %>
+                    <%= content_tag(:label,txt,:for=>"vacation_type_#{cd}",:class=>'no-wrap') %>
+                    <%= "<br>".html_safe if row_count % 2 ==0 %>
+                    <% row_count += 1 ;} %>
+                </div>
+                <% end %>
+                <% when "leav_time","arriv_time" %>
+                <%= content_tag(:td,id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"),vgroup:row_setting[:group]}) do %>
+                <%= content_tag(:select,id:"i_#{row_setting[:key]}",**row_setting[:event],data:{ess:row_setting[:ess]}) do %>
+                <% row_setting[:value].each do |lt| %>
+                <%= content_tag(:option,lt)%>
+                <% end %>
+                <% end %>
+                <% end %>
+                <% when "end_date" %>
+                <%= content_tag(:td,content_tag(:input,nil,id:"i_#{row_setting[:key]}",**row_setting[:event],size:row_setting[:size],data:{ess:row_setting[:ess]}),id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"), vgroup:row_setting[:group]},) %>
+                <% when "origin_date" # 振休 %>
+                <%= content_tag(:td,id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"),vgroup:row_setting[:group]}) do %>
+                <%= content_tag(:select,id:"i_#{row_setting[:key]}",**row_setting[:event],size:row_setting[:size],data:{ess:row_setting[:ess]}){}%>
+                <% end %>
+                <% when "origin_date2" # 代休 %>
+                <%= content_tag(:td,id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"),vgroup:row_setting[:group]}) do %>
+                <%= content_tag(:input,nil,id:"i_#{row_setting[:key]}",**row_setting[:event],size:row_setting[:size],data:{ess:row_setting[:ess]},list:"l_#{row_setting[:key]}",:autocomplete=>"off") %>
+                <%= content_tag(:datalist,id:"l_#{row_setting[:key]}",**row_setting[:event]) do %>
+                <% row_setting[:value].each do |wd| %>
+                <%= content_tag(:option,wd.vacation_day.strftime("%Y/%m/%d") )%>
+                <% end %>
+                <% end %>
+                <% end %>
+                <% when "app_origin_date","app_origin_date2"%>
+                <%= content_tag(:td,nil,id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"),vgroup:row_setting[:group]}) do %>
+                <% end %>
+                <% when "def_base_no","preselect_base_no" %>
+                <%= content_tag(:td,id:"d_#{row_setting[:key]}",data:{rel:row_setting[:rel].join("_"),vgroup:row_setting[:group]}) do %>
+                <%= content_tag(:span,"",id:row_setting[:key]) %>
+                <% end %>
+                <% end %>
+            </tr>
+            <% end %>
+            <tr>
+                <%= content_tag(:th,:colspan=>"2",:class=>"listC") do %>
+                <%= button_tag("設定",:onclick=>"setValue();",:class=>"btn submit-btn") %>
+                <%= button_tag("取消",:id=>'removeButton',:onclick=>"unsetValue();",:class=>"btn cancel-btn") %>
+                <%= button_tag("とじる",:onclick=>"closeForm();",:class=>"btn close-btn") %>
+                <% end %>
+            </tr>
+        </table>
+    </div>
+</div>
+<!-- 休暇申請フォーム（ここまで） -->
+<div id="field1">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <%= render :partial => "t_month_box",:locals=>{:day_info=>@tarm[0],:today=>@today,:tbl_class=>"",:day_title=>""} %>
+
+    <!-- アラート表示 -->
+    <div class='alert-msg-box' style="text-align:center;margin:15px auto;">
+        <p id="vac-counter" class="alert-msg">※ <span style="font-weight:bold;"><%= @datas.find{|k,v| k==@datas.keys.max}[0] %>月度</span>の休暇日を<span style="text-decoration:underline;">あと<span id='requireSetDay'>0</span>日</span>選択してください</p>
+    </div>
+
+    <!-- カレンダー -->
+    <div class="grid-box">
+        <% 
+            start_pos = 0;
+            end_pos = 0; 
+            def_style = [['grid-item','cmonth'],['grid-item','nmonth']]
+        %>
+        <% @datas.each.with_index do |data,i| %>
+        <%
+                month,cal_data = data
+                index = 2; pos_col = end_pos!=0 ? end_pos : 0;
+                head_str = "#{month.to_s}月度#{@tarm[i][:locked] ? '(〆)': ''}";
+                lr = i==0 ? "l" : "r"
+                col_s = @grid_setting[(lr + "_index").to_sym]
+                col_e = col_s + @grid_setting[:col_size]
+                grid_col = col_s.to_s + "/" + col_e.to_s
+            %>
+        <%= content_tag(:div, head_str,:class=>"grid-item head-crt",:style=>"grid-row: 1/2; grid-column: #{grid_col};") %>
+
+        <% cal_data.each do |day,day_data| %>
+        <% 
+                    base_no = at_work = 0; origin_date = leave_time = end_date = "";
+                    year,month,day,wday = day_data[:date];
+                    dateYYYYMMDD = year.to_s + format("%02d",month) + format("%02d",day)
+                    cal_str = (day==1 || day==16) ? month.to_s + "/" + day.to_s : day.to_s
+                    font_color = day_data[:wh_flg]==0 ? "black" : "red"
+                    cal_style  = [*def_style[i], 'day']
+                    cell_style = [*def_style[i], 'vac']
+                %>
+        <% start_pos = pos_col %>
+        <%= content_tag(
+                    :div, 
+                    cal_str,
+                    :id=>"wk_date_#{dateYYYYMMDD}",
+                    :class=>cal_style.join(" "), 
+                    :style=>"color:#{font_color};grid-row:#{index} / #{index+1};grid-column: #{pos_col+=1} / #{pos_col+1};"
+                ) %>
+        <%= content_tag(
+                    :div, 
+                    wday,
+                    :class=>cal_style.join(" "), 
+                    :style=>"color:#{font_color};grid-row:#{index} / #{index+1};grid-column: #{pos_col+=1} / #{pos_col+1};"
+                ) %>
+
+
+        <%
+                    vac = day_data[:vacation] 
+                    cal_str = vac.present? ? vac[:base_no].to_s : ""
+                    data_attr = {
+                        :year=>year,
+                        :month=>month,
+                        :day=>day,
+                        :wday=>day_data[:wday],
+                        :monthly=>day_data[:monthly],
+                        :whflg=>day_data[:wh_flg],
+                        :lock_flg=>day_data[:vacation_lock],
+                        :vacation_day=>dateYYYYMMDD,
+                        at_work:0,
+                        base_no:0,
+                        leav_time:"",
+                        arriv_time:"",
+                        origin_date:"",
+                        end_date:"",
+                        sts:0
+                    }
+                    if vac.present?
+                        data_attr[:vacation_day] = vac[:vacation_day].strftime("%Y%m%d")
+                        data_attr[:base_no] = vac[:base_no]
+                        data_attr[:at_work] = vac[:at_work] if vac[:at_work].present?
+                        data_attr[:leav_time] = vac[:leav_time] if vac[:leav_time].present?
+                        data_attr[:arriv_time] = vac[:arriv_time] if vac[:arriv_time].present?
+                        data_attr[:origin_date] = vac[:origin_date].strftime("%Y年%m月%d日") if vac[:origin_date].present?
+                        data_attr[:sts] = vac[:sts] if vac[:sts].present?
+                    end
+
+                    style_attr = "grid-row:#{index} / #{index+1};grid-column: #{pos_col+=1} / #{pos_col+1};" 
+                    base_style = [*cell_style]
+                    base_style << "hol-wk" if vac.present? && vac.sts==4 && vac.base_no==6 
+                %>
+
+        <%= content_tag(:div, cal_str, :id=>"#{day_data[:id_prefix]}#{dateYYYYMMDD}", :class=>base_style.join(" "), :style=>style_attr, :onclick=>day_data[:click_events], :data=>data_attr) %>
+
+        <% end_pos = pos_col;pos_col = start_pos; index +=1 %>
+        <% end %>
+        <% end %>
+    </div>
+    <!-- カレンダー（ここまで） -->
+    <%= render :partial => "operator/back_to_top" %>
+</div>

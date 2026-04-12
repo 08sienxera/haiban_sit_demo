@@ -1,0 +1,34 @@
+<div id="field1">
+  <%= form_tag({:action=>:csv_input},{:method=>:post,:multipart => true,:name => 'inform'}){ %>
+  <table width="95%" border="0" cellpadding="5" cellspacing="0" class="soloidline">
+	<tr><th class="listTitle"><%=@file_name%>CSVファイル</th>
+            <td class="listL"><%= file_field("file", "csv", :size=>60,:class=>'btn') %></td></tr>
+	<tr><th class="listTitle" >登録方式</th>
+            <td ><%=@file_name%>データの追加（重複データがある場合は更新）を行います。<br />
+              ファイルデータに不良がある場合は処理を中断します。
+              <%=hidden_field("file","upflg", :value=>1)%>
+              <%=hidden_field("file","MAX_FILE_SIZE", :value=>MAX_FILE_SIZE)%>
+            </td></tr>
+	<tr><th class="listTitle" >ダウンロード</th>
+            <td class="listL">
+              <%=link_to("#{@out_file_name}.csv",:action=>:csv_output)%>
+            </td></tr>
+	<tr><td colspan="2" align="center" ><br /><%=submit_tag(:submit,:class=>'btn', :value=>"保存")%><br /><br /></td></tr>
+  </table>
+  <table width="95%" border="0" cellpadding="5" cellspacing="0">
+      <tr>
+          <td>
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msgs],:style_class=>'msg'} %>
+          </td>
+      </tr>
+  </table>
+  <br />
+  <div class="listC">
+　CSVのファイル形式は次の通りです。(<%=raw essstr(1,1)%>は必須項目です。)<br />
+  </div>
+  <%= printcsvtable(@cc) %>
+  <% } %>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

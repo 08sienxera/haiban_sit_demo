@@ -1,0 +1,197 @@
+<% content_for(:head){ %>
+<style type="text/css">
+    <!--
+    td.menu {
+        font-size: 12pt;
+        text-align: center;
+        line-height: 130%;
+        white-space: nowrap;
+    }
+
+    td.menu a {
+        display: inline-block;
+        width: 100%;
+        border: 3px double silver;
+        line-height: 200%;
+        text-decoration: none;
+        color: black;
+        background-color: #FFEEFF;
+    }
+
+    td.menu a:hover {
+        color: black;
+        background-color: yellow
+    }
+
+    span.title {
+        display: block;
+        color: #FFFFFF;
+        background-color: #0168B1;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    div.box {
+        padding-top: 5px;
+    }
+    -->
+</style>
+<%= javascript_tag do %>
+$(function() {
+/* 配番画面のマルチウィンドウの後処理がされていない場合に表示が崩れる対策 */
+if(window.opener){window.opener=null}
+});
+function dlFile(fobj,mord){
+reqFields = fobj.getElementsByClassName('reqFld')
+switch (fobj.name){
+case "f4":
+const msgs = [];
+const inY = fobj.m_yyyy;
+const inM = fobj.m_mm;
+if(inY.value==""||inM.value==""){
+msgs.push("「対象月」を入力してください")
+}
+if(!inY.value.match(/^\d{4}$/)){
+msgs.push("対象年は半角数字4桁を入力してください")
+}
+if(!inM.value.match(/^\d{1,2}$/)){
+msgs.push("対象月は半角数字1～2桁を入力してください")
+}
+if(msgs.length==0 && (Number(inM.value)<1 || Number(inM.value)>12)){
+    msgs.push("対象月は1～12の範囲で入力してください")
+    }
+    if(msgs.length>0){
+    window.alert(msgs.join("\n"))
+    return true
+    }
+    fobj.mord.value = mord;
+    fobj.submit();
+    return false;
+    break;
+    default:
+    /* */
+    hasEmptyField = Array.from(reqFields).some((input)=>{
+    if(input.value == ""){
+    message = reqFields.length==1
+    ? "「対象日」を入力してください"
+    : "「対象期間」を入力してください"
+    window.alert(message)
+    return true
+    }
+    return false
+    })
+    if(hasEmptyField) return false
+    if(reqFields.length==2){
+    if(new Date(reqFields[0].value)>new Date(reqFields[1].value)){
+    window.alert("「対象期間」は集計開始日～集計終了日を指定してください")
+    return false
+    }
+    }
+    if(mord=="TAX_FREE_MACHINES_PDF" && reqFields.length==2){
+    if(reqFields[0].value.substring(0,7)!=reqFields[1].value.substring(0,7)){
+    window.alert("「免税軽油稼働実績表」の出力では\n対象期間に同じ年月を指定してください")
+    return false
+    }
+    }
+    fobj.mord.value = mord;
+    fobj.submit();
+    /* */
+    }
+    }
+    <% end %>
+    <% } %>
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+    <div id="field1">
+        <div>
+            <table border="0" cellpadding="5" cellspacing="0" style="width:90%">
+                <% @linkdata.each_with_index{|linkdata,idx| %>
+                <%= content_tag(:tr,content_tag(:td,content_tag(:span,linkdata[0],:class=>"title"),{:valign=>"top",:class=>"menu",:colspan=>4})) %>
+                <% case idx %>
+                <% when 1 %>
+                <tr>
+                    <td colspan=4>
+                        <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f1"){ %>
+                        <div class="box">
+                            <div class="listC">
+                                対象日：<%= text_field_tag(:t_date,(Date.today+1).strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                                <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                                    <% 0.upto(11){|index| link=linkdata[1][index] %>
+                                    <%= render :partial => "menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                                    <% } %>
+                                </table>
+                                <%= hidden_field_tag(:mord) %>
+                            </div>
+                        </div>
+
+                        <%} %>
+                        <br />
+                        <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f2"){ %>
+                        <div class="box">
+                            <div class="listC">
+                                対象日：<%= text_field_tag(:t_date,(Date.today-1).strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                                <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                                    <% 12.upto(linkdata[1].size-1){|index| link=linkdata[1][index] %>
+                                    <%= render :partial => "menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                                    <% } %>
+                                </table>
+                                <%= hidden_field_tag(:mord) %>
+                            </div>
+                        </div>
+                        <%} %>
+                    </td>
+                </tr>
+                <% when 2 %>
+                <tr>
+                    <td colspan=4>
+                        <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f3"){ %>
+                        <div class="box">
+                            <div class="listC">
+                                対象期間：
+                                <%= text_field_tag(:t_s_date,@current_monthly[:length][:begin_date].strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                                ～
+                                <%= text_field_tag(:t_e_date,@current_monthly[:length][:end_date].strftime("%Y/%m/%d"),:size=>11,:class=>'reqFld',:onchange=>"set_date(this);") %>
+                                <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                                    <% links = linkdata[1].filter{|link| link[:aggr_type]=="free"} %>
+                                    <% (4-links.size%4).times{|n| links<<{}} %>
+                                    <% links.each_with_index{|link,index| %>
+                                    <%= render :partial => "menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                                    <% } %>
+                                </table>
+                                <%= hidden_field_tag(:mord) %>
+                                <%= hidden_field_tag(:t_date,(Date.today-1).strftime("%Y/%m/%d")) %>
+                            </div>
+                        </div>
+                        <%} %>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan=4>
+                        <%= form_tag({:controller=>:print_files,:action=>:create},:method=>:post,:name=>"f4"){ %>
+                        <div class="box">
+                            <div class="listC">
+                                対象月：<%= text_field_tag(:m_yyyy,@current_monthly[:year].to_s,:size=>6,:class=>'reqFld',:onchange=>"") %>年
+                                <%= text_field_tag(:m_mm,@current_monthly[:month].to_s,:size=>4,:class=>'reqFld',:onchange=>"") %>月
+                                <table border="0" cellpadding="5" cellspacing="0" style="width:100%">
+                                    <% links = linkdata[1].filter{|link| link[:aggr_type]=="monthly"} %>
+                                    <% (4-links.size%4).times{|n| links<<{}} %>
+                                    <% links.each_with_index{|link,index| %>
+                                    <%= render :partial => "menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                                    <% } %>
+                                </table>
+                                <%= hidden_field_tag(:mord) %>
+                                <%= hidden_field_tag(:t_date,(Date.today-1).strftime("%Y/%m/%d")) %>
+                            </div>
+                        </div>
+                        <%} %>
+                    </td>
+                </tr>
+                <% else %>
+                <% linkdata[1].each_with_index{|link,index| %>
+                <%= render :partial => "menu_btn" , :locals=>{:link=>link,:index=>index} %>
+                <% } unless linkdata[1].blank? %>
+                <% end %>
+                <% } unless @linkdata.blank? %>
+            </table>
+            <br />
+        </div>
+    </div>

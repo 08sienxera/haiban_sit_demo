@@ -1,0 +1,36 @@
+<% content_for(:head){ %>
+    <%= javascript_tag do %>
+    function iCheck(fobj){
+        var strErrorMassage="";
+        <% @cc.getparamkey.each{|key| %>
+        <%= @cc.get_input_js(key) %>
+        <% }unless @cc.blank? %>
+        if(strErrorMassage==""){fobj.submit();}
+        else{alert(strErrorMassage);return false;}
+    }
+    <% end } %>
+
+<div id="field1">
+    <div id="spage"></div>
+    <%= form_tag({:action=>:answer},{:name => 'inform'}){ %>
+        <div class="listC">
+            <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+            <p>
+                <div class="input">
+                    <table border=0 cellpadding=3 cellspacing=8  >
+                        <% @cc.getparamkey.each{|key|
+                            data = @cc.getparam(key)%>
+                            <tr>
+                                <%= content_tag(:td,data['title'],:class=>"listL") %>
+                                <%= content_tag(:td,mkhtmlform(@cc.getgname,key,data),:class=>"listL") %>
+                            </tr>
+                        <% } unless @cc.blank? %>
+                        <%= content_tag(:tr,content_tag(:td,
+                            submit_tag(:submit, :value=>'質問を表示する',:type=>'button',:onclick=>"goInput()"),:class=>"listC",:colspan=>2))%>
+                    </table>
+                </div>
+            </p>
+        <%= link_to(icon("fas","caret-right")+"ログイン画面へ",{:controller=>"/login",:action=>:login}) %>
+    <% } %>
+    <div id="spage"></div>
+</div>

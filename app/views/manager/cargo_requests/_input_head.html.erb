@@ -1,0 +1,55 @@
+<% content_for :head do %>
+  <%= javascript_tag do %>
+function iCheck(fobj){
+  var strErrorMassage="";
+<% cc.getparamkey.each{|key| %>
+  <%= cc.get_input_js(key) %>
+  <% case key %>
+  <% when "move_no" %>
+    if(fobj.work_class.value=="1"){<%= cc.get_ess_js(key) %>}
+  <% when "move_no2" %>
+    if(fobj.work_class.value=="2"){<%= cc.get_ess_js(key) %>}
+  <% end %>
+<% }unless cc.blank? %>
+  if(strErrorMassage==""){return true;}
+  else{alert(strErrorMassage);return false;}
+}
+$(function(){calcCount();});
+<% #運転・作業員カウント %>
+function calcCount(){
+  var fobj = document.inform;
+  var WokerNumKey = <%= CargoRequest::WokerNumKey.to_json.html_safe %>;
+  var driverCount=0;
+  var workerCount=0;
+  var tmp;
+  $.each(WokerNumKey, function(index, key) {
+    tmp = fobj.elements["<%=cc.getgname%>["+key+"]"].value - 0;
+    if(isNaN(tmp) == false && key!="wk_w"){
+      if(key.substr(-2)=="_w"){workerCount+=tmp;}else{driverCount+=tmp;}
+    }
+    $("#driverCount").text(driverCount);
+    fobj.elements["<%=cc.getgname%>[wk_w]"].value = workerCount;
+  });
+}
+
+
+  <% end %>
+<% end %>
+<div id="field1">
+<table width="95%" border="0" cellpadding="0" cellspacing="0" class="soloidline">
+  <tr>
+  <%= content_tag(:th,"対象日",:class=>"listTitle",:style=>"width:25%;")%>
+  <%= content_tag(:td,@t_date.str_date_html,:class=>"listL")%>
+  </tr>
+  <tr>
+  <%= content_tag(:th,"公休／平日",:class=>"listTitle",:style=>"width:25%;")%>
+  <%= content_tag(:td,content_tag(:span,@t_date.str_wh_flg,:class=>@t_date.hd_style),:class=>"listL")%>
+  </tr>
+  <tr>
+  <%= content_tag(:th,"状況",:class=>"listTitle",:style=>"width:25%;")%>
+  <%= content_tag(:td,cc.list_to_str("esta_flg",cc.getparamdata("esta_flg","value")),:class=>"listL")%>
+  </tr>
+</table>
+</div>
+
+

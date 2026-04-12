@@ -1,0 +1,65 @@
+<div id="main" style="width:100%">
+    <form name="testForm" action="" method="get">
+        <input type="text" id="i_amount" name="amount"/>
+        <input type="submit" value="go save"/>
+    </form>
+</div>
+<br/>
+
+<div>
+    <button onclick="openSubPage()">子ウィンドウを開く</button>
+</div>
+<hr>
+<div>
+    <button onclick="classChange()">クラス変更</button>
+    <button onclick="getValue()">値取得</button>
+</div>
+<div>
+    <button onclick="addCld()">子ノード追加</button>
+    <button onclick="rmCld()">子ノード削除</button>
+</div>
+<div>
+    <button onclick="setValue(1)">値設定(input内に値セット)</button>
+    <button onclick="setValue(2)">値設定2(属性valueにセット)</button>
+</div>
+<div>
+    <button onclick="setValue(3)">値設定3(Jqueryのval())</button>
+    <button onclick="setValue(4)">値設定4(Jqueryのattr())</button>
+</div>
+<hr>
+<div>リスト<ul id="list"></ul></div>
+<hr>
+<pre>
+# 検知したい動作
+- inputを手動更新したとき
+- 要素が追加されたとき
+- JSでvalueを更新したとき
+- Jqueryでval()で更新したとき
+
+---
+
+# 検証結果
+- 値設定の　2,4　はobserverが反応する
+- amount.valueの変更は検知しない
+- amount.setAttribute()は検知する
+- Input内のvalue属性が優先される。
+
+---
+
+# MEMO
+- 作業員が割当されると作業員パネルの子ノード inputが更新される。
+　　ID:"wkAUser_001[assignments]"
+　　割当時："|wkACargoWorker_0_wk_1||wkACargoWorker_2_dm_1||wkACargoWorker_3_wi_1|"
+　　解除時："|wkACargoWorker_0_wk_1||wkACargoWorker_2_dm_1|"
+</pre>
+
+<style>
+    form[name='testForm']{
+        width:50%;
+        margin:0 auto;
+        
+    }
+    input.myClass {
+        background-color:pink;
+    }
+</style>

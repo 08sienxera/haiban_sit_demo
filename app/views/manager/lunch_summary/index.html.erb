@@ -1,0 +1,104 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+
+    ul {margin:0;padding:0;}
+    li {list-style:none;margin:0}
+
+    .lunch-order-wrap {max-width:1300px;}
+    .branch {margin-bottom: 2rem;display: none;}
+    .branch.active {display: block;}
+    .grid {
+        display:grid;
+        grid-template-columns: repeat(<%= @grid_setting[:column_size] %>, 1fr);
+        gap: 0px;
+        place-content: center;  
+    }
+    .grid .item {border-right:1px solid #666;text-align:center;}
+
+    .btn {color: black; text-decoration: none; border: 1px solid; padding: 1px 12px; background-color: #E5E5E5; }
+    a.btn, input[type="button"] {border-width:1px; padding-top:2px; padding-bottom:2px; border-radius:3px; border-color:#666}
+    .summary{width:100%;}
+    .summary tr>* {padding:0}
+    .summary tr th {width:120px;}
+    .summary tr th,.summary tr td {border:solid 1px black;}
+    #link_box>table {margin:0 auto;}
+
+--></style>
+<%= javascript_tag do %>
+    const setBranch = (branchCd) => {
+        const branchWraps = document.getElementsByClassName("branch");
+        Array.from(branchWraps).forEach((ele)=>{
+            ele.classList.remove("active")
+            ebcd = ele.id.substring(ele.id.indexOf("_")+1)
+            if(branchCd==ebcd){
+                ele.classList.add("active")
+            }
+        })
+    }
+    $(function(){
+        <% if @datas %>
+            setBranch('<%= @datas.keys.first %>');
+        <% end %>
+    });
+<% end %>
+<% } %>
+<% sum_datas={:date_alert=>{},:menbers_count=>{},:branch_count=>{:total=>{:vacation=>0,:continuous=>0}}} #ページ内集計用%>
+<div id="field1">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <table>
+        <tr>
+        <td><%= render :partial => "t_month_box",:locals=>{:day_info=>@t_tarm,:today=>@today,:tbl_class=>"",:day_title=>""} %></td>
+        <td class="listR" style="width:20%">
+            <%= content_tag(:div,link_to("帳票出力",{:controller=>:lunch_summary,:action=>:excel_output,:begin_date=>@t_tarm[:length][:begin_date].strftime("%Y%m%d")},:class=>'btn', :style=>"cursor:pointer;margin-right:20px"),:style=>"display:inline-block;")%>
+        </td>
+        <td class="listR" style="width:25%">
+            <% @branches.each do |branch| %>
+                <%= content_tag(:div,submit_tag(:button, :value=>branch[1],:type=>'button',:onclick=>"setBranch('#{branch[0]}')",:style=>"background-color:#{branch[2]};cursor:pointer;"),:style=>"display:inline-block;")%>
+            <% end %>
+        </td>
+        </tr>
+    </table>
+</div>
+<div class="lunch-order-wrap">
+    <% @datas.each do |branch_cd,users| %>
+        <%= content_tag(:div,branch_cd,:id=>"branch_#{branch_cd}",:class=>'branch') do %>
+            <table class="summary" cellspacing="0">
+                <tr>
+                    <% branch = @branches.find{|b| b[0]==branch_cd} %>
+                    <%= content_tag(:th,branch[1],:style=>"background-color:#{branch[2]};") %>
+                    <td>
+                        <ul class="grid">
+                            <% (@t_tarm[:length][:begin_date]..@t_tarm[:length][:end_date]).each do |day| %>
+                                <%= content_tag(:li,day.day,:class=>"item listTitle") %>  
+                            <% end %>
+                            <% @vendor_snames.values.each do |name| %>
+                                <%= content_tag(:li,name,:class=>"item listTitle",:style=>"background-color:#{branch[2]};") %>  
+                            <% end %>
+                            <%= content_tag(:li,"合計",:class=>"item listTitle",:style=>"background-color:#666666;") %>  
+                        </ul>
+                    </td>
+                </tr>
+                <% users.each do |user_id,data| %>
+                <tr>
+                    <%= content_tag(:th,data[:user_info][:name],:style=>"background-color:#{branch[2]}50;") %>
+                    <td>
+                        <ul class="grid">
+                            <% data[:cal_cell].each do |cell| %>
+                                <%= content_tag(:li, cell[0],:class=>"item",:id=>"lunch_order_#{cell[1]}") %>  
+                            <% end %>
+                            <% data[:order_total].values.each do |value| %>
+                                <%= content_tag(:li,value,:class=>"item",:style=>"background-color:#{branch[2]}50;") %>  
+                            <% end %>
+                            <%= content_tag(:li,data[:order_total_sum],:class=>"item",:style=>"background-color:#66666650;") %>  
+                        </ul>
+                    </td>
+                </tr>
+                <% end %>
+            </table>
+        <% end %>
+    <% end %>
+<div>
+<br/>
+    <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+<%= content_tag(:div,nil,:id=>"msgBox")%>

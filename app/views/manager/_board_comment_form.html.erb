@@ -1,0 +1,37 @@
+<% content_for(:head){ %>
+  <%= javascript_include_tag("manager/board_comment") %>
+  <style type="text/css"><!--
+    #commentFormBox {position: absolute;left: 50%;top: 80%;background-color: white;width: 80%;transform: translate(-50%, -50%);text-align: center;padding: 5px;border:3px solid green;box-shadow: 0px 0px 10px gray;}
+    #commentFormBox.deactive {display:none;}
+    #commentFormBox table,#commentFormBox table textarea{width:98%  }
+    span.msg{font-weight:bold;color:red;}
+  --></style>
+<% } %>
+
+<div id="commentFormBox" class="deactive" style="display:normal">
+    <table class="soloidline">
+    <span class="ess">コメント欄を空欄で登録すると新規コメントは作成されず、既存コメントは削除されます</span>
+    <tr>
+    <%= content_tag(:td, "コメント",:class=>"listTitle") %>
+    <%= content_tag(:td, content_tag(:textarea,nil,:rows=>"8",:id=>"commentArea",:style=>"ime-mode:active;width:98%;",:class=>"listL")) %>
+    </tr>
+    </table>
+    <%= form_tag({:controller=>:board_comments,:action=>:create},{:name => :create_comment_form}) do %>
+      <%= hidden_field_tag(:board_id,dataline[:id]) %>
+      <%= hidden_field_tag(:board_comment_body,nil) %>
+    <% end %>
+    <%= form_tag({:controller=>:board_comments,:action=>:create},{:name => :create_comment_form}) do %>
+      <%= hidden_field_tag(:board_id,dataline[:id]) %>
+      <%= hidden_field_tag(:board_comment_body,nil) %>
+    <% end %>
+    <%= form_tag({:controller=>:board_comments,:action=>:update},{:method=>:put,:name => :update_comment_form}) do %>
+      <%= hidden_field_tag(:board_comment_id,nil) %>
+      <%= hidden_field_tag(:board_comment_body,nil) %>
+    <% end %>
+
+    <%= button_tag "削除",:id=>"clear-btn",:onclick=>"doClear();" %>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <%= button_tag "登録",:id=>"create-btn",:onclick=>"doSubmit();" %>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <%= button_tag "閉じる",:id=>"close-btn",:onclick=>"closeCommentForm();" %>
+</div>

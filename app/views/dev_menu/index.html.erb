@@ -1,0 +1,25 @@
+  <%= javascript_tag do %>
+function viewBox(key){
+  var tObj = document.getElementById(key+"_box");
+  if(tObj.style.display == "block"){
+    tObj.style.display = "none";
+  }else{
+    tObj.style.display = "block";
+  }
+}
+  <% end %>
+<div id="field1">
+<h1>デモ用Ｉｎｄｅｘ （<%= Rails.env %>）</h1>
+<ul>
+  <%= content_tag(:li,link_to("メンバーログイン",{:controller=>:login,:action=>:login},{:target=>:onakai_main}),:class=>"level1") %>
+  <%= content_tag(:li,"外部閲覧者ログイン",:class=>"level1") %>
+</ul>
+<hr />
+<ul>
+  <%= content_tag(:li,link_to("稼働時間集計",{:controller=>"batch/work_time_aggregate"},{:target=>:batch}),:class=>"level1") %>
+  <%= content_tag(:li,link_to("掃除",{:controller=>"batch/clean_up"},{:target=>:batch}),:class=>"level1") %>
+  <%= content_tag(:li,link_to("App監視",{:controller=>:keeper_ck},{:target=>:batch}),:class=>"level1") %>
+  <%#= content_tag(:li,button_to("データ補正(随時)",{:action=>:create},{:target=>:batch}),:class=>"level1") %>
+</ul>
+
+</div>

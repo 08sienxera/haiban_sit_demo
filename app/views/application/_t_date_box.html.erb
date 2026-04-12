@@ -1,0 +1,17 @@
+<%= javascript_include_tag 'tDateBox.js' %>
+<%= javascript_include_tag 'ck.js' %>
+<table border="0" cellpadding="0" cellspacing="0" class="<%= tbl_class %>" style="width:100%;margin: 0 auto 5px;" id="tDateTbl">
+    <% io_flg ||= 1 %>
+    <tr>
+        <%= content_tag(:td,day_title,:class=>"listTitle",:style=>"width:25%") if day_title.present? %>
+        <td class="listC"  style="width:50%">
+            <%= link_to(icon("fa-solid","angles-left"),{:t_date=>(day_info[:t_date]-7).strftime("%Y%m%d")})%>
+            <%= link_to(icon("fa-solid","angle-left"),{:t_date=>(day_info[:t_date]-1).strftime("%Y%m%d")})%>
+            <%= day_info.str_date_html(io_flg) %>
+            <%= note %>
+            <%= link_to(icon("fa-solid","angle-right"),{:t_date=>(day_info[:t_date]+1).strftime("%Y%m%d")})%>
+            <%= link_to(icon("fa-solid","angles-right"),{:t_date=>(day_info[:t_date]+7).strftime("%Y%m%d")})%>
+        </td>
+        <td class="listC" style="width:25%"><%= button_to("本日(#{today.strftime("%m/%d")})",nil,{:method=>:get,:params=>{:t_date=>today.strftime("%Y%m%d")},:class=>"btn"},)%></td>
+    </tr>
+</table>

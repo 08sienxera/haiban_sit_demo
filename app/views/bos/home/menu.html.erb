@@ -1,0 +1,126 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+body {margin:0px;padding:0px;box-sizing:border-box;}
+table {margin-bottom:20px;}
+td.menu{font-size:12pt;text-align: center;line-height: 130%;white-space: nowrap;}
+span.title{display:block;color:#FFFFFF;background-color: #0168B1;font-weight:bold;text-align: center;padding:3px;}
+td.menu a{text-decoration:none;display:inline-block;width:100%;border:3px double silver;line-height: 200%;color:black;background-color:#FFEEFF;}
+td.menu a:hover{color:black;background-color:yellow}
+div#msg_box {text-align: center;}
+.box.notification_box { padding:10px 20px;}
+.box.notification_box h3 { margin:0;font-size:1.3em;}
+.box.notification_box a { padding-left: 1rem;font-size:1.3em;}
+.box.notification_box a::before { content:"・";margin-right:0px;}
+--></style>
+<%= javascript_tag do %>
+    let msgs = []
+    function setHeight(iframeId,height){
+        var iframe = $(iframeId);
+            iframe.height(height);
+    }
+    function dlFile(fobj,mord){
+        reqFields = fobj.getElementsByClassName('reqFld')
+        switch (fobj.name){
+            case "f4":
+                const msgs = [];
+                const inY = fobj.m_yyyy;
+                const inM = fobj.m_mm;
+                if(inY.value==""||inM.value==""){
+                    msgs.push("「対象月」を入力してください")
+                }
+                if(!inY.value.match(/^\d{4}$/)){
+                    msgs.push("対象年は半角数字4桁を入力してください")
+                }
+                if(!inM.value.match(/^\d{1,2}$/)){
+                    msgs.push("対象月は半角数字1～2桁を入力してください")
+                }
+                if(msgs.length==0 && (Number(inM.value)<1 || Number(inM.value)>12)){
+                    msgs.push("対象月は1～12の範囲で入力してください")
+                }
+                if(msgs.length>0){
+                    window.alert(msgs.join("\n"))
+                    return true
+                }
+                fobj.mord.value = mord;
+                fobj.submit();
+                return false;
+                break;
+            default:
+                /*  */
+                hasEmptyField = Array.from(reqFields).some((input)=>{
+                    if(input.value == ""){
+                        message = reqFields.length==1 
+                            ? "「対象日」を入力してください" 
+                            : "「対象期間」を入力してください"
+                        window.alert(message)
+                        return true
+                    }
+                    return false
+                })
+                if(hasEmptyField) return false
+                if(reqFields.length==2){
+                    if(new Date(reqFields[0].value)>new Date(reqFields[1].value)){
+                    window.alert("「対象期間」は集計開始日～集計終了日を指定してください")
+                    return false
+                    }
+                }
+                if(mord=="TAX_FREE_MACHINES_PDF" && reqFields.length==2){
+                    if(reqFields[0].value.substring(0,7)!=reqFields[1].value.substring(0,7)){
+                    window.alert("「免税軽油稼働実績表」の出力では\n対象期間に同じ年月を指定してください")
+                    return false
+                    }
+                }
+                fobj.mord.value = mord;
+                fobj.submit();
+                /*  */
+        }
+    }
+
+<% end %>
+<% } %> 
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msgs],:style_class=>'err'} %>
+<div id="field1">
+    <div>
+        <table id="work-table" border="0" cellspacing="1" style="width:90%">
+            <% if @top_message.present? %>
+            <tr>
+                <td class="box notification_box" colspan="2" style="border:3px double silver;">
+                    <h3>＜ 通知 ＞</h3>
+                    <%= link_to(@top_message[:text],@top_message[:action]) %>
+                </td>
+            </tr>
+            <% end %>
+            <tr>
+                <td class="menu" style="width:50%"><%= link_to(content_tag(:span,content_tag(:l,"作業予定",:class=>"fa-solid fa-calendar-day"),:class=>"title"),{:controller=>"bos/work_schedule",:action=>:index}) %></td>
+                <td class="menu" style="width:50%"><%= link_to(content_tag(:span,content_tag(:l,"休暇申請",:class=>"fa-solid fa-clipboard"),:class=>"title"),{:controller=>"bos/my_vacations",:action=>:index}) %></td>
+            </tr>
+            <tr>
+                <td class="box" style="border:3px double silver;">
+                    <iframe src="<%= url_for({:controller=>:work_schedule}) %>" class="topBox" frameborder="0" id="WorkScheduleBox" style="width:100%;height:22vh;"></iframe>
+                </td>
+                <td rowspan='5' class="box" style="border:3px double silver;">
+                    <iframe src="<%= url_for({:controller=>:my_vacations}) %>" class="topBox" frameborder="0" id="vacationBox" style="height:80vh;width:100%;"></iframe>
+                </td>
+            </tr>
+            <tr>
+                <td class="menu" style="width:50%"><%= link_to(content_tag(:span,content_tag(:l,"昼食注文",:class=>"fa-solid fa-calendar-day"),:class=>"title"),{:controller=>:lunch_order,:action=>:edit,:id=>@t_date.strftime("%Y%m%d")}) %></td>
+            </tr>
+            <tr>
+                <td class="box" style="border:3px double silver;">
+                    <iframe src="<%= url_for({:controller=>:lunch_order,:action=>:edit,:id=>@t_date.strftime("%Y%m%d")}) %>" class="topBox" frameborder="0" id="lunchOrderBox" style="width:100%;height:22vh;"></iframe>
+                </td>
+            </tr>
+                <td class="menu" style="width:50%"><%= link_to(content_tag(:span,content_tag(:l,"掲示",:class=>"fa-solid fa-calendar-day"),:class=>"title"),{:controller=>"bos/boards",:action=>:index}) %></td>
+            </tr>
+            <tr>
+                <td class="box" style="border:3px double silver;">
+                    <iframe src="<%= url_for({:controller=>:boards}) %>" class="topBox" frameborder="0" id="boardBox" style="width:100%;height:22vh;"></iframe>
+                </td>
+            </tr>
+        </div>
+    </div>
+    <br/>
+    <%= render :partial=>"home/link_menu", :locals=>{:menu_list=>@menu_list} %>
+
+</div>

@@ -1,0 +1,92 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+table.soloidline td{vertical-align: top;min-width:20px;}
+table.nosoloidline,table.nosoloidline tbody{margin: 0 auto;padding 0;}
+table.nosoloidline td.listL {padding: 0;}
+table.nosoloidline td.listR {padding: 0;}
+--></style>
+<%= javascript_tag do %>
+<% end %>
+<% } %>
+<% on_numbering = false %>
+<div id="field1">
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td class="listL" style="width:40%">
+    <%= render :partial => "t_date_box",:locals=>{:day_info=>@t_date,:note=>"",:today=>@today,:tbl_class=>"",:day_title=>""} %>
+    </td>
+    <td class="listL" style="width:60%">
+      <%= content_tag(:div,"配番準備を始めています。修正した場合は必ず管理課までご連絡ださい！！！",:style=>"color:white;background-color:red;width:100%;height:25px;text-align:center;padding:5px;display:none;",:id=>"doNumberingAltBox") %>
+    </td>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <table class='soloidline'>
+        <tr>
+        <%= content_tag(:th,"No<br />状態".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"動静番号<br />貨物コード".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"作業名<br />貨物名".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"場所<br />出勤".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"開始<br />終了".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"機械",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"FM",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"DM",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"WM",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"ｸﾚ<br />ｰﾝ".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"ローダ",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"ﾊﾞｯｸﾎｰ",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"船内<br />ﾛ-ﾀﾞ".html_safe,:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"ブル",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"リフト",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"ＳＣ",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"他",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"作業員",:class=>"listTitle listTitle2",:colspan=>6) %>
+        <%= content_tag(:th,"計",:class=>"listTitle listTitle2",:style=>"border-left-style:none;",:rowspan=>2) %>
+        </tr>
+        <tr>
+          <% %w[ハン 土場 配車 船内 沿岸 他].each{|key| %>
+            <%= content_tag(:th,key,:class=>"listTitle listTitle2") %>
+          <% } %>
+        </tr>
+        <% if @datas.blank? %>
+        <%= content_tag(:tr,content_tag(:td,I18n.t("system_alert.not_fund"),:class=>"err",:colspan=>30))%>
+        <% else %>
+        <% @datas.each{|dataline| on_numbering = true if dataline[:esta_flg]==1  %>
+        <tr>
+        <%= content_tag(:td,"#{dataline[:work_no]}<br />#{content_tag(:span,list2str(CargoRequest::EstaFlg,"#{dataline[:esta_flg]}"),:class=>(dataline[:esta_flg]==9 ? "err" : nil))}".html_safe,:class=>"listR") %>
+        <%= content_tag(:td,"#{link_to((dataline[:work_class]==1 ? dataline[:move_no] : (dataline[:work_class]==2 ? dataline[:move_no2] : "休み")),{:action=>:edit,:id=>dataline[:id]})}<br />#{dataline[:work_cd]}".html_safe,:class=>"listL") %>
+        <%= content_tag(:td,"#{str_cut(dataline[:work_name],20)}<br />#{str_cut(dataline[:cargo_name],20)}".html_safe,:class=>"listL") %>
+        <%= content_tag(:td,"#{dataline[:work_place]}<br />#{dataline[:i_time].try(:strftime,"%H:%M")}".html_safe,:class=>"listL") %>
+        <%= content_tag(:td,"#{dataline[:s_time].try(:strftime,"%H:%M")}<br />#{dataline[:e_time].try(:strftime,"%H:%M")}".html_safe,:class=>"listC") %>
+        <%= content_tag(:td,dataline[:machine_nm],:class=>"listL") %>
+          <% ["fm","dm","wm","cr"].each{|key|%>
+          <%= content_tag(:td,dataline["#{key}_m".to_sym],:class=>"listR") %>
+          <% } %>
+          <% ["ld","bh","sl","bl","lf","sc"].each{|key|%>
+          <%= content_tag(:td,dataline["#{key}_m".to_sym],:class=>"listR",:style=>"border-right-style:none;") %>
+          <%= content_tag(:td,dataline["#{key}_s".to_sym],:class=>"listR",:style=>"border-left-style:none;") %>
+          <% } %>
+          <%= content_tag(:td,dataline[:ot_m],:class=>"listR") %>
+          <% [:hd_w,:db_w,:hs_w,:sn_w,:eg_w,:ot_w].each{|key| %>
+          <%= content_tag(:td,dataline[key],:class=>"listR") %>
+          <% } %>
+          <%= content_tag(:td,dataline[:wk_w],:class=>"listR",:style=>"") %>
+        </tr>
+        <% } ; end ; %>
+    </table>
+  </div>
+  <br />
+  <table border="0" cellpadding="5" cellspacing="0" style="width:60%">
+    <tr>
+    <%= content_tag("td",button_to("作業依頼CSV取込み",  {:action => :csv_in},  {:method=>:get,:class=>"css_btn"}),{:valign=>"bottom",:class=>"listC"}) %>
+    <%= content_tag("td",button_to(I18n.t("btn_labels.new"),  {:action => :new},  {:method=>:get,:class=>"css_btn"}),{:class=>"listC"})  %>
+    </tr>
+  </table>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+<% if on_numbering %>
+<%= javascript_tag do %>
+$("#doNumberingAltBox").css("display","");
+<% end ; end %>

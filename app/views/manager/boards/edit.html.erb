@@ -1,0 +1,37 @@
+<% content_for(:head){ %>
+  <style type="text/css"><!--
+    table.soloidline {width:700px}
+    table.soloidline td.listTitle {width:130px}
+    #board_targets {width:150px; margin-top:5px;}
+    span.file-list::before {content: "・"}
+  --></style>
+  <%= javascript_include_tag("manager/board_target") %>
+  <%= javascript_tag do %>
+
+  <% end %>
+<% } %>
+<%= render :partial => "application/input_head" , :locals=>{:cc=>@cc} %>
+<div id="field2">
+  <%= render :partial => 'manager/board_comment_form' , :locals=>{:dataline => @dataline} if @dataline.present?%>
+  <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+  <%= form_tag({:action=>:update},{:method=>:put,:multipart => @my_setting[:multipart_flg],:name => 'inform'}){ %>
+    <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+    <%= hidden_field_tag(:change_pw,@change_pw) if @my_setting[:table].model_name.name == "Admin" %>
+    <%= render :partial => "manager/boards/comment_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+  <% } %>
+  <div id="map" style="display:none">Map</div>
+  <br/>
+  <div class="listC">
+    <% if @my_setting[:destroy] %>
+      <%= submit_tag(:submit, :value=>I18n.t("btn_labels.destroy"),:type=>'button',
+              :onclick=>"goDelete();",:id=>"delete_btn") %>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <% end %>
+    <%= submit_tag(:submit, :value=>I18n.t("btn_labels.update"),:type=>'button',:onclick=>"goInput2(this);",:id=>"update_btn") %>
+  </div>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+<% if @my_setting[:destroy] %>
+  <%= form_tag({:action=>:destroy},{:method=>:delete,:name => 'delform'}) {} %>
+<% end %> 

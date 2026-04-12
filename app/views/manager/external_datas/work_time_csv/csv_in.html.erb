@@ -1,0 +1,33 @@
+<div id="field1">
+  <%= form_tag({:action=>:csv_input},{:method=>:post,:multipart => true,:name => 'inform'}){ %>
+  <table width="95%" border="0" cellpadding="5" cellspacing="0" class="soloidline">
+    <tr>
+      <th class="listTitle"><%=@file_name%>CSVファイル</th>
+      <td class="listL"><%= file_field("file", "csv", :size=>60,:class=>'btn') %></td>
+    </tr>
+    <tr>
+      <th class="listTitle" >登録方式</th>
+      <td >
+        <%= "勤務時間の更新を行います。<br/>ファイルデータに不良がある場合は該当行をスキップし、正常行のみを取り込みます。".html_safe %>
+      </td>
+    </tr>
+    <tr>
+      <th class="listTitle" >対象勤務日</th>
+      <td><%= date_field_tag("t_date", Date.today - 1, size: 10) %></td>
+    </tr>
+    <tr><td colspan="2" align="center" ><br /><%=submit_tag(:submit,:class=>'btn', :value=>"保存")%><br /><br /></td></tr>
+  </table>
+  <table width="95%" border="0" cellpadding="5" cellspacing="0">
+    <tr><td>
+      <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+      <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msgs],:style_class=>'msg'} %>
+    </td></tr>
+  </table>
+  <br/>
+  
+  <div class="listC">CSVのファイル形式は次の通りです。(<%=raw essstr(1,1)%>は必須項目です。)<br/></div>
+  <%=  printcsvtable(@cc) %>
+  <% } %>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

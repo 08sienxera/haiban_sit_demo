@@ -1,0 +1,48 @@
+<%= render :partial => "serch_head" , :locals=>{:ss=>@ss,:tab_keys=>@tab_keys} %>
+<div id="field1">
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td valign="bottom" class="listL" style="width:80%;">
+    <%= render :partial => 'tablist' , :locals=>{:cc=>@cc,:ss=>@ss,:tab_keys=>@tab_keys} %></td>
+    <%= content_tag("td",
+        (render :partial => 'serch', :locals=>{:ss=>@ss,:action=>@serch_action,:serch_options=>@serch_options}),
+      {:valign=>"bottom",:class=>"listR"}) unless @ss.nil? %>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <table class='soloidline'>
+        <tr>
+        <%= content_tag(:th,@cc.getparamdata("important_flg","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,"掲示期間",:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("board_category_id","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("subject","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,"コメント",:class=>"listTitle") %>
+        <%= content_tag(:th,"閲覧",:class=>"listTitle") %>
+        </tr>
+      <% if @datas.blank? %>
+        <%= content_tag(:tr,content_tag(:td,I18n.t("system_alert.not_fund"),:class=>"err",:colspan=>7))%>
+      <% else %>
+      <% @datas.each{|data_line| %>
+        <tr>
+        <%= content_tag(:td,data_line.important_str,:class=>"listC err") %>
+        <%= content_tag(:td,data_line.view_tarm_str("%y/%m/%d"),:class=>"") %>
+        <%= content_tag(:td,@cc.list_to_str("board_category_id","#{data_line[:board_category_id]}"),:class=>"") %>
+        <%= content_tag(:td,link_to(data_line[:subject],{:action=>:edit,:id=>data_line[:id]}),:class=>"") %>
+        <%= content_tag(:td,"#{data_line[:comment_count]}件",:class=>"listR") %>
+        <%= content_tag(:td,link_to("#{data_line[:confirmation_count]}/#{data_line[:target_count]}",{:action=>:show,:id=>data_line[:id]}),:class=>"listC") %>
+        </tr>
+      <% } %>
+      <% end %>
+    </table>
+    <%= render :partial => "paging" , :locals=>{:datas=>@datas} %>
+  </div>
+  <br />
+  <table border="0" cellpadding="5" cellspacing="0" style="width:60%">
+    <tr>
+    <%= content_tag("td",button_to(I18n.t("btn_labels.new"),  {:action => :new},  {:method=>:get,:class=>"css_btn"}),{:class=>"listC"})  %>
+    </tr>
+  </table>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

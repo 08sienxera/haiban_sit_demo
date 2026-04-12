@@ -1,0 +1,97 @@
+<% content_for(:head){%>
+<style type="text/css"><!--
+    a.showLink{}
+    div.searchBox{display: flex;justify-content: space-between;margin: 0;width: 100%;}
+    div.radiobox a {text-decoration:none;color:black;}
+    div.searchword {padding-top:12px;margin: 1px auto;}
+    div#field2 {width:900px;}
+    a.board-card *{margin:0;padding:0;}
+    a.board-card{display:block;width:98%;background-color:#ffffff;margin:5px auto;border-radius:5px;border:1px solid black;text-decoration:none;color:black;overflow:hidden;}
+    a.board-card:hover{background-color:#FFEEFF;}
+    a.board-card div.board-important{display:inline-block;width:1.3rem;color:red;}
+    a.board-card p.board-category{display:inline-block;}
+    a.board-card div.board-header{padding-left:5px;background-color:#C2EEFF;border-bottom:1px solid black;}
+    a.board-card div.board-body{margin-left:2rem;}
+    a.board-card h2.board-subject{font-weight:400;font-size:2.0rem;}
+    @media (max-width: 600px) {
+        html {font-size: calc(100vw / 60);}
+        body *{font-size:1.8rem}
+        #header h1 div{margin:0;}
+        #header h1 div.h1_left{font-size:3.8rem;}
+        div#field2 {width:100vw;}
+        div.searchBox{flex-direction:column;margin-bottom:15px;}
+        .h100p{height:auto;}
+    }
+--></style>
+<%= javascript_tag do %>
+    function forceRedirect(event,anchor){
+        if(window == window.parent){
+            return;
+        };
+        event.preventDefault();
+        parent.location.href = anchor.getAttribute('href');
+    }
+    function doSearch(){
+        $input = document.getElementById("searchInputBox");
+        let current_Url = location.href;
+        let suffix ='';
+        if(current_Url.match(/^http:\/\/[^?]*$/)){
+            suffix = "?";
+        }else if(current_Url.match(/^http:\/\/[^?]*\?[^&]+$/)){
+            suffix = "&";
+        }else{
+            suffix = "&";
+        };
+        window.location.href = location.href + suffix + `search=${$input.value}`;
+    };
+    $(function(){
+        setParentWindowFrameSize("#boardsBox")
+        if(window != window.parent){
+            $("a.showLink").attr("target","_parent");
+            <% if @top_message.present? %>
+                doSetMessage('<%= @top_message[:text] %>','<%= @top_message[:url] %>');
+            <% end %>
+        };
+    });
+<% end } %>
+<div id="field2">
+    <div class="listC"><%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %></div>
+
+    <div class="searchBox"style="">
+        <div class="radiobox fleft">
+            <% @radio_settings.each do |setting| %>
+                <%= content_tag :input,nil,:name=>'bbs_serch_sts',:value=>setting[:value],:type=>"radio",:class=>'radiobutton',:id=>"bbs_serch_sts_#{setting[:value]}",:checked=>setting[:checked] %>
+                <%= content_tag :label,link_to(setting[:name],operator_boards_path(target: setting[:target])),:for=>"bbs_serch_sts_#{setting[:value]}" %>
+            <% end %>
+        </div>
+        <div class="searchword">
+            <lavel class="fa-solid fa-magnifying-glass" style="cursor:pointer;" onclick="doSearch()"></lavel><input value="<%= @search_word ? @search_word : ''%>" id="searchInputBox" size=15 onchange="doSearch()"/>
+        </div>
+    </div>
+
+    <% if @boards.present? %>
+        <% @boards.each do |board| %>
+            <% 
+            c_user = @c_users.find{|u| u.login_id==board.created_uid}
+            b_category = board.board_category
+            next if c_user.blank? || b_category.blank?
+            %>
+            <%= link_to(operator_board_path(board.id),:class=>"board-card",:onclick=>"forceRedirect(event,this)") do %>
+                <div class="board-header">
+                    <div class="board-important"><%= board.important_str %></div>
+                    <p class="board-category"><%= b_category.name %></p>
+                </div>
+                <div class="board-body">
+                    <h2 class="board-subject"><%= board.subject %></h2>
+                    <p><%= "#{c_user.name}／#{board.view_s_dt.strftime('%y年%-m月%-d日')}" %></p>
+                </div>
+            <% end %>
+        <% end %>
+        <br />
+        <%= render :partial => "paging" , :locals=>{:datas=>@boards} %>
+    <% else %>    
+        <p style="text-align: center;color: red;">※対象はありません※</p>
+    <% end %>
+    <br />
+    <%= render :partial => "operator/back_to_top" %>
+</div>

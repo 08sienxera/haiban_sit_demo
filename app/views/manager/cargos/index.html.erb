@@ -1,0 +1,219 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+div.hcalVCell{vertical-align: top;min-width:25px;}
+div.selectlist:hover{background-color : #FFFF00;cursor:pointer;}
+div.v_box{overflow:hidden;}
+div.hcaltable{margin: 0 auto;}
+#CargosBodyBox{overflow-y:scroll;}
+--></style>
+<%= javascript_tag do %>
+var WokerNumKey = <%= Cargo::WokerNumKey.to_json.html_safe %>;
+function myICheck(key,obj){
+  var strErrorMassage="";
+  switch(key){
+  <% @cc.getparamkey.each{|key| %>
+  <%= "case '#{key}' : #{ @cc.get_input_js(key).sub(/fobj.elements\['.*'\]/,"obj")} break;\n".html_safe %>
+  <% }unless @cc.blank? %>
+  }
+  if(strErrorMassage==""){return true;}
+  else{obj.focus();alert(strErrorMassage);return false;}
+}
+function iCheck(fobj){
+  var strErrorMassage="";
+  var row_count = fobj.row_count.value -0;
+  for(var rowid = 1;rowid <= row_count; rowid++){
+    if($("#row_"+rowid).length){
+    <% @cc.getparamkey.each{|key| %>
+      <%= @cc.get_input_js(key).sub(@cc.getgname,"#{@cc.getgname}_'+rowid+'").sub("'#{@cc.getparamdata(key,"title")}'","rowid+'行目(No.'+fobj.elements['#{@cc.getgname}_'+rowid+'[work_no]'].value+')の#{@cc.getparamdata(key,"title")}'").html_safe %>
+    <% }unless @cc.blank? %>
+    }
+  }
+  if(strErrorMassage==""){return true;}
+  else{alert(strErrorMassage);return false;}
+}
+
+<% end %>
+<% } %>
+<% ymdt_date = @t_date[:t_date].strftime("%Y%m%d") %>
+<div id="field1">
+<%= content_tag(:div,@alert_msg,:style=>"color:white;background-color:red;width:95%;height:25px;text-align:center;padding:5px",:id=>"doNumberingAltBox") unless @can_edit%>
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td class="listL" style="width:40%">
+    <%= render :partial => "t_date_box",:locals=>{:day_info=>@t_date,:note=>"",:today=>@today,:tbl_class=>"",:day_title=>""} %>
+    </td>
+    <%= content_tag("td",button_to("作業依頼取込",  {:action=>:create},  {:method=>:post,:params=>{:t_date=>ymdt_date,:mord=>"getset"},:class=>"btn"}),{:class=>"listC"}) if @can_edit %>
+    <%= content_tag("td",button_to("配番画面",  {:controller=>:wk_assignment,:action=>:index,:t_date=>ymdt_date},:method=>:get,:class=>"btn"),{:class=>"listC"}) if @cargo_link_enable %>
+    <td class="listC" style="width:30%">
+    <%= form_tag({:action=>:create},{:method=>:post,:name=>"cpform"}){ %>
+    <% @cc.setgname("#{Cargo.model_name.name}_in"); @cc.setparam('work_date','value',@cp_date); %>    
+    <%= mkhtmlform(@cc.getgname,"work_date",@cc.getparam("work_date")) if @can_edit %>
+    <%= submit_tag(:submit, :value=>"指定日追加作業コピー",:type=>'button',:onclick=>"doCopy(this);") if @can_edit %>
+    <%= hidden_field_tag(:t_date,ymdt_date) %>
+    <%= hidden_field_tag(:max_desp_index,0) %>
+    <%= hidden_field_tag(:max_work_no,0) %>
+    <%= hidden_field_tag(:do_reset,0) %>
+    <%= hidden_field_tag(:mord,"docopy") %>
+    <% } %>
+    </td>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+<% row_count = 0 %>
+  <div>
+    <div class="hcaltable" id="CargosHeadTbl">
+      <div class="hcalRow">
+        <%= content_tag(:div,"No".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:25px") %>
+        <%= content_tag(:div,"動静番号<br />作業名".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:110px") %>
+        <%= content_tag(:div,"貨物番号<br />貨物名".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:110px") %>
+        <%= content_tag(:div,"場所<br />出勤".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:60px") %>
+        <%= content_tag(:div,"開始<br />終了".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:45px") %>
+        <%= content_tag(:div,"機械",:class=>"hcalCell hcalVCell listTitle",:style=>"width:60px") %>
+        <%= content_tag(:div,"FM",:class=>"hcalCell hcalVCell listTitle",:style=>"width:25px") %>
+        <%= content_tag(:div,"DM",:class=>"hcalCell hcalVCell listTitle",:style=>"width:25px") %>
+        <%= content_tag(:div,"WM",:class=>"hcalCell hcalVCell listTitle",:style=>"width:25px") %>
+        <%= content_tag(:div,"ｸﾚ<br />ｰﾝ".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:25px") %>
+        <%= content_tag(:div,"ローダ",:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"ﾊﾞｯｸﾎｰ",:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"船内<br />ﾛ-ﾀﾞ".html_safe,:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"ブル",:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"リフト",:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"ＳＣ",:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"ＴＬ",:class=>"hcalCell hcalVCell listTitle",:style=>"width:54px") %>
+        <%= content_tag(:div,"他",:class=>"hcalCell hcalVCell listTitle",:style=>"width:25px") %>
+        <%= content_tag(:div,"運転",:class=>"hcalCell hcalVCell listTitle",:style=>"width:30px") %>
+        <%= content_tag(:div,"ハ<br />ン".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:25px") %>
+        <%= content_tag(:div,"土<br />場".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:25px") %>
+        <%= content_tag(:div,"配<br />車".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:25px") %>
+        <%= content_tag(:div,"船<br />内".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:25px") %>
+        <%= content_tag(:div,"沿<br />岸".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:25px") %>
+        <%= content_tag(:div,"他".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:25px") %>
+        <%= content_tag(:div,"作<br />業".html_safe,:class=>"hcalCell hcalVCell listTitle listTitle2",:style=>"width:30px") %>
+        <%= content_tag(:div,nil,:class=>"hcalCell",:id=>"CargosHeadAdjustCell") %>
+      </div>
+    </div>
+    <div class="hcaltable" id="CargosSmpleTbl" style="display:none;">
+      <%= render :partial => "row",:locals=>{:dataline=>{"work_date"=>@t_date[:t_date]},:desp_no=>row_count,:cc=>@cc} %>
+    </div>
+    <%= form_tag({:action=>:update,:id=>ymdt_date},{:method=>:put,:multipart => @my_setting[:multipart_flg],:name => 'inform'}){ %>
+    <div id="CargosBodyBox">
+      <div class="hcaltable" id="CargosBodyTbl">
+      <% @datas.each{|dataline| row_count+=1%>
+        <%= render :partial => "row",:locals=>{:dataline=>dataline,:desp_no=>row_count,:cc=>@cc} %>
+      <% } %>
+      </div>
+    </div>
+    <%= hidden_field_tag("row_count",row_count) %>
+    <% } #form_tag %>
+    <div class="hcaltable" id="CargosSumTbl">
+      <div class="hcalRow">
+        <%= content_tag(:div,"本船・沿岸合計",:class=>"hcalCell hcalVCell listTitle listR",:style=>"width:435px") %>
+        <% ["fm","dm","wm","cr"].each{|key|%>
+          <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:25px",:id=>"CargosSumCell_#{key}_m") %>
+        <% } %>
+        <% ["ld","bh","sl","bl","lf","sc","tl"].each{|key|%>
+          <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:25px;border-right-style:none;",:id=>"CargosSumCell_#{key}_m") %>
+          <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:25px;border-left-style:none;",:id=>"CargosSumCell_#{key}_s") %>
+        <% } %>
+        <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:25px",:id=>"CargosSumCell_ot_m") %>
+        <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:30px",:id=>"CargosSumCell_dr") %>
+        <% ["hd","db","hs","sn","eg","ot"].each{|key|%>
+          <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:25px",:id=>"CargosSumCell_#{key}_w") %>
+        <% } %>
+        <%= content_tag(:div,0,:class=>"hcalCell hcalVCell listR",:style=>"width:30px",:id=>"CargosSumCell_wk") %>
+        <%= content_tag(:div,nil,:class=>"hcalCell",:id=>"CargosSumAdjustCell") %>
+      </div>
+    </div>
+    <div class="hcaltable" id="CargosWokerSumTbl">
+      <div class="hcalRow">
+        <%= content_tag(:div,"対応可能者数",:class=>"hcalCell hcalVCell listTitle listR",:style=>"width:435px") %>
+        <% ["fm","dm","wm","cr"].each{|key|%>
+        <%= content_tag(:div,@woker_sum[key],:class=>"hcalCell hcalVCell listR",:id=>"CargosWokerSumCell_#{key}",:style=>"width:25px") %>
+        <% } %>
+        <% ["ld","bh","sl","bl","lf","sc","tl"].each{|key|%>
+        <%= content_tag(:div,@woker_sum[key],:class=>"hcalCell hcalVCell listR",:id=>"CargosWokerSumCell_#{key}",:style=>"width:54px") %>
+        <% } %>
+        <%= content_tag(:div,@woker_sum["ot"],:class=>"hcalCell hcalVCell listR",:id=>"CargosWokerSumCell_ot",:style=>"width:25px") %>
+        <%= content_tag(:div,@woker_sum["dr"],:class=>"hcalCell hcalVCell listR",:id=>"CargosWokerSumCell_dr",:style=>"width:30px") %>
+        <% ["hd","db","hs","sn","eg","ot_w"].each{|key|%>
+        <%= content_tag(:div,@woker_sum[key],:class=>"hcalCell hcalVCell listR",:id=>"CargosWokerSumCell_#{key}",:style=>"width:25px") %>
+        <% } %>
+        <%= content_tag(:div,@woker_sum["wk"],:class=>"hcalCell hcalVCell listR",:id=>"CargosWokerSumCell_wk",:style=>"width:30px") %>
+
+        <%= content_tag(:div,nil,:class=>"hcalCell",:id=>"CargosWokerSumAdjustCell") %>
+      </div>
+    </div>
+  </div>
+  <br />
+  <div class="box" style="padding:5px;max-width:830px;">
+    <% @cc.setgname("#{Cargo.model_name.name}_in");@cc.setdbdata({}); @cc.setparam('io_flg','type','select'); @cc.setparam('dirt_flg','type','check_one'); %>
+    <%= form_tag(nil,{:name => 'subinform'}){ %>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="soloidline">
+        <tr>
+        <%= content_tag(:td,@cc.getparamdata("io_flg","title"),:class=>"listL") %>
+        <%= content_tag(:td,mkhtmlform(@cc.getgname,"io_flg",@cc.getparam("io_flg")),:class=>"listL") %>
+        <td class="listTitle" rowspan=5>【メモ】</td>
+        <td class="list" rowspan=5>
+            <table border="0" cellpadding="0" cellspacing="0" class="soloidline" style="width:100%">
+            <tr>
+            <td class="listTitle">FM</td>
+            <td class="listTitle">DM</td>
+            <td class="listTitle">機械</td>
+            </tr>
+            <tr>
+            <%= content_tag(:td,mkhtmlform(@cc.getgname,"momo_fm",@cc.getparam("momo_fm")),:class=>"listL") %>
+            <%= content_tag(:td,mkhtmlform(@cc.getgname,"momo_dm",@cc.getparam("momo_dm")),:class=>"listL") %>
+            <%= content_tag(:td,mkhtmlform(@cc.getgname,"momo_mc",@cc.getparam("momo_mc")),:class=>"listL") %>
+            </tr>
+            </table>
+            <table border="0" cellpadding="0" cellspacing="0" class="soloidline" style="width:100%">
+            <tr>
+            <td class="listTitle">ｳｨﾝﾁ取扱者</td>
+            <td class="listTitle">取扱者</td>
+            </tr>
+            <tr>
+            <%= content_tag(:td,mkhtmlform(@cc.getgname,"momo_wi",@cc.getparam("momo_wi")),:class=>"listL") %>
+            <%= content_tag(:td,mkhtmlform(@cc.getgname,"momo_dr",@cc.getparam("momo_dr")),:class=>"listL") %>
+            </tr>
+            <tr>
+            <td class="listTitle" colspan=2>船内／沿岸</td>
+            </tr>
+            <tr>
+            <%= content_tag(:td,mkhtmlform(@cc.getgname,"momo_wk",@cc.getparam("momo_wk")),:class=>"listL",:colspan=>2) %>
+            </tr>
+            </table>
+        </td>
+        </tr>
+        <tr>
+        <%= content_tag(:td,@cc.getparamdata("note","title"),:class=>"listL") %>
+        <%= content_tag(:td,mkhtmlform(@cc.getgname,"note",@cc.getparam("note")),:class=>"listL") %>
+        </tr>
+        <tr>
+        <%= content_tag(:td,@cc.getparamdata("quantity","title"),:class=>"listL") %>
+        <%= content_tag(:td,mkhtmlform(@cc.getgname,"quantity",@cc.getparam("quantity")),:class=>"listL") %>
+        </tr>
+        <tr>
+        <%= content_tag(:td,@cc.getparamdata("dirt_flg","title"),:class=>"listL") %>
+        <%= content_tag(:td,mkhtmlform(@cc.getgname,"dirt_flg",@cc.getparam("dirt_flg")),:class=>"listL") %>
+        </tr>
+        <tr>
+        <td class="listR listTitle">申し送り事項</td>
+        <td class="listL">
+        <%= mkhtmlform(@cc.getgname,"matter1",@cc.getparam("matter1")) %><br />
+        <%= mkhtmlform(@cc.getgname,"matter2",@cc.getparam("matter2")) %>
+        </td>
+        </tr>
+  </table>
+  <% } #sub_form_tag %>
+  </div>
+  <br />
+  <table border="0" cellpadding="5" cellspacing="0" style="width:60%">
+    <tr>
+    <%= content_tag("td",submit_tag(:submit, :value=>"荷役削除",:type=>'button',:onclick=>"deletRow();renumber();"),{:class=>"listC"})  %>
+    <%= content_tag("td",submit_tag(:submit, :value=>"荷役追加",:type=>'button',:onclick=>"addRow();renumber();"),{:class=>"listC"})  %>
+    <%= content_tag("td",submit_tag(:submit, :value=>I18n.t("btn_labels.update"),:type=>'button',:onclick=>"goInput(this);",:id=>"update_btn"),{:class=>"listC"}) if @can_edit %>
+    </tr>
+  </table>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

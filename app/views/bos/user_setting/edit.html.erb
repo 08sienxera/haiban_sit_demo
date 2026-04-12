@@ -1,0 +1,65 @@
+<% content_for(:head) do %>
+    <style type="text/css"><!--
+        table {width:800px; margin:0 auto;}
+        table,table th,table td {border-collapse: collapse; padding:10px;}
+        table tr {border-bottom: solid 1px #eee;}
+        table th {width:35%;}
+        .container {
+            margin: 30px 10px;
+            border: solid 1px #777;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .container * {
+            font-family:'メイリオ',Meiryo,'Hiragino Kaku Gothic Pro','ＭＳ Ｐゴシック',sans-serif;
+            box-sizing: border-box;
+            font-size:16px;
+            color:#333;
+            font-weight:normal;
+        }
+        .container a { text-decoration: none; display: inline-block; }
+        .btn {
+            padding:10px 40px;
+            margin: 40px auto;
+            display: block;
+        }
+        .btn.disable {
+            opacity: 0.7;
+            background-color: #ccc;
+            cursor: auto;
+        } 
+        div#msg_box {padding:20px;text-align:center;}
+        div.radiobox {text-align:left;}
+        div.radiobox label {margin-right:20px;}
+        .subform label,.subform input {display:block;}
+        .subform input {padding: 5px 10px;width: 400px;margin-bottom: 20px;}
+        .subform label{margin:0;padding:0;}
+    --></style>
+    <%= javascript_tag do %>
+        function btnToEnable(btn){
+            btn.removeAttribute("disabled");
+            btn.classList.remove("disable");
+        }
+        $(function() {
+            let $submitBtn = document.getElementById("submit-btn");
+            let $allInputFields = document.querySelectorAll("input")
+            $allInputFields.forEach((input)=>{
+                input.addEventListener("change",()=>{
+                    btnToEnable($submitBtn);
+                });
+            });
+
+            $submitBtn.onclick = (e) => {
+                e.preventDefault();
+                if(!window.confirm("ユーザ設定の変更を適用しますか？")){return;};
+                let $f = document.getElementById("form");
+                $f.submit();
+            };
+        });
+    <% end %>
+<% end %>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+<div class="container">
+    <%= render :partial => "worker_common/user_setting" , :locals=>{:user=>@user} %>
+</div>
+<%= render :partial => 'links' , :locals=>{:back_links => @links} %>

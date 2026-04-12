@@ -1,0 +1,107 @@
+<% work_schedule.each do |key,schedule| %>
+<% if key==:current_day %>
+<%= render :partial => "t_date_box",:locals=>{:day_info=>day_info[0],:note=>nil,:today=>Date.today,:tbl_class=>"",:day_title=>""} %>
+<% elsif key==:next_day && schedule[:status]!="assigned" %>
+<% break %>
+<% else %>
+<div style="text-align:center;margin-bottom:5px;">─── <%= day_info[1].str_date_html(0) %> ───</div>
+<% end %>
+<style>
+    .schedule_wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* border : 1px solid black; */
+    }
+
+    .schedule_wrapper>* {
+        display: inline-block;
+        /* border : 1px solid red; */
+        margin: 0;
+    }
+
+    .schedule_wrapper>*:first-child {
+        /* margin-right: 60px */
+    }
+
+    @media (max-width: 600px) {
+        .schedule_wrapper {
+            flex-direction: column;
+        }
+    }
+
+    .schedule_table tr:last-child th,
+    .schedule_table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .schedule_table th,
+    .schedule_table td {
+        border-bottom: solid 1px #666;
+        padding: 4px 8px;
+    }
+
+
+    .schedule_table th {
+        /* border-right: solid 1px #666; */
+    }
+</style>
+<% case schedule[:status] %>
+<% when "vacation" %>
+<p style="text-align:center;color:red;">※休暇日です※</p>
+<% when "unassigned" %>
+<p style="text-align:center;color:red;">※未配番です※</p>
+<% when "pending" %>
+<p style="text-align:center;color:red;">※配番中です、時間をおいて再度ご確認ください※</p>
+<% when "assigned" %>
+<div class="schedule_wrapper">
+    <div class="schedule_box_l">
+        <table class="schedule_table" id="work_schedule_<%= key %>">
+            <tr>
+                <%= content_tag :th,"メ　モ" %>
+                <%= content_tag :td,ary_to_joined_comma(schedule[:memo]),:style=>"text-wrap:auto;" %>
+            </tr>
+            <tr>
+                <%= content_tag :th,"出　勤" %>
+                <%= content_tag :td,schedule[:i_time] %>
+            </tr>
+            <tr>
+                <%= content_tag :th,"作業名" %>
+                <%= content_tag :td,ary_to_joined_comma(schedule[:work_name]) %>
+            </tr>
+            <tr>
+                <%= content_tag :th,"貨物名" %>
+                <%= content_tag :td,ary_to_joined_comma(schedule[:cargo_name]) %>
+            </tr>
+            <tr>
+                <%= content_tag :th,"場　所" %>
+                <%= content_tag :td,ary_to_joined_comma(schedule[:place]) %>
+            </tr>
+            <tr>
+                <%= content_tag :th,"作　業" %>
+                <%= content_tag :td,ary_to_joined_comma(schedule[:work]) %>
+            </tr>
+            <% if schedule[:message].present? %>
+            <tr>
+                <%= content_tag :th,"言付け",style:"color:red;" %>
+                <%= content_tag :td,ary_to_joined_comma(schedule[:message]),:style=>"text-wrap:auto;" %>
+            </tr>
+            <% end %>
+        </table>
+    </div>
+    <% if key==:current_day %>
+    <div class="schedule_box_r">
+        <% if Time.now().hour < 16 %>
+        <%= button_to '配番予定表出力', { controller: 'print_files', action: 'create', t_date: @t_date.strftime("%Y/%m/%d"), mord: 'CARGO_SCHEDULE.PDF'}, { method: :post } %>
+        <% else %>
+        <%= button_to '配番実績表出力', { controller: 'print_files', action: 'create', t_date: @t_date.strftime("%Y/%m/%d"), mord: 'CARGO_RESULT.PDF'}, { method: :post } %>
+        <% end %>
+    </div>
+    <% else %>
+    <div class="schedule_box_r">
+        <%= button_to '配番予定表出力', { controller: 'print_files', action: 'create', t_date: (@t_date+1).strftime("%Y/%m/%d"), mord: 'CARGO_SCHEDULE.PDF'}, { method: :post } %>
+    </div>
+    <% end %>
+</div>
+<% end %>
+<% end %>

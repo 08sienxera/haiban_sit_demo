@@ -1,0 +1,157 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+div.radiobox{line-height: 220%;}
+table.inTbl{width:95%;margin:0px auto 30px;}
+table.inTbl tr td:not(.inner-table td){
+    border-bottom: 1px solid silver;
+    padding:5px 5px 5px 10px;
+}
+table.inTbl tr td:first-child:not(.inner-table td,td[colspan]){
+    background-color: #C2EEFF;
+    text-align: right;
+    padding-right:10px;
+    width: 250px;
+    
+}
+.btn:hover{opacity: 0.5;}
+.btn{padding: 5px 10px; min-width: 100px; font-size: 16px;}
+#msg_box {text-align: center;}
+--></style>
+<%= javascript_tag do %>
+    <%# 休暇種別選択→補助情報表示制御 %>
+    function setVacationTypeBaseNo(robj){
+        var fobj = document.inform;
+        if(fobj){
+            var base_no_obj = fobj.base_no;
+            if(base_no_obj){
+                var display = {"at_work":"none","origin_date":"none","leav_time":"none"};
+                switch(getRadioVal(base_no_obj)){
+                case "2" : display["leav_time"] = ""; break;
+                case "6" : display["at_work"] = ""; break;
+                case "7" : display["origin_date"] = ""; break;w
+                }
+                for(key in display){
+                    $("#row_"+key).css("display",display[key]);
+                }
+            }
+        }
+    }
+    <%# 申請内容を画面に反映 %>
+    function updateDspOnInit(){
+        <% if @vacation.base_no %>
+            const baseNo = <%= @vacation.base_no %>
+            document.getElementById(`base_no_${baseNo}`).checked = true;
+            <% if @vacation.at_work %>
+                document.getElementById(`at_work_<%= @vacation.at_work %>`).checked = true;
+            <% end %>
+        <% end %>
+    }
+    
+    <%# フォーム制御 %>
+    function doDelete(){event.preventDefault();document.delform.submit();}
+    function doUpdate(){event.preventDefault();document.inform.submit();}
+    <%# 休日出勤｜承諾拒否選択を送信データに追加 %>
+    function addSts(key,value){
+        event.preventDefault();
+        let $newEle = document.createElement('input');
+        $newEle.setAttribute('type', 'hidden');
+        $newEle.setAttribute('name', key);
+        $newEle.setAttribute('value', value);
+        document.inform.appendChild($newEle);
+    }
+    <%# 初期表示制御 %>
+    $(function(){
+        setParentWindowFrameSize("#vacationsBox",200)
+        updateDspOnInit();
+        setVacationTypeBaseNo();
+    });
+<% end %>
+<% } %>
+<div id="field1">
+    <table width="95%" border="0" cellpadding="0" cellspacing="0" class="inTbl">
+    <tr>
+        <td class="listTitle" width="25%">対象日</td>
+        <td class="listL"><%= render :partial => "t_date_box",:locals=>{:day_info=>@wh,:note=>"",:today=>Date.today,:tbl_class=>"inner-table",:day_title=>""} %></td>
+    </tr>
+    <tr>
+        <td class="listTitle" width="25%">公休／平日</td>
+        <td class="listL"><%= content_tag(:span,@wh.str_wh_flg,:class=>@wh.hd_style) %></td>
+    </tr>
+    <tr>
+        <td class="listTitle" width="25%">状況</td>
+        <td class="listL"><%= @vacation.str_sts %></td>
+    </tr>
+    </table><br />
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+
+<%= form_tag({:action=>:update},{:method=>:put,:name => 'inform'}){ %>
+    <table class="inTbl" cellspacing="0" cellpadding="0" border="0">
+        <% @form_setting.each{|setting| %>
+            <tr id="row_<%= setting[:key] %>">
+            <% case setting[:key] %>
+            <% when :base_no,:at_work ; list = (setting[:key] == :base_no ? @vacation_list : KAFUKA_MARK ) ; %>
+                <% if setting[:io] == 0 %>
+                <%= content_tag(:td,setting[:title],:class=>"listR") %>
+                <td class="listL">
+                <%= list2str(list,@vacation[setting[:key]]) %>
+                <%= hidden_field_tag(setting[:key],@vacation[setting[:key]]) %>
+                </td>
+                <% else %>
+                <td colspan=2>
+                    <div class="radiobox">
+                    <% row_count=1 ; list.each{|txt,cd| %>
+                    <%= radio_button_tag(setting[:key],cd,(cd == @vacation[setting[:key]]),
+                        {:class=>"radiobutton",:onclick=>"setVacationTypeBaseNo()"}) %>
+                    <%= content_tag(:label,txt,:for=>"#{setting[:key]}_#{cd}") %>
+                    <%= "<br>".html_safe if row_count % 7 ==0 %>
+                    
+                    <% row_count += 1 ;} %>
+                    </div>
+                </td>
+                <% end %>
+            <% when :origin_date %>
+                <%= content_tag(:td,setting[:title],:class=>"listR") %>
+                <% if setting[:io] == 0 %>
+                <%= content_tag(:td,@vacation[setting[:key]].try(:strftime,"%Y/%m/%d"),:class=>"listL")%>
+                <% else %>
+                <%= content_tag(:td,date_field_tag(setting[:key],@vacation[setting[:key]]),:class=>"listL")%>
+                <% end %>
+            <% when :leav_time %>
+                <%= content_tag(:td,setting[:title],:class=>"listR") %>
+                <% if setting[:io] == 0 %>
+                <%= content_tag(:td,@vacation[setting[:key]],:class=>"listL")%>
+                <% else %>
+                <%= content_tag(:td,text_field_tag(setting[:key],@vacation[setting[:key]],:onchange=>"set_time(this);"),:class=>"listL")%>
+                <% end %>
+            <% when :reason %>
+                <%= content_tag(:td,setting[:title],:class=>"listR") %>
+                <% if setting[:io] == 0 %>
+                <%= content_tag(:td,content_tag(:pre,@vacation[setting[:key]]),:class=>"listL")%>
+                <% else %>
+                <%= content_tag(:td,text_area_tag(setting[:key],@vacation[setting[:key]]),:class=>"listL")%>
+                <% end %>
+            <% end %>
+            </tr>
+        <% } %>
+    </table>
+<% } %>
+<br />
+    <table width="95%" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+<% @button_setting.each{|txt,js,style| %>
+    <%= content_tag(:td,button_to(txt,nil,:class=>"btn #{style}",:onclick=>js),:class=>"listC")%>
+<% } %>
+    </tr>
+</table>
+<br />
+<%= render :partial => "operator/back_to_top" %>
+</div>
+<%= form_tag({:action=>:destroy},{:method=>:delete,:name => 'delform'}) {%>
+    <%= hidden_field_tag(:t_date,@t_date.strftime("%Y%m%d")) %>
+<% } unless @vacation.new_record? %>
+
+
+
+
+

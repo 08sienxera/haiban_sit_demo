@@ -1,0 +1,98 @@
+<div id="orderinfo_<%= branche_cd%>" style="display:none?;">
+    <% total_count = menu.map{|m_name,m_id| m_id}.zip(Array.new(menu.size,[])).to_h %>
+    <% locations.each{|name,id| %>
+    <div class="lunch_box">
+        <table class="main_tbl lunch_tbl">
+            <tr>
+                <%= content_tag(:td,name,:menu=>"listL location")%>
+                <td class="listL" rowspan=2 style="padding-left:10px;">
+                    <ul class="UsersBox">
+                        <% case id %>
+                        <% when "0","-1"; m_id=-1;order_info = order[id.to_i][m_id] %>
+                        <% order_info[:users].each{|u_nmae,u_id,workon| %>
+                        <%= content_tag(:li,link_to(u_nmae,{:action=>:edit,:id=>u_id,:t_date=>t_date})) if id=="-1" || workon %>
+                        <% } %>
+                        <% else ; menu.each{|m_name,m_id| order_info = order[id.to_i][m_id.to_i]  %>
+                        <% total_count[m_id] += order_info[:users] %>
+                        <% order_info[:users].each{|u_nmae,u_id| %>
+                        <%= content_tag(:li,link_to(u_nmae,{:action=>:edit,:id=>u_id,:t_date=>t_date})) %>
+                        <% } ; } unless menu.blank?%>
+                        <% end %>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="listL">
+                    <table style="margin: 0;">
+                        <% order_sum = 0 %>
+                        <% case id %>
+                        <% when "0","-1"; m_id=-1;order_info = order[id.to_i][m_id] %>
+                        <tr>
+                            <%= content_tag(:td,"",:class=>"listL") %>
+                            <%= content_tag(:td,"：",:class=>"listC") %>
+                            <%= content_tag(:td,order_info[:users].filter{|user| id=="-1" || user[2]==true}.size,:class=>"listR") %>
+                        </tr>
+                        <% else ; menu.each{|m_name,m_id| order_info = order[id.to_i][m_id.to_i]  %>
+                        <% order_num = order_info[:order_num] %>
+                        <% order_sum += order_num %>
+                        <tr>
+                            <%= content_tag(:td,m_name,:class=>"listL") %>
+                            <%= content_tag(:td,"：",:class=>"listC") %>
+                            <%= content_tag(:td,order_num,:class=>"listR") %>
+                        </tr>
+                        <% } unless menu.blank?%>
+                        <% if menu.present? && menu.size >=2 %>
+                        <tr class="sub-total">
+                            <%= content_tag(:td,"小計",:class=>"listR") %>
+                            <%= content_tag(:td,"：",:class=>"listC") %>
+                            <%= content_tag(:td,order_sum,:class=>"listR") %>
+                        </tr>
+                        <% end %>
+                        <% end %>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <% } unless locations.blank? %>
+    <div class="lunch_box total">
+        <table class="main_tbl lunch_tbl">
+            <tr>
+                <%= content_tag(:td,"注文合計",:menu=>"listL location")%>
+                <td class="listL" rowspan=2 style="padding-left:10px;">
+                    <ul class="UsersBox">
+                        <% menu.each do |m_name,m_id| %>
+                            <% total_count[m_id].each do|u_nmae,u_id| %>
+                                <%= content_tag(:li,link_to(u_nmae,{:action=>:edit,:id=>u_id,:t_date=>t_date})) %>
+                            <% end %>
+                        <% end unless menu.blank? %>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="listL">
+                    <table style="margin: 0;">
+                        <% order_sum = 0 %>
+
+                        <% menu.each{|m_name,m_id| %>
+                            <% order_num = total_count[m_id].size %>
+                            <% order_sum += order_num %>
+                        <tr>
+                            <%= content_tag(:td,m_name,:class=>"listL") %>
+                            <%= content_tag(:td,"：",:class=>"listC") %>
+                            <%= content_tag(:td,order_num,:class=>"listR") %>
+                        </tr>
+                        <% } unless menu.blank?%>
+                        <% if menu.present? && menu.size >=2 %>
+                        <tr class="sub-total">
+                            <%= content_tag(:td,"小計",:class=>"listR") %>
+                            <%= content_tag(:td,"：",:class=>"listC") %>
+                            <%= content_tag(:td,order_sum,:class=>"listR") %>
+                        </tr>
+                        <% end %>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

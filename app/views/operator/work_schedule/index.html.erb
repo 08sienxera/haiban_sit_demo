@@ -1,0 +1,33 @@
+<% content_for(:head){%>
+<style type="text/css"><!--
+table#tDateTbl tr td {display:block;width:100%;}
+.listC{vertical-align: top;}
+.alt{color: red;}
+div#field2>div {margin:15px auto;width:90%;}
+div#field2>div:first-child {border-bottom:1px solid black;}
+div.schedule_wrapper {padding:10px;}
+table.schedule_table{ border-collapse: collapse; border-spacing: 0; margin-bottom: 12px}
+table.schedule_table tr *{vertical-align: top;}
+table.schedule_table tr th{font-weight:normal;}
+table.schedule_table tr td{text-align:left;padding-left:10px;}
+
+--></style>
+<%= javascript_tag do %>
+    $(function(){
+        const el = document.querySelectorAll("table#tDateTbl tr td")
+        Array.from(el).forEach((e)=>{
+            e.removeAttribute("style");
+        })
+        setParentWindowFrameSize("#WorkScheduleBox")
+        <% if @top_message.present? %>
+        if(window != window.parent){doSetMessage('<%= @top_message[:text] %>','<%= @top_message[:url] %>');}
+        <% end %>
+    });
+<% end } %>
+    <div id="field2">
+    <div>
+        <div class="listC"><%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %></div>
+        <div class="listC"><%= render :partial => "worker_common/wk_schedule" , :locals=>{:work_schedule=>@work_schedule,:day_info=>@day_info} %></div>
+    </div>
+</div>
+<%= render :partial => "operator/back_to_top" %>

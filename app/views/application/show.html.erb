@@ -1,0 +1,33 @@
+<%= render :partial => "serch_head" , :locals=>{:ss=>@ss,:tab_keys=>@tab_keys} %>
+<%= javascript_tag do %>
+function retunSerch(val,rtarget){
+  var pobj = window.opener;
+  if(pobj){
+    pobj.returnSerch(val,rtarget);
+    window.close();
+  }else{
+    alert("元画面が閉じられたようです。再度実行してください。");
+  }
+}
+<% end %>
+
+<div id="field1">
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td valign="bottom" class="listL" style="width:80%;">
+    <%= render :partial => 'tablist' , :locals=>{:cc=>@cc,:ss=>@ss,:tab_keys=>@tab_keys} %></td>
+    <%= content_tag("td",
+        (render :partial => 'serch', :locals=>{:ss=>@ss,:action=>@serch_action,:serch_options=>@serch_options}),
+      {:valign=>"bottom",:class=>"listR"}) unless @ss.nil? %>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <%= form_tag({:action=>nil},{:name => 'list'}) do %>
+    <%= printlisttable() %>
+    <% end %>
+    <%= render :partial => "paging" , :locals=>{:datas=>@datas} %>
+  </div>
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

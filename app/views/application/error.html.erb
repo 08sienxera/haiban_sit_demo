@@ -1,0 +1,9 @@
+<div id="field1">
+  <div id="spage"></div>
+  <div class="listC" style="line-height: 120%">
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:error_msgs],:style_class=>'err'} %>
+    <div id="spage"></div>
+    <%= link_to("ログイン画面に戻る",{:controller=>"/login",:action=>:login}) %><br />
+  </div>
+  <div id="spage"></div>
+</div>

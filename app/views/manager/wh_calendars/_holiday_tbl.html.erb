@@ -1,0 +1,42 @@
+<table border="0" cellpadding="0" cellspacing="0" class="soloidline" style="width:100%;margin: 0 auto;">
+<%= content_tag(:tr,content_tag(:th,"#{t_year}年#{format("%02d",t_month)}月度",:colspan=>7,:class=>"listTitle")) %>
+<tr>
+    <% 7.times{|week| %>
+    <%= content_tag(:th,t("date.abbr_day_names")[week],:class=>"listTitle col-cell#{week}") %>
+    <% } %>
+</tr>
+<%  if datas.blank? %>
+<%= content_tag(:tr,content_tag(:td,"初期データ作成中",:colspan=>7,:class=>"listC err")) %>
+<%  else 
+      w_date = datas[:cs_date]
+      while w_date <= datas[:ce_date]
+        week = w_date.strftime("%w")
+        ymd = w_date.strftime("%Y%m%d")
+        data = (datas[:calendars].has_key?(w_date) ? datas[:calendars][w_date] : {})
+        calendar_str = w_date.wday!=0 && data && data[:wh_flg]==1 ? "所定休日" : WhCalendar::WhList[data[:wh_flg]]
+%>
+  <%= "<tr>".html_safe if week == "0" %>
+  <td style="width:14%;">
+    <%if datas[:s_date] <= w_date && w_date <= datas[:e_date] %>
+        <%= content_tag(:div,w_date.strftime("%m/%d")+(data[:hname].blank? ? "" : "(祝)"),:class=>"dayBox col-cell#{week}") %>
+        <%= content_tag(:div,calendar_str,:class=>"selectCell whBox whBox#{data[:wh_flg]}",:id=>"wh_#{ymd}",:onclick=>"changeCalendar(this)") %>
+        <%= hidden_field_tag("wh_#{ymd}",data[:wh_flg])%>
+        <%= content_tag(:div,vendors["#{data[:lunch_vendor_id]}"],:class=>"selectCell vdBox",:id=>"vd_#{ymd}",:onclick=>"changeCalendar(this)") %>
+        <%= hidden_field_tag("vd_#{ymd}",data[:lunch_vendor_id])%>
+    <% else %>
+        <%= content_tag(:div,w_date.strftime("%m/%d"),:class=>"dayBox outBox col-cell#{week}") %>
+        <%= content_tag(:div,nil,:class=>"whBox outBox") %>
+        <%= content_tag(:div,nil,:class=>"vdBox outBox") %>
+    <% end %>
+  </td>
+  <%= "</tr>".html_safe if week == "6" %>
+  <%    w_date+=1 ; end %>
+<tr>
+<td colspan=7 class="listC">
+法定・所定休日数：<%=content_tag(:span,datas[:sunday_num],:id=>"sunday_num_#{t_year}_#{t_month}") %>日、
+祝祭日数：<%=datas[:holiday_num]%>日、
+法定休日以外の最低公休日設定日数：
+<%= text_field_tag("hsettingmin_#{t_year}#{format("%02d",t_month)}",datas[:h_setting_min],:id=>"hsettingmin_#{t_year}#{format("%02d",t_month)}",:onchange=>"changeCalendar(this)",:style=>"text-align:right;width:30px;") %>
+</tr>
+<% end %>
+</table>

@@ -1,0 +1,6 @@
+<div class="listC">
+<%= link_to(content_tag(:l,nil,:class=>"fa-solid fa-caret-left"),{:action=>:edit,:id=>(t_date-1).strftime("%Y%m%d")}) %>
+<%= content_tag(:span,"#{t_date.strftime("%m/%d")}(#{I18n.t("date.abbr_day_names")[t_date.strftime("%w").to_i]})の#{title}",:class=>"#{hd_style}") %>
+<%= link_to(content_tag(:l,nil,:class=>"fa-solid fa-caret-right"),{:action=>:edit,:id=>(t_date+1).strftime("%Y%m%d")}) %>
+</div>
+

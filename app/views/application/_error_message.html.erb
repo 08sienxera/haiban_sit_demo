@@ -1,0 +1,13 @@
+<div style="width:95%" id="msg_box">
+<%
+  if message_obj.instance_of?(Array)
+    message_obj.each{|msg|
+%>
+  <%= content_tag("span", msg.html_safe, {:class=>style_class}) %><br />
+<%
+    }
+  elsif message_obj.instance_of?(String)
+%>
+  <%= content_tag("span", message_obj.html_safe,{:class=>style_class}) %>
+<% end %>
+</div>

@@ -1,0 +1,22 @@
+<div class="hcalRow"><%# 課毎集計行(公休者数) %>
+<% wk_date = @t_tarm[:length][:begin_date]
+    while wk_date <= @t_tarm[:length][:end_date] do
+        cell_class = "hcalCell hcalVCell listR";
+        style = "background-color:#{branche_info[:color]}"
+        if sum_datas[:date_alert].has_key?(branch_cd) && sum_datas[:date_alert][branch_cd].has_key?(wk_date)
+            cell_class << " hcalAlertCell"
+            style = nil
+        end
+        cell_text = @calendar[:counts][branch_cd][wk_date].to_i
+%>
+<%= content_tag(:div,cell_text,:id=>"gsumh_#{branch_cd}_#{wk_date.strftime("%Y%m%d")}",:class=>cell_class,:style=>style)%>
+<% wk_date += 1; end %>
+</div>
+<div class="hcalRow"><%# 課毎集計行(出勤者数) %>
+<% wk_date = @t_tarm[:length][:begin_date]
+    while wk_date <= @t_tarm[:length][:end_date] do
+    cell_text = (@calendar[:member_count][branch_cd] - @calendar[:counts][branch_cd][wk_date].to_i)
+%>
+<%= content_tag(:div,cell_text,:id=>"gsumw_#{branch_cd}_#{wk_date.strftime("%Y%m%d")}",:class=>"hcalCell hcalVCell listR",:style=>"background-color:#{branche_info[:color]}")%>
+<% wk_date += 1; end %>
+</div>

@@ -1,0 +1,20 @@
+<%= form_with model:user,url:{:controller=>:users,:action=>:update_setting},:method=>:put,:id=>"form",:local=> true do |form| %>
+    <table>
+        <tr>
+            <%= content_tag :th,User.human_attribute_name(:bbs_max_count) %>
+            <%= content_tag :td,form.text_field(:bbs_max_count,:type=>"number",:style=>"width: 80px;",:min=>1,:max=>20) %>
+        </tr>
+        <tr>
+            <%= content_tag :th,"パスワードリマインド" %>
+            <%= content_tag :td do %>
+                <div class="subform">
+                    <%= form.label("質問") %>
+                    <%= form.text_field(:remind_question) %>
+                    <%= form.label("回答") %>
+                    <%= form.text_field(:remind_answer) %>
+                </div>
+            <% end %>
+        </tr>
+    </table>
+    <%= form.submit "変更する",:class=>"btn btn-update disable",:id=>"submit-btn",:disabled=>true %>
+<% end %>

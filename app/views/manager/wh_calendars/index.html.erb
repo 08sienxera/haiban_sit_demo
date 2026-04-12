@@ -1,0 +1,41 @@
+<% content_for(:head){ %>
+<style type="text/css"><!--
+div.selectCell:hover {background-color:#FFFF00;cursor:pointer;}
+div.dayBox {font-weight:bold;text-align:right;}
+div.whBox,div.vdBox{height:25px;text-align:center;vertical-align:middle;}
+div.outBox{background-color:gray}
+div.whBox1,div.whBox2{color:red;}
+--></style>
+<%= javascript_tag do %>
+var Vendors = <%= @vendors.to_a.to_json.html_safe %>;
+var WhList = <%= WhCalendar::WhList.to_a.to_json.html_safe %>;
+<% end %>
+<% } %>
+<div id="field1">
+    <%= render :partial => "yyyy_box",:locals=>{:yyyy=>@yyyy} %>
+    <table border="0" cellpadding="10px" cellspacing="0" style="width:98%;margin: 0 auto 5px;" id="holidayTbl">
+    <% calendars_left = @datas.values[..5] %>
+    <% calendars_right = @datas.values[6..] %>
+    <% 6.times{|wi| %>
+    <% line = [calendars_left[wi],calendars_right[wi]] %>
+    <tr>
+      <% line.each do |calendar|%>
+        <td style="width:50%;vertical-align:top;">
+          <div id="<%= "whCalendarTbl_#{calendar[:t_year]}_#{calendar[:t_month]}" %>">
+            <%= render :partial => "holiday_tbl",:locals=>{:t_year=>calendar[:t_year],:t_month=>calendar[:t_month],:datas=>calendar,:vendors=>@vendors} %>
+          </div>
+        </td>
+      <% end %>
+    </tr>
+    <% } %>
+    </table>
+    <br />
+    <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+<%= form_tag({:action=>:update,:id=>@yyyy},{:method=>:put,:name => 'inform',:target=>:updateBox}){ %>
+    <%= hidden_field_tag(:t_date) %>
+    <%= hidden_field_tag(:t_col) %>
+    <%= hidden_field_tag(:t_val) %>
+<% } %>
+<iframe src="" frameborder="0" style="display:none;" name="updateBox"></iframe>
+<%= content_tag(:div,nil,:id=>"msgBox")%>

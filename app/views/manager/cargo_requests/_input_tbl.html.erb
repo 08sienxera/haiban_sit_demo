@@ -1,0 +1,77 @@
+<table border=0 cellpadding=3 cellspacing=0 class=soloidline  >
+<tr>
+  <%= printtable_cellset("work_no",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("serial_no",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("department_cd",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("department_nm",@cc,title_class="listR listTitle") %>
+</tr>
+<tr>
+  <%= printtable_cellset("work_class",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("move_no",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("move_no2",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("work_name",@cc,title_class="listR listTitle") %>
+</tr>
+<tr>
+  <%= printtable_cellset("io_flg",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("quantity",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("work_cd",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("cargo_name",@cc,title_class="listR listTitle") %>
+</tr>
+<tr>
+  <%= printtable_cellset("work_place",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("i_time",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("s_time",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("e_time",@cc,title_class="listR listTitle") %>
+</tr>
+<tr>
+  <%= printtable_cellset("dirt_flg",@cc,title_class="listR listTitle") %>
+  <%= printtable_cellset("machine_nm",@cc,title_class="listR listTitle",5) %>
+</tr>
+<tr>
+<td class="listR listTitle">人数</td>
+<td class="listC" colspan=7>
+    <table class='soloidline'>
+    <tr>
+        <%= content_tag(:th,"FM",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"DM",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"WM",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"ｸﾚ<br />ｰﾝ".html_safe,:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"ローダ",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"ﾊﾞｯｸﾎｰ",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"船内<br />ﾛ-ﾀﾞ".html_safe,:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"ブル",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"リフト",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"ＳＣ",:class=>"listTitle",:colspan=>2,:rowspan=>2) %>
+        <%= content_tag(:th,"他",:class=>"listTitle",:rowspan=>2) %>
+        <%= content_tag(:th,"作業員",:class=>"listTitle",:style=>"background-color:#7fffbf",:colspan=>6) %>
+   </tr>
+   <tr>
+     <% %w[ハン 土場 配車 船内 沿岸 他].each{|key| %>
+        <%= content_tag(:th,key,:class=>"listTitle",:style=>"background-color:#7fffbf") %>
+     <% } %>
+   </tr>
+   <tr>
+   <% CargoRequest::WokerNumKey.each{|key| %>
+     <%= content_tag(:td,mkhtmlform(@cc.getgname,key,@cc.getparam(key)),:class=>"listR") unless key=="wk_w" %>
+   <% } %>
+   </tr>
+   <tr>
+     <td colspan=17 class="listR" id="driverCount">0</td>
+     <%= content_tag(:td,mkhtmlform(@cc.getgname,"wk_w",@cc.getparam("wk_w")),:class=>"listR",:colspan=>6) %>
+   </tr>
+   </table>
+</td>
+</tr>
+<tr>
+  <%= printtable_cellset("note",@cc,title_class="listR listTitle",7) %>
+</tr>
+<td class="listR listTitle">申し送り事項</td>
+<td class="listL" colspan=7>
+<%= mkhtmlform(@cc.getgname,"matter1",@cc.getparam("matter1")) %><br >
+<%= mkhtmlform(@cc.getgname,"matter2",@cc.getparam("matter2")) %><br >
+</td>
+</table>
+
+<%= mkhtmlform(@cc.getgname,"work_date",@cc.getparam("work_date")) %>
+<%= mkhtmlform(@cc.getgname,"esta_flg",@cc.getparam("esta_flg")) %>
+

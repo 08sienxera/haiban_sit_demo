@@ -1,0 +1,7 @@
+<%= "<tr>".html_safe if (index % 4) == 0 %>
+<% if link.blank? %>
+  <%= content_tag(:td,nil,{:valign=>"top",:class=>"menu",:style=>"width:25%"}) %>
+<% else %>
+  <%= content_tag(:td,link_to(link[:title],link[:link]),{:valign=>"top",:class=>"menu",:style=>"width:25%"}) %>
+<% end %>
+<%= "</tr>".html_safe if (index % 4) == 3 %>

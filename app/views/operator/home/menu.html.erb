@@ -1,0 +1,71 @@
+
+<%= content_tag :div,render(:partial => "error_message" , :locals=>{:message_obj=>flash[:msgs],:style_class=>'err'}),:style=>"padding:20px;text-align: center;" if flash[:msgs] %>
+<div class='box' id="loginUserBox">
+    <div class='loginUser'>ログイン者：<span style='color:red;'><%= "#{session[UserSessionKey][:name]}(#{session[UserSessionKey][:login_id]})" %></span></div>
+    <%= button_to("ログアウト",{:controller=>"/login",:action=>:logout},{:method=>:get,:class=>"btn"}) %>
+</div>
+<div class="box" id="msgBox">
+    <div class="title"><%= content_tag(:l,nil,:class=>"fa-solid fa-circle-exclamation",:style=>"color:red;") %>お知らせ</div>
+    <ul id="messageTarget">
+    </ul>
+</div>
+<% unless @branch_cd.blank? %>
+<div class="box">
+    <div class="title"><%= link_to(content_tag(:l,nil,:class=>"fa-solid fa-calendar-day")+"作業予定",{:controller=>:work_schedule},:name=>"work_schedule") %></div>
+    <iframe src="<%= url_for({:controller=>:work_schedule}) %>" class="topBox" frameborder="0" id="WorkScheduleBox" style="height:320px;"></iframe>
+</div>
+<div class="box">
+    <div class="title"><%= link_to(content_tag(:l,nil,:class=>"fa-solid fa-mug-hot")+"昼食注文",{:controller=>:lunch_order,:action=>:edit,:id=>@lunch_date.try(:strftime,"%Y%m%d")},:name=>"lunch_order") %></div>
+    <iframe src="<%= url_for({:controller=>:lunch_order,:action=>:edit,:id=>@lunch_date.try(:strftime,"%Y%m%d")}) %>" class="topBox" frameborder="0" id="lunchOrderBox"></iframe>
+</div>
+<% end %>
+<div class="box">
+    <div class="title"><%= link_to(content_tag(:l,nil,:class=>"fa-regular fa-clipboard")+"掲示",{:controller=>:boards},:name=>"boards") %></div>
+    <iframe src="<%= url_for({:controller=>:boards}) %>" class="topBox" frameborder="0" id="boardsBox"></iframe>
+</div>
+<% unless @branch_cd.blank? %>
+<div class="box">
+    <div class="title"><%= link_to(content_tag(:l,nil,:class=>"fa-solid fa-store-slash")+"休暇カレンダー",{:controller=>:my_vacations}) %></div>
+    <iframe src="<%= url_for({:controller=>:my_vacations,:t_date=>@lunch_date.try(:strftime,"%Y%m%d")}) %>" class="topBox" frameborder="0" id="vacationsBox"></iframe>
+</div>
+<% end %>
+<script>
+    let msgs = []
+    // // アイフレーム枠サイズ調整
+    // function setHeight(iframeId,height){
+    //         var iframe = $(iframeId);
+    //         if(iframe){
+    //             iframe.height(Math.min(height,window.outerHeight));
+    //         }
+    // }
+    function setMessage(msg,url){
+        if(msgs.includes(msg)){
+        }else{
+            var msgBox = document.getElementById("msgBox"); 
+            msgBox.classList.add("active");
+            var list = document.getElementById("messageTarget");
+            var newList = document.createElement("li");
+            var link = document.createElement("a")
+            link.innerHTML = msg;
+            link.setAttribute("href",url);
+            newList.appendChild(link);
+            list.appendChild(newList);
+            msgs.push(msg);
+        }
+    }
+    function removeMessage(msg){
+        if(msgs.includes(msg)){
+            var list = document.getElementById("messageTarget");
+            Array.from(list.children).forEach((el,i)=>{
+                if(el.firstChild.innerHTML==msg){
+                    list.children[i].remove();
+                    msgs = msgs.filter(m=>m!=msg);
+                    return;
+                }
+            });            
+        }else{
+        }
+    }
+
+
+</script>

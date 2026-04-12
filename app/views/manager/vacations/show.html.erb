@@ -1,0 +1,87 @@
+<%= render :partial => "serch_head" , :locals=>{:ss=>@ss,:tab_keys=>@tab_keys} %>
+<div id="field1">
+<table width="95%" border="0" cellpadding="5" cellspacing="0" >
+  <tr>
+    <td class="listC" id="tablist" style="width:40%;">
+      <% case @mord %>
+      <% when "0" %>
+        <%= content_tag("div",content_tag(:span,"未承認一覧"),:class=>"left") %>
+        <%= content_tag("div",link_to("休日出勤依頼差戻・未承認一覧",{:id=>2}),:class=>"left") %>
+      <% when "2" %>
+        <%= content_tag("div",link_to("未承認一覧",{:id=>0}),:class=>"left") %>
+        <%= content_tag("div",content_tag(:span,"休日出勤依頼差戻・未承認一覧"),:class=>"left") %>
+      <% else %>
+        <%= content_tag("div",link_to("未承認一覧",{:id=>0}),:class=>"left") %>
+        <%= content_tag("div",link_to("休日出勤依頼差戻・未承認一覧",{:id=>2}),:class=>"left") %>
+      <% end %>
+    </td>
+    <td valign="bottom" class="listL" style="width:60%;">
+    <%= content_tag("td",
+        (render :partial => 'serch', :locals=>{:ss=>@ss,:action=>{:id=>@mord},:serch_options=>@serch_options}),
+      {:valign=>"bottom",:class=>"listR"}) unless @ss.nil? %>
+  </tr>
+</table>
+<%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+  <div>
+    <%= form_tag({:action=>:update_all},{:name => 'list'}) do %>
+    <table border="0" cellpadding="0" cellspacing="0" class="soloidline">
+    <thead>
+      <tr>
+        <%= content_tag(:th,"CK",:class=>"listTitle",:onclick=>"ck_box_all(this)") %>
+        <%= content_tag(:th,@cc.getparamdata("login_id","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("name","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("branch_cd","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("vacation_day","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("base_no","title"),:class=>"listTitle") %>
+        <%= content_tag(:th,@cc.getparamdata("sts","title"),:class=>"listTitle") %>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @datas.blank? %>
+      <tr><td class="err" colspan="14"><%= I18n.t("system_alert.not_fund") %></td></tr>
+      <% else ; @datas.each{|dataline|%>
+      <tr>
+        <%= content_tag(:td,check_box("d",dataline[:id]),:class=>"listC") %>
+        <%= content_tag(:td,link_to(dataline[:login_id],{:action=>:edit,:id=>dataline[:user_id],:t_date=>dataline[:vacation_day].try(:strftime,"%Y%m%d")}),:class=>"listL") %>
+        <%= content_tag(:td,dataline.user[:name],:class=>"listL") %>
+        <%= content_tag(:td,@cc.list_to_str("branch_cd",dataline[:branch_cd]),:class=>"listC") %>
+        <%= content_tag(:td,dataline[:vacation_day].try(:strftime,"%y/%m/%d"),:class=>"listC") %>
+        <td class="listL">
+        <%= @cc.list_to_str("base_no",dataline[:base_no]) %>
+        <% case dataline[:base_no] %>
+        <% when 2 %>
+        <%= "(#{dataline[:leav_time]})" %>
+        <% when 6 %>
+        <%= "(#{@cc.list_to_str("at_work",dataline[:at_work])})" %>
+        <% when 7 %>
+        <%= "(#{dataline[:origin_date].try(:strftime,"%y/%m/%d")})" %>
+        <% end %>
+        </td>
+        <%= content_tag(:td,@cc.list_to_str("sts",dataline[:sts]),:class=>"listC") %>
+      </tr>
+      <% } ; end %>
+    </tbody>
+  </table>
+
+
+
+
+    <% end %>
+    <%= render :partial => "paging" , :locals=>{:datas=>@datas} %>
+  </div>
+  <br />
+  <% case @mord %>
+  <% when "0" %>
+  <div class="listC"><%= submit_tag(:submit, :value=>"一括承認",:type=>'button',:onclick=>"alert('Todo')") %></div>
+  <% when "2" %>
+  <table border="0" cellpadding="5" cellspacing="0" style="width:60%">
+    <tr>
+      <td class="listC"><%= submit_tag(:submit, :value=>"一括取下",:type=>'button',:onclick=>"alert('Todo')") %></td>
+      <td class="listC"><%= submit_tag(:submit, :value=>"一括承認",:type=>'button',:onclick=>"alert('Todo')") %></td>
+    </tr>
+  </table>
+ <% end %>
+  
+  <br />
+  <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>

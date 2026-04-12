@@ -1,0 +1,33 @@
+<%
+  unless ss.nil?
+    gname = ss.getgname
+    params = ss.getparams
+    paramskey = ss.getparamkey
+    action = {:action=>:index} if action.nil?
+%>
+<%= form_tag(action,{:method=>:get,:name => 'serch'}) do %>
+  <div id="serchform" style="display:none;" class="serchform">
+  <table border="0" cellpadding="5" cellspacing="0" class="soloidline">
+    <tr><th colspan="3" class="listC">検索条件</th></tr>
+    <% paramskey.each{|key| %>
+    <%= mk_serchtable_row(gname,key,params) %>
+    <% } %>
+    <tr><td colspan="3" class="listC">
+      <%= submit_tag(:submit, :value=>'検索実行',:type=>'button',
+          :onclick=>"doSerch()") %>
+      <%= submit_tag(:submit, :value=>'条件クリア',:type=>'button',
+          :onclick=>"common_AllClr(document.serch)") %>
+      <%= submit_tag(:submit, :value=>'閉じる',:type=>'button',
+          :onclick=>"document.getElementById('serchform').style.display='none';") %>
+      <%= hidden_field("serch","mord") %>
+      <%= hidden_field(gname,"d",:value=>"d") %>
+      <% serch_options.each{|key,val| %>
+      <%= hidden_field_tag(key,val) %>
+      <% } unless serch_options.blank? %>
+      </td></tr>
+   </table>
+ </div>
+ <%= submit_tag(:submit, :value=>'検索フォーム表示',:type=>'button',:id=>'vform',
+          :onclick=>"document.getElementById('serchform').style.display='block';") %>
+  <% end %>
+<% end %>

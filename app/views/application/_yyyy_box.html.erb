@@ -1,0 +1,5 @@
+<div class="listC">
+    <%= link_to(icon("fa-solid","angle-left"),{:yyyy=>(yyyy-1)})%>
+    <%= content_tag(:span,"#{yyyy}年度(#{yyyy}/03/16～#{yyyy+1}/03/15)") %>
+    <%= link_to(icon("fa-solid","angle-right"),{:yyyy=>(yyyy+1)})%>
+</div>

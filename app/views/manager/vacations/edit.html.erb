@@ -1,0 +1,198 @@
+<% content_for(:head){ %>
+<%= javascript_tag do %>
+    $(function(){
+        $('#Vacation_in_origin_date2').attr("list","l_origin_date2")
+        $('#Vacation_in_origin_date2').attr("autocomplete","off")
+        setBasenoLayout();
+        <% #// ラジオボタンを初期表示設定 %>
+        <% @input ||= {} %>
+        <% if @input[:base_no].present? || (@vacation.present? && @vacation[:base_no].present?) %>
+            <% @vacation.base_no=17 if @vacation.holiday_work? %>
+            let radioBtn = document.querySelectorAll('input[name="Vacation_in[base_no]"]')
+            for(let rb of radioBtn){
+                if(rb.value=='<%= @input[:base_no] || @vacation[:base_no] %>'){
+                    rb.checked = true
+                    setVacationTypeBaseNo(rb)
+                }
+            }
+        <% end%>
+    });
+    let leavTimeTitle = {"2":"早退","3":"遅出"};
+    let leavTimeSelectList = null;
+    let leavTimeBaseNo2 = ["16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]; // 早退
+    let leavTimeBaseNo3 = ["07:30","08:00"]; // 遅出
+    let preselectValue = ""; // 直前に選択されたラジオボタン
+    const defLeavTime = '<%= @vacation.present? ? @vacation[:leav_time] : "" %>'
+    // 半休メニューのレイアウト調整
+    function setBasenoLayout() {
+        const rowId = 'row_base_no';
+        let baseRow = $(`tr#${rowId}`);
+        let clonedRow = baseRow.clone();
+        baseRow.after(clonedRow);
+        clonedRow.children('td.listTitle').html(
+            clonedRow.children('td.listTitle').html().replace('休暇種別', '半休')
+        );
+
+        baseRow.find('input').each((_, input) => {
+            if (input.value > 30) {
+                input.parentNode.remove();
+            }
+        });
+
+        clonedRow.find('input').each((_, input) => {
+            if (input.value <= 30) {
+                input.parentNode.remove();
+            }
+        });
+
+        let cellHtml = clonedRow.find('#base_no_cell').html();
+        cellHtml = cellHtml.substr(cellHtml.indexOf('<label>')); //余分なスペース改行を除外
+        clonedRow.find('#base_no_cell').html(cellHtml);
+    }
+    function goInput2(){
+        var base_no_obj = document.inform.elements['<%= @cc.getgname %>[base_no]'];
+        if(base_no_obj){
+            if(getRadioVal(base_no_obj)=="" && !$('#arriv_time').val() && !$('#leav_time').val()){
+                alert("かならず「出勤希望」か「退勤希望」の時刻を指定してください")
+                return
+            }
+        }
+        goInput()
+    }
+
+    function iCheck(fobj){
+        var strErrorMassage="";
+    <% @cc.getparamkey.each{|key| %>
+        <%= @cc.get_input_js(key) %>
+        <% if @cc.getparamdata(key,"inputFlg") == 1 %>
+            <% case key %>
+            <% when "origin_date" %>
+                if(getRadioVal(fobj.elements['<%= @cc.getgname %>[base_no]']) == "7"){
+                <%= "strErrorMassage += check_Select_List(fobj.elements['#{@cc.getgname}[#{key}]'],1,'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                }
+            <% when "origin_date2" %>
+                if(getRadioVal(fobj.elements['<%= @cc.getgname %>[base_no]']) == "17"){
+                <% if (@vacation[:base_no] == 6 && @vacation[:sts] == 4) %>
+            <%= "strErrorMassage += check_Select_List(fobj.elements['#{@cc.getgname}[#{key}]'],1,'#{@cc.getparamdata(key,"title")}');".html_safe %>
+            <%= "strErrorMassage += CheckDateTerm2(fobj.elements['#{@cc.getgname}[#{key}]'],'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                <% else %>
+            <%= "strErrorMassage += check_Select_List(fobj.elements['#{@cc.getgname}[#{key}]'],1,'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                <% end %>
+                }
+
+            <% when "at_work" %>
+                if(getRadioVal(fobj.elements['<%= @cc.getgname %>[base_no]']) == "6"){
+            <%= "strErrorMassage += check_Checkradio(fobj.elements['#{@cc.getgname}[#{key}]'],1,'#{@cc.getparamdata(key,"title")}');".html_safe %>
+                }
+            <% end %>
+        <% end %>
+    <% }unless @cc.blank? %>
+        if(strErrorMassage==""){return true;}
+        else{alert(strErrorMassage);return false;}
+    }
+    <%# 削除実行 %>
+    function goDelete(){
+        if(confirm("削除します。よろしいですか？")){document.delform.submit();}
+    }
+    <% unless @cc.blank? %>
+    <%# 休暇種別選択→補助情報表示制御 %>
+    function setVacationTypeBaseNo(robj){
+        const sts = <%= @vacation[:sts].to_i %>;
+        if((sts!=4 && sts!=5) && robj && robj.value==preselectValue){robj.checked = false;}        
+        var fobj = document.inform;
+        if(!fobj){return} 
+        var base_no_obj = fobj.elements['<%= @cc.getgname %>[base_no]'];
+        if(base_no_obj){
+            var display = {"at_work":"none","origin_date":"none","origin_date2":"none","arriv_time":"none","leav_time":"none","vacation_end_day":""};
+            var baseNo = getRadioVal(base_no_obj)
+            switch(baseNo){
+            // 未選択 leav_time => on , arriv_time => on
+            case "" : display["arriv_time"] = ""; display["leav_time"] = "";break;
+            // 公休
+            case "6" : display["at_work"] = ""; display["vacation_end_day"]="none";break;
+            // 振休
+            case "7" : display["origin_date"] = ""; display["vacation_end_day"]="none";break;
+            // 代休
+            case "17" : display["origin_date2"] = ""; display["vacation_end_day"]="none";break;
+            // 介護AM,看護AM
+            case "31" :
+            case "33" : 
+            case "41" : display["leav_time"] = "";break;
+            // 介護PM,看護PM
+            case "32" : 
+            case "34" : 
+            case "42" : display["arriv_time"] = "";break;
+            }
+            for(key in display){
+                disp_setting = display[key]
+                $("#row_"+key).css("display",display[key]);
+                if(disp_setting=="none"){
+                    $("#" + key).val("")
+                }
+            }
+        }
+        if(robj){preselectValue = robj.value};
+        // 切替後「終了日」が非表示の場合に入力を削除
+        const endDayRow = $("#row_vacation_end_day");
+        const endDayIn = $("#Vacation_in_vacation_end_day");
+        if(endDayRow && endDayIn && endDayRow.css("display")==="none") endDayIn.val("");
+        
+    }
+    <%# 初期表示制御 %>
+    $(function(){
+        setVacationTypeBaseNo();
+        function applyFormOptions() {
+            if (Array.isArray(<%= raw @form_options.to_json %>)) {
+                <%= raw @form_options.to_json %>.forEach(function(opt) {
+                    if (opt.selector && opt.option) {
+                        $(opt.selector).prop(opt.option, opt.value);
+                    }
+                });
+            }
+        }
+        applyFormOptions();
+    });
+<% end #unless @cc.blank?  %>
+<% end %>
+<% } %>
+<div id="field1">
+    <table width="95%" border="0" cellpadding="0" cellspacing="0" class="soloidline">
+    <tr>
+        <td class="listTitle" width="25%">対象者</td>
+        <td class="listL"><%= @user[:name] %> (<%= @worker.branch_nm %>)</td>
+    </tr>
+    <tr>
+        <td class="listTitle" width="25%">対象日</td>
+        <td class="listL"><%= render :partial => "t_date_box",:locals=>{:day_info=>@wh,:note=>"",:today=>Date.today,:tbl_class=>"nosoloidline",:day_title=>""} %></td>
+    </tr>
+    <tr>
+        <td class="listTitle" width="25%">公休／平日</td>
+        <td class="listL"><%= content_tag(:span,@wh.str_wh_flg,:class=>@wh.hd_style) %></td>
+    </tr>
+    </table><br />
+    <%= render :partial => "error_message" , :locals=>{:message_obj=>flash[:msg],:style_class=>'err'} %>
+    <%= form_tag({:action=>:update},{:method=>:put,:name => 'inform'}){ %>
+    <%= render :partial => "input_tbl", :locals=>{:tbl_optins=>@my_setting[:tbl_optins], :cc=>@cc} %>
+    <% if @cc.getparamdata("base_no","inputFlg") != 1 %>
+    <%= hidden_field(@cc.getgname,"base_no",{:value=>@vacation[:base_no]}) %>
+    <% end %>
+    <%= hidden_field(@cc.getgname,"sts",{:value=>@vacation[:sts]}) %>
+    <% } %>
+    <br />
+    <% if @vacation.new_record? || (@vacation[:base_no] == 6 && @vacation[:sts] == 4) %>
+        <div class="listC">
+        <%= submit_tag(:submit, :value=>"代行登録",:type=>'button',:onclick=>"goInput2(this);",:id=>"update_btn") %>
+        </div>
+    <% else %>
+        <div class="listC">
+        <%= submit_tag(:submit, :value=>"削除",:type=>'button',:onclick=>"goDelete(this);",:id=>"delete_btn") %>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <%= submit_tag(:submit, :value=>"更新",:type=>'button',:onclick=>"goInput2(this);",:id=>"update_btn") %>
+        </div>
+    <% end %>
+    <br />
+    <%= render :partial => 'links' , :locals=>{:back_links => @my_setting[:back_links]} %>
+</div>
+<%= form_tag({:action=>:destroy},{:method=>:delete,:name => 'delform'}) {%>
+    <%= hidden_field_tag(:t_date,@t_date.strftime("%y%m%d")) %>
+<% } unless @vacation.new_record? %>

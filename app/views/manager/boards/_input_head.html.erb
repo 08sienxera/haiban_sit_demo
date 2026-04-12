@@ -1,0 +1,18 @@
+<% content_for :head do %>
+<%= javascript_tag do %>
+    function iCheck(fobj){
+      var strErrorMassage="";
+    <% cc.getparamkey.each{|key| %>
+      <%= cc.get_input_js(key) %>
+      <% case key %>
+      <% when "view_e_dt" %>
+      if(!fobj.elements['view_e_infin'].checked){
+        <%= cc.get_ess_js(key) %>
+      }
+      <% end %>
+    <% }unless cc.blank? %>
+      if(strErrorMassage==""){return true;}
+      else{alert(strErrorMassage);return false;}
+    }
+  <% end %>
+<% end %>
