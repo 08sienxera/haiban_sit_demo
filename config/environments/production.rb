@@ -1,4 +1,4 @@
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -52,18 +52,18 @@ Rails.application.configure do
   config.force_ssl = false
 
   # Log to STDOUT by default
-  #config.logger = ActiveSupport::Logger.new(STDOUT)
+  # config.logger = ActiveSupport::Logger.new(STDOUT)
   #  .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
   #  .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
   config.log_formatter = ::Logger::Formatter.new
 
   # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
 
   # "info" includes generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). If you
   # want to log everything, set the level to "debug".
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
@@ -87,7 +87,7 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-  
+
   config.require_master_key = true
 
   # Enable DNS rebinding protection and other `Host` header attacks.
@@ -98,28 +98,31 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
   config.middleware.use ExceptionNotification::Rack,
-    :email => {
-      :email_prefix =>         "[HaibanSitDemo] ",
-      :sender_address =>       %{"notifier" <syserr@seiko-portit.com>},
-      :exception_recipients => %w{n-oosige@seiko-itsolution.jp}
-    }
+                        email: {
+                          email_prefix: '[HaibanSitDemo] ',
+                          sender_address: %("notifier" <08sienxera@gmail.com>),
+                          exception_recipients: %w[08sienxera@gmail.com]
+                        }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    :address => "localhost",
-    :port => 25,
-    :domain => 'seiko-portit.com',
-    :openssl_verify_mode  => 'none',
+    address: 'smtp.gmail.com',
+    port: 587,
+    domain: 'gmail.com',
+    user_name: '08sienxera@gmail.com',
+    password: 'obyrbxsbrpfikscs',
+    authentication: 'plain',
+    enable_starttls_auto: true
   }
   config.action_mailer.perform_deliveries = true
   config.session_store :redis_store, servers: 'redis://127.0.0.1:6379/0'
   config.action_controller.forgery_protection_origin_check = false
-  config.relative_url_root = "/haiban_sit_demo"
+  config.relative_url_root = '/haiban_sit_demo'
 end
 EXCEPTION_NOTIFIER_MAIL_CONFIG = {
-  :email_prefix => "[HaibanSitDemo] ",
-  :sender_address => %{syserr@seiko-portit.com},
-  :exception_recipients => %w(n-oosige@seiko-itsolution.jp)
+  email_prefix: '[HaibanSitDemo] ',
+  sender_address: %("notifier" <08sienxera@gmail.com>),
+  exception_recipients: %w[08sienxera@gmail.com]
 }
-MY_URL = "https://relat.seiko-portit.com"
-MY_URL_PATH = "/haiban_sit_demo"
-SYS_MAIL_FROM = "info@seiko-portit.com"
+MY_URL = 'https://relat.seiko-portit.com'
+MY_URL_PATH = '/haiban_sit_demo'
+SYS_MAIL_FROM = '08sienxera@gmail.com'

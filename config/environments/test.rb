@@ -81,4 +81,4 @@ Rails.application.configure do
 end
 MY_URL = "http://192.168.33.106:3944"
 MY_URL_PATH = ""
-SYS_MAIL_FROM = "test_info@seiko-itsolution.jp"
+SYS_MAIL_FROM = "08sienxera@gmail.com"

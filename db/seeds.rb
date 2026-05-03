@@ -47,7 +47,7 @@ p "board_groups"
 p "users"
 [
     {:login_id=>"xadmin",:name=>"正興管理者",:password=>"admin",
-     :bbs_max_count=>10,:bbs_mail_flg=>2,:holiday_mail_flg=>1,:mail=>"n-oosige@seiko-denki.co.jp",
+     :bbs_max_count=>10,:bbs_mail_flg=>2,:holiday_mail_flg=>1,:mail=>"08sienxera@gmail.com",
      :tel=>"03-5835-1012",:auth_flg=>5},
 ].each{|data|User.create_data(:login_id,data,MY_NAME,true)}
 

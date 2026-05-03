@@ -110,3 +110,5 @@ group :test do
   gem 'rails-controller-testing'
 end
 gem 'sshkit','1.22.1'
+
+gem "ruby-lsp", "~> 0.26.9"

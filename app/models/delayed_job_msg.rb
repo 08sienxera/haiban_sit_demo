@@ -2,6 +2,4 @@
 #= JOBメッセージ
 class DelayedJobMsg < ApplicationRecord
   extend Common::Func
-  
-  
 end

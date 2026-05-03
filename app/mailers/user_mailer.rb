@@ -1,6 +1,6 @@
 #= 変更により未使用
 class UserMailer < ApplicationMailer
-    default from: 'test_info@seiko-itsolution.jp'
+    default from: '08sienxera@gmail.com'
 
     # パスワード変更通知メールを送信
     def notify_new_password_mail

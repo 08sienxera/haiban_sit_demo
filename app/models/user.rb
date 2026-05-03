@@ -154,7 +154,6 @@ class User < ApplicationRecord
     return s_form
   end
 
-
   #===ログインチェック処理
   # 引数:: params Hash POSTデータ
   # :: strwhere String 追加条件文
