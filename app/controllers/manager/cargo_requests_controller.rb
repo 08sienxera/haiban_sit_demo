@@ -5,7 +5,7 @@ class Manager::CargoRequestsController < Manager::HomeController
   before_action :set_my_oth_variable,:except=>:index
   before_action :set_my_csv_variable,:only=>[:csv_in,:csv_input]
 
-  # 作業依頼一覧画面
+  # 作業依頼一覧画面 Cargo request list
   def index
     @title="作業依頼一覧"
     condition1 = CargoRequest.where(:work_date=>@t_date[:t_date],:work_class=>1).order({:work_place=>:asc,:move_no=>:asc,:work_no=>:asc,:serial_no=>:asc})
@@ -25,7 +25,7 @@ class Manager::CargoRequestsController < Manager::HomeController
 
   private
   #
-  #=== 表示対象日付取得：10時以降は翌々日(変更)→常に翌日
+  #=== 表示対象日付取得：10時以降は翌々日(変更)→常に翌日 Date to display: After 10:00, it will be the day after tomorrow (changed) → Always the next day
   def get_set_tdate
     @today= Date.today
     t_date = @today+1

@@ -1,5 +1,7 @@
 #= 現業職労働時間・時間外管理表エクセル作成クラス
 #(Constants)->エクセルレイアウトの初期設定
+##= On-site work hours/overtime management table Excel creation class 
+#(Constants)->Initial settings for Excel layout
 class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
   require File.expand_path('../../../lib/excel/excel_format_builder.rb', __dir__)
   DefColWidth = 4.5
@@ -13,19 +15,19 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
   DataSizeH = 65
 
   
-  #=== ファイル名を返す
+  #=== ファイル名を返す return file name
   def name()
     return @file_name
   end
 
   
 
-  #=== エクセルを作成
-  # 引数
+  #=== エクセルを作成 create excel
+  # 引数 argument
   # agg_data : WorkTimeAggregate.get_for_work_time_summary_excel_data
   def create(agg_data)
     init_format()
-    @data_size = agg_data.values.map(&:length).max # group_table_dataのデータ数から求める
+    @data_size = agg_data.values.map(&:length).max # group_table_dataのデータ数から求める Calculate from the number of data in group_table_data
     sum_data = convert_table_data(agg_data)
 
     # -- sum_sheet
@@ -84,7 +86,7 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
   end
 
   def convert_table_data(agg_data)
-    # sum...時間外累計（見込み）ot...所定時間外累計 lo...法定時間外累計
+    # sum...時間外累計（見込み）ot...所定時間外累計 lo...法定時間外累計 sum...Total overtime (estimated) ot...Total outside specified hours lo...Total overtime by law
     sum_group = []
     sum_data = []
     ot_group = []
@@ -232,13 +234,13 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
         style = border_cell
         style = style.copy().num_format('0.00') if row_index==ot_data.length-4
         if row_index>0 && row_index<=@data_size && value!=""
-          #   ・累計見込＝残業時間＋時間外：40以上で赤文字
+          #   ・累計見込＝残業時間＋時間外：40以上で赤文字 ・Cumulative expected = overtime hours + overtime: 40 or more in red
           style = style.copy().merge(@red_font) if [4,11,18,25].include?(col_index) && value>=40
-          # ・公出(平)＝work_time_aggregates.wd_base6_num：1以上で赤文字
+          # ・公出(平)＝work_time_aggregates.wd_base6_num：1以上で赤文字 ・Publication (flat) = work_time_aggregates.wd_base6_num: 1 or more, red text
           style = style.copy().merge(@red_font) if [5,12,19,26].include?(col_index) && value>=1
-          # ・公出(日)＝work_time_aggregates.hd_base6_num：3以上で赤文字
+          # ・公出(日)＝work_time_aggregates.hd_base6_num：3以上で赤文字 ・Publication (Sun) = work_time_aggregates.hd_base6_num: Red text for 3 or more
           style = style.copy().merge(@red_font) if [6,13,20,27].include?(col_index) && value>=3
-          # ・公出(計)＝公出(平)＋公出(日)：3以上で赤文字
+          # ・公出(計)＝公出(平)＋公出(日)：3以上で赤文字 ・Publication (total) = Publication (average) + Publication (day): 3 or more in red
           style = style.copy().merge(@red_font) if [7,14,21,28].include?(col_index) && value>=3
 
         end
@@ -285,9 +287,9 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
         style = custom_number_cell if row_index==lo_data.length-2
         if row_index>0 && row_index<=@data_size && value!=""
           style = custom_number_cell if [2,3,6,7,10,11,14,15].include?(col_index)
-          # 45以内：4work_time_aggregates.l_ot_45　/60：45.1で赤文字
+          # 45以内：4work_time_aggregates.l_ot_45　/60：45.1で赤文字 Within 45: 4work_time_aggregates.l_ot_45 /60: 45.1 in red
           style = style.copy().merge(@red_font) if [2,6,10,14].include?(col_index) && value>45.0
-          # 80以内：4work_time_aggregates.l_ot_80　/60：80.1で赤文字
+          # 80以内：4work_time_aggregates.l_ot_80　/60：80.1で赤文字 Within 80: 4work_time_aggregates.l_ot_80 /60: 80.1 in red
           style = style.copy().merge(@red_font) if [3,7,11,15].include?(col_index) && value>80.0
         end
         tmp_row << [value,style]
@@ -308,7 +310,7 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
 
   def set_sheet_style(sum_sheet)
   # def set_sheet_style(sum_sheet,ot_sheet,lo_sheet)
-    # 時間外累計（見込み）
+    # 時間外累計（見込み） Overtime cumulative total (estimated)
     sum_sheet.freeze_panes(3, 0)
     one_size = 1.6
     col_setting = []
@@ -346,7 +348,7 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
 
 
     
-    # 所定時間外累計（見込）
+    # 所定時間外累計（見込） Cumulative total outside of designated hours (estimated)
     ot_sheet.freeze_panes(3, 0)
     one_size = 1.6
     col_setting = []
@@ -367,7 +369,7 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
     ot_sheet.set_row(2,34)
     (3..@data_size+10).each {|row| ot_sheet.set_row(row,20)}
 
-    # 法定時間外累計（見込）
+    # 法定時間外累計（見込） Cumulative total of legal overtime (estimated)
     lo_sheet.freeze_panes(3, 0)
     one_size = 1.6
     col_setting = []
@@ -390,11 +392,11 @@ class  Excel::WorkTimeSummaryExcel < Excel::ExcelClass
 
   end
 
-  #=== セル書式の量産対策、プールから同じフォーマットを返す、無ければ登録
+  #=== セル書式の量産対策、プールから同じフォーマットを返す、無ければ登録 Measures for mass production of cell formats, returning the same format from the pool, registering if not available
   def find_format(format_builder)
     @style_pool ||= []
     b = @style_pool.find{|style_hash,_| format_builder.get_style() == style_hash}
-    if b # 同じ書式が見つかった場合
+    if b # 同じ書式が見つかった場合 If the same format is found
       return b[1]
     else
       format = format_builder.get_format()

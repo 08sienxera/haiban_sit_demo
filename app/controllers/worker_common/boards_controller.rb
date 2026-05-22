@@ -3,7 +3,7 @@ class WorkerCommon::BoardsController < ApplicationController
   before_action :auth_ck, :except => [:error]
   before_action :set_cmn_oth_variable,:except=>[:index,:file_output]
   
-  #=== 掲示一覧リクエスト処理
+  #=== 掲示一覧リクエスト処理 Bulletin List Request Processing
   def index
     @title = "掲示一覧"
     @user = User.find(get_uval(:id))
@@ -27,7 +27,7 @@ class WorkerCommon::BoardsController < ApplicationController
 
     @top_message = {text:"未読の掲示があります。",url:url_for(:controller=>:boards,:action=>:index,:target=>:Unread)} if board_with_state.any?{|arr| arr[2]}
 
-    # 検索ワードの入力があれば表示対象を「すべて」
+    # 検索ワードの入力があれば表示対象を「すべて」 If a search term is entered, the display will be set to "All".
     @search_word = params[:search]
     @boards = []
     display_target = ""
@@ -46,7 +46,7 @@ class WorkerCommon::BoardsController < ApplicationController
       @boards = board_with_state.filter{|arr| arr[3]} || []
     end
 
-    # 検索ワードの入力があれば更に絞り込み
+    # 検索ワードの入力があれば更に絞り込み Further refinement is possible if you enter search terms.
     if @search_word.present?
       @boards.filter!{|board,_,_,_,_|
         text_line = board.board_category&.name.to_s + board.subject.to_s + board.body1.to_s + board.body2.to_s
@@ -69,7 +69,7 @@ class WorkerCommon::BoardsController < ApplicationController
     end
   end
   
-  #=== 掲示詳細リクエスト処理
+  #=== 掲示詳細リクエスト処理 Request processing for detailed posting information
   def show
     @title = "掲示詳細"
     respond_to do |format|
@@ -92,7 +92,7 @@ class WorkerCommon::BoardsController < ApplicationController
     end
   end
   
-  #===添付ファイル送信
+  #===添付ファイル送信 Send attachment
   def file_output
     begin
       board = Board.find(params[:id])

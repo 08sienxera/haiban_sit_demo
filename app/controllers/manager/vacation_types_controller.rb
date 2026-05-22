@@ -1,4 +1,4 @@
-#= 休暇種別マスタ
+#= 休暇種別マスタ Leave type master
 class Manager::VacationTypesController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

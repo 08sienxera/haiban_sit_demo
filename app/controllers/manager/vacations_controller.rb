@@ -4,7 +4,7 @@ class Manager::VacationsController < Manager::HomeController
   before_action :set_my_oth_variable,:only=>[:edit,:update]
 
 
-  #=== 開発中（テスト
+  #=== 開発中（テスト Under development (testing)
   def test_run
     t_year = 2025
     t_month = 7
@@ -28,11 +28,11 @@ class Manager::VacationsController < Manager::HomeController
     end
   end
 
-  #=== 休暇管理画面を表示
+  #=== 休暇管理画面を表示 Display the leave management screen.
   def index
     @title="休暇管理"
     @t_tarm = get_month(@t_date)
-    # 月度の前後10日を含めて取得
+    # 月度の前後10日を含めて取得 Taken including 10 days before and after the month.
     @is_futurity = (@t_tarm[:length][:begin_date] >= @today)
     @calendar = Vacation.load_calendar(@t_tarm[:length][:begin_date]-10,@t_tarm[:length][:end_date]+10,:t_date=>@t_tarm[:length][:begin_date])
     # return render :json=>@calendar
@@ -44,11 +44,11 @@ class Manager::VacationsController < Manager::HomeController
     end
     @wh_summary = WhSummary.find_by_get_month(@t_tarm)
     @inc_js= ["manager/vacations","eventUtil"]
-    @add6_btn_lock = false # 不足公休自動設定ボタン　活性・非活性
+    @add6_btn_lock = false # 不足公休自動設定ボタン　活性・非活性 Automatic setting button for insufficient public holidays: Activated/Inactive
 
     
     
-    # 前後月度の末端日で法廷公休日につづく休暇を取得
+    # 前後月度の末端日で法廷公休日につづく休暇を取得 Take leave following a statutory public holiday on the last day of the preceding or following month.
     # <><<><><><><><><><>><><><>><><><><><><>><<><<<>><<>><
 
     @constraint_check_data = {:continuous_date=>[]}
@@ -88,8 +88,8 @@ class Manager::VacationsController < Manager::HomeController
       @constraint_check_data[login_id] ||= {}
       m_vacations = @calendar[:vacations][login_id]
       if m_vacations.present?
-        # -- 月次範囲の前後1日を対象に法定休日との連続チェック
-        # -- 法定休日のサンドウィッチチェック
+        # -- 月次範囲の前後1日を対象に法定休日との連続チェック Continuous checking against statutory holidays, targeting the day before and after the monthly range.
+        # -- 法定休日のサンドウィッチチェック Sandwich check on a public holiday
         [[tmp_s_date,-1],[tmp_e_date,1]].each do |def_date,step|
           cur_date = def_date
 
@@ -122,16 +122,16 @@ class Manager::VacationsController < Manager::HomeController
     end
 
     
-    # ブランチ一覧
+    # ブランチ一覧 Branch list
     t_branches = Branche.where(:cd=>Branche::WorkerBranchCd).pluck(:cd,:name).map{|cd,name| [name,cd]}
 
-    # 操作可能なブランチ一覧
+    # 操作可能なブランチ一覧 List of operable branches
     permitted_branch = []
     user = User.find_by_id(get_uval(:id))
     if user.present?
       case user.auth_flg
       when 0,1,2
-        @add6_btn_lock = true # 不足公休自動設定ボタン　活性・非活性
+        @add6_btn_lock = true # 不足公休自動設定ボタン　活性・非活性 Automatic setting button for insufficient public holidays: Activated/Inactive
       when 3
         permitted_branch << user.branch_cd
       when 4,5
@@ -141,15 +141,15 @@ class Manager::VacationsController < Manager::HomeController
     end
     @allowed_branches = permitted_branch
 
-    # 公休予定確定済みのグループを取得
+    # 公休予定確定済みのグループを取得 Get the group whose public holiday schedule has been confirmed.
     locked_branches = VacationBase6Lock.get_locked_branch_cd_list(@t_tarm[:year],@t_tarm[:month])
 
-    # 〆、〆解除　リクエストURL
+    # 〆、〆解除　リクエストURL | Closed, Unclosed Request URL
     lock_url = url_for(:action=>:base6_lock)
     unlock_url = url_for(:action=>:base6_unlock)    
 
     
-    # 〆ボタン用パラメータ
+    # 〆ボタン用パラメータ Parameters for the closing button
     keys = ["all",*t_branches.map{|_,cd| cd}]
     @vacation_lock_buttons = {}
     keys.each do |key|
@@ -184,7 +184,7 @@ class Manager::VacationsController < Manager::HomeController
     end
     msg << "・対象グループの公休予定を確定しました。"
     # output = create_vacation_calendar_excel(t_year,t_month,t_branch_list)
-    # msg << "・休暇カレンダーを作成しました。" if output.present?
+    # msg << "・休暇カレンダーを作成しました。" if output.present? | msg << "• A holiday calendar has been created." if output.present?
     # ----------------------------------------------------
 
 
@@ -201,7 +201,7 @@ class Manager::VacationsController < Manager::HomeController
   end
 
 
-  #=== 各種自動割当処理　他
+  #=== 各種自動割当処理　他 | Various automatic assignment processes, etc.
   def create
     queue = "vacations#{params[:mord]}#{params[:t_year]}#{params[:t_month]}"
     case params[:mord]
@@ -285,17 +285,17 @@ class Manager::VacationsController < Manager::HomeController
     render :json => ret.to_json, :status => 200
   end
 
-  #=== 休暇代行登録画面を表示
+  #=== 休暇代行登録画面を表示 Display the leave substitute registration screen.
   def edit
     # before_action :set_my_oth_variable,:only=>[:edit,:update]
   end
 
-  #=== 休暇代行登録処理
+  #=== 休暇代行登録処理 Leave of Absence Substitute Registration Process
   def update
     begin
-      # パラメータの検証と初期化
+      # パラメータの検証と初期化 Parameter verification and initialization
       corrected = corrected_params(params.to_unsafe_h)
-      # バリデーション
+      # バリデーション validation
       alert_messages = validate_params(corrected)
       if alert_messages.present?
         @input = corrected
@@ -304,20 +304,20 @@ class Manager::VacationsController < Manager::HomeController
         render :action => :edit; return
       end
 
-      # 休暇データの作成
+      # 休暇データの作成 Creating vacation data
       app_user = User.find(get_uval(:id))
       vacations = build_vacations(corrected,app_user)
       Vacation.transaction do
-        # 登録済休暇データの削除
+        # 登録済休暇データの削除 Deleting registered leave data
         delete_existing_vacations(vacations)
-        # 休暇データの登録
+        # 休暇データの登録 Registering vacation data
         regist_vacations(vacations)
       end if vacations.present?
 
-      # 実行結果メッセージの作成
+      # 実行結果メッセージの作成 Creating execution result messages
       msg = build_result_message(vacations)
       flash[:msg] = msg
-      # リダイレクト
+      # リダイレクト redirect
       redirect_to :action => :index, :def_branch_cd => @worker[:branch_cd]
       return
     rescue ActiveRecord::RecordNotUnique => e
@@ -336,7 +336,7 @@ class Manager::VacationsController < Manager::HomeController
   end
 
 
-  # 休暇承認画面を表示（仕様変更により未使用
+  # 休暇承認画面を表示（仕様変更により未使用 | Displaying the leave approval screen (unused due to specification changes)
   def show
     @mord = params[:id]
     @cc = @my_setting[:table].set_list_form(@my_setting[:table].model_name.name)
@@ -347,11 +347,11 @@ class Manager::VacationsController < Manager::HomeController
     when "0"
       @title="休暇申請未承認一覧"
       def_where = "base_no<>1 and sts=0"
-      #検索項目要調整
+      #検索項目要調整 | Search criteria need adjustment.
     when "2"
       @title="休日出勤依頼差戻・未承認一覧"
       def_where = "base_no=1 and sts in (0,2)"
-      #検索項目要調整
+      #検索項目要調整 | Search criteria need adjustment.
     else
       def_where = "sts=0"
     end
@@ -370,12 +370,12 @@ class Manager::VacationsController < Manager::HomeController
 
 
 
-  # 休暇申請一括承認画面を表示（仕様変更により未使用
+  # 休暇申請一括承認画面を表示（仕様変更により未使用 | Display the bulk approval screen for leave requests (unused due to specification changes)
   def update_all
     @title="休暇申請一括承認"
   end
 
-  #=== 休暇削除処理
+  #=== 休暇削除処理 | Leave deletion process
   def destroy
     user = User.find_by_id(params[:id])
     vacation = Vacation.find_by({:user_id=>user[:id],:vacation_day=>@t_date})
@@ -431,25 +431,31 @@ class Manager::VacationsController < Manager::HomeController
     @title = "振休代行登録" if @vacation.holiday_work?
 
 
-    # --- 「振替元日」候補リスト」 ---
+    # --- 「振替元日」候補リスト」 --- 
     # フォーム形式： list
     # 属性       ： origin_date
     # 形式      ： yyyy-mm-dd（yyyy年m月d日振替）
     # 抽出条件  ： 同月度内の未消化の公休(base6)　および　同月度内の未消化の振休(base7)
     # UAT303   ： 過去日の振休は抽出条件から外すことで再振替不可としている。　管理課側で修正したい場合はコメントアウトしている行を使用する。その際、配番実績との不一致について対策要否を考えること(2025-10-09 大澤)
+    # --- "Substitute New Year's Day" Candidate List ---
+    # Form Format: list
+    # Attribute: origin_date
+    # Format: yyyy-mm-dd (Substitute on yyyy/m/d)
+    # Extraction Criteria: Unused public holidays within the same month (base6) and unused compensatory leave within the same month (base7)
+    # UAT303: Compensatory leave from past dates is excluded from the extraction criteria to prevent re-transfer. If the management department wishes to make corrections, use the commented-out lines. In that case, consider whether countermeasures are necessary regarding discrepancies with the actual assignment record (2025-10-09 Osawa)
     wh_summary = WhSummary.find_by_tdate(@t_date)
     today = Date.today
     base6_list = []
-    # 公休リスト
+    # 公休リスト Public holiday list
     base6_in_tarm = Vacation.get_base6(@user.id,:wh=>0,:where=>[["vacation_day >= ?",wh_summary.s_date],["vacation_day <= ?",wh_summary.e_date],["vacation_day >= ?",today]]).where.not(:id=>@vacation.id).to_a
     base6_in_tarm = base6_in_tarm.filter{|vacation| vacation.sts!=4 && vacation.sts!=5 && Vacation.find_by(:login_id=>vacation.login_id,:origin_date=>vacation.vacation_day).blank?}
-    # 振休取得済の公休リスト
+    # 振休取得済の公休リスト List of public holidays for which compensatory leave has been taken.
     base7_in_tarm = Vacation.where(:user_id=>@user.id,:base_no=>7).where("vacation_day >= ? and vacation_day <= ?",wh_summary.s_date,wh_summary.e_date).where.not(:id=>nil,:origin_date=>@vacation.origin_date).where("vacation_day >= ?",today).to_a
     # base7_in_tarm = Vacation.where(:user_id=>@user.id,:base_no=>7).where("vacation_day >= ? and vacation_day <= ?",wh_summary.s_date,wh_summary.e_date).where.not(:id=>nil,:origin_date=>@vacation.origin_date).to_a
-    # 公休リストと振休取得済の公休リストを結合
+    # 公休リストと振休取得済の公休リストを結合 Combine the list of public holidays with the list of public holidays for which compensatory leave has already been taken.
     base6_list += base6_in_tarm if base6_in_tarm.present?
     base6_list += base7_in_tarm if base7_in_tarm.present?
-    # 選択リスト用のソート、文字列変換
+    # 選択リスト用のソート、文字列変換 Sort the selection list and convert the string
     base6_list = base6_list.sort_by{|vacation| vacation.base_no==6 ? vacation.vacation_day : vacation.origin_date}
       .map{|vacation| 
         vacation.base_no==6 ? 
@@ -457,17 +463,20 @@ class Manager::VacationsController < Manager::HomeController
         vacation.origin_date.strftime("%Y-%m-%d") + " (#{vacation.vacation_day.strftime("%Y年%-m月%-d日に振替え")})"
       }
     
-    # 登録済休暇が振休の場合、選択リストの先頭に現在指定している「振替元日」を表示する
+    # 登録済休暇が振休の場合、選択リストの先頭に現在指定している「振替元日」を表示する Display the currently specified "transfer date" if the registered holiday is a compensatory leave
     base6_list = [@vacation.origin_date.strftime('%Y-%m-%d'), *base6_list] if @vacation&.base_no==7
     @holiday_work_data_list = base6_list
 
     # --- 「休日出勤日」候補リスト」 ---
     # フォーム形式  -> datalist
     # 属性         -> origin_date2
+    # --- "List of candidate days for working on holidays" ---
+    # Form format -> datalist
+    # Attribute -> origin_date2
     @holiday_work_list = Vacation.get_hol_work_vacation(@user[:id]).map{|vac| vac[:vacation_day].strftime('%Y-%m-%d')}
-    @holiday_work_list = [@vacation.origin_date.strftime('%Y-%m-%d'), *@holiday_work_list] if @vacation.base_no==17 # 登録済休暇が代休の場合、選択リストの先頭に現在指定している「休日出勤日」を追加
+    @holiday_work_list = [@vacation.origin_date.strftime('%Y-%m-%d'), *@holiday_work_list] if @vacation.base_no==17 # 登録済休暇が代休の場合、選択リストの先頭に現在指定している「休日出勤日」を追加 # If the registered leave is a compensatory day off, add the currently designated "holiday work day" to the top of the selection list.
     
-    # common_class の初期化
+    # common_class の初期化 Initialization of common_class
     @cc = Vacation.set_input_form("#{Vacation.model_name.name}_in")
     init_common_class_to_edit(@cc,@vacation,@holiday_work_data_list,@holiday_work_list)
 
@@ -515,7 +524,7 @@ class Manager::VacationsController < Manager::HomeController
       end
     end    
 
-    # 振休、代休の候補リスト
+    # 振休、代休の候補リスト List of possible compensatory leave/substitute holidays
     common_class.setparam('origin_date','type','select')
     common_class.setparam('origin_date','list',unused_vacations)
     common_class.setparam('origin_date2','bwd',build_datalist_html(holiday_work_list))
@@ -593,18 +602,18 @@ class Manager::VacationsController < Manager::HomeController
     case corrected[:base_no]
     when 7,17
       key = corrected[:base_no]==7 ? :origin_date : :origin_date2
-      # 休暇日と元日の重複チェック
+      # 休暇日と元日の重複チェック Check for overlap between holiday days and New Year's Day.
       if corrected[:vacation_day] == corrected[:origin_date]
         alert_messages[key] = "「休暇日」と同じ日付が指定されています。"
       end
 
-      # 振替元日の必須チェック
+      # 振替元日の必須チェック Essential checks for the substitute New Year's Day
       if corrected[:origin_date].blank?
         alert_messages[key] = "必須項目です。"
       else
-        # 振替元休暇の存在チェック
+        # 振替元休暇の存在チェック Checking for the existence of the original leave that was to be used as compensation.
         case corrected[:base_no]
-        when 7 # 振休
+        when 7 # 振休 Shinkyu
           if alert_messages.blank?
             origin_vacation = Vacation.unscoped.find_by(user_id: corrected[:user_id], vacation_day: corrected[:origin_date], base_no: 6)
             if origin_vacation.present?
@@ -612,8 +621,8 @@ class Manager::VacationsController < Manager::HomeController
               alert_messages[key] = ck_result[:msg] unless ck_result[:result]==200
             end
           end
-        when 17 # 代休
-          # 代休の場合は特別な処理が必要
+        when 17 # 代休 # Compensatory leave
+          # 代休の場合は特別な処理が必要 # Special procedures are required for compensatory leave.
           if alert_messages.blank?
             origin_vacation = Vacation.find_by(user_id: corrected[:user_id], vacation_day: corrected[:origin_date], base_no: 6, sts: 4)
             if origin_vacation.present?
@@ -723,7 +732,7 @@ class Manager::VacationsController < Manager::HomeController
 
 
   def create_vacation_calendar_excel(t_year,t_month,t_branch_list)
-    # 休暇カレンダーエクセルの作成
+    # 休暇カレンダーエクセルの作成 # Creating a vacation calendar in Excel
     require Rails.root.join("app/services/parser/vacation_calendar_excel_parser")
 
     yyyy = t_year.to_s.rjust(4,"0")
@@ -731,7 +740,7 @@ class Manager::VacationsController < Manager::HomeController
     t_tarm = get_month(Date.new(yyyy.to_i,mm.to_i,1))
     ow_branch_cd = t_branch_list
     
-    # 最新バージョンの取得
+    # 最新バージョンの取得 # Get the latest version
     location = Excel::VacationCalendarExcel::OutputLocation
 
     file_name,last_version = Dir.glob("*_休暇カレンダー(#{yyyy}#{mm}_*).xls",base: location)\

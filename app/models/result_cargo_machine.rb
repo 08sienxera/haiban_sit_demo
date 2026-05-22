@@ -5,7 +5,7 @@ class ResultCargoMachine < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
   
   #
-  #===実績登録後のメンテナンススケジュールへの設定
+  #===実績登録後のメンテナンススケジュールへの設定 Settings for maintenance schedule after registering results
   def update_maintenance
     p "--ResultCargoMachine.update_maintenance"
     p self[:machine_id]

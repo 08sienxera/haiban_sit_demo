@@ -6,18 +6,18 @@ class ResultCargo < ApplicationRecord
   has_many :result_cargo_machine
   default_scope {where(:deleted_at => nil)}
 
-  #設定なし時の値
+  #設定なし時の値 Value without setting
   BLANK = nil
 
   #
-  #=== 配番データのコピー
+  #=== 配番データのコピー Copy numbering data
   def self.copy_cargo(queue,work_date_ymd,uid)
     extend MkAssignment
     do_copy_cargo(queue,work_date_ymd,uid)
   end
 
   #
-  #=== 配番用割当データリスト
+  #=== 配番用割当データリスト Assignment data list for numbering
   def get_assignment_list
     assignment_list = {}
     Cargo::WkType.each{|text,wk_type| 
@@ -53,12 +53,12 @@ class ResultCargo < ApplicationRecord
     return assignment_list
   end
 
-  # 人数カラムの更新(*_np
+  # 人数カラムの更新(*_np | Update the number of people column (*_np
   def update_np_count
     result_cargo_id = self[:id]
     result_cargo_wokers = ResultCargoWorker.where(:result_cargo_id=>result_cargo_id)
     return if result_cargo_wokers.blank?
-    # 0初期化 
+    # 0初期化  0 initialization
     count_fields = [:ob_np,:hh_np,:wk_np]
     count_fields.each {|key| self[key]=0}
     
@@ -70,7 +70,7 @@ class ResultCargo < ApplicationRecord
       self[:wk_np]+=1 unless login_id.include?("ROKYO")
     end
 
-    # 変更があればsave
+    # 変更があればsave Save any changes
     self.save if self.changes.any?{|key,(bef,aft)| bef!=aft}
 
   end
@@ -86,23 +86,23 @@ class ResultCargo < ApplicationRecord
 
 
   #
-  #=== 実績データ登録
+  #=== 実績データ登録 Record data registration
   def self.update_assignment(login_id,work_date,conf_flg,cargo,worker,machine)
-    #従事データを一旦論理削除
+    #従事データを一旦論理削除 Logically delete engagement data once
     cargo_data = self.find_by({:id=>cargo[:id],:work_date=>work_date})
     raise NotFoundError.new("cargo.id=[#{cargo[:id]}] and work_date=[#{work_date.try(:strftime,"%Y/%m/%d")}]") if cargo_data.nil?
     ResultCargoWorker.delete_all(login_id,["result_cargo_id=? ",cargo_data[:id]])
     ResultCargoMachine.delete_all(login_id,["result_cargo_id=? ",cargo_data[:id]])
-    #作業実績を更新
+    #作業実績を更新 Update work history
     cargo.each{|key,val|
       case key
-      when "id" #スキップ
+      when "id" #スキップ skip
       else ; cargo_data[key] = (val.blank? ? nil : val)
       end
     }
     cargo_data[:conf_flg] = (conf_flg.blank? ? 0 : 1)
     cargo_data.save! if cargo_data.changed?
-    #荷役従事者を更新
+    #荷役従事者を更新 Update cargo handling personnel
     worker.each{|key,val|
       if key =~ /^(\w+)_(\d+)_login_id$/ && val.present?
         wk_type = $1
@@ -124,7 +124,7 @@ class ResultCargo < ApplicationRecord
         rc_worke.delay.update_vacation if cargo_data[:conf_flg] == 1
       end
     }unless worker.blank?
-    #荷役従事機械
+    #荷役従事機械 Cargo handling machinery
     machine.each{|key,val|
       if key =~ /^(\w+)_(\d+)_machine_id$/ && val.present?
         wk_type = $1
@@ -144,9 +144,9 @@ class ResultCargo < ApplicationRecord
     }unless machine.blank?
   end
 
-  #=== 実績CSV用配列データ作成
+  #=== 実績CSV用配列データ作成 Create array data for actual CSV
   def self.get_csv_data(t_date)
-    #荷役実績(既存連携データ)
+    #荷役実績(既存連携データ) Cargo handling record (existing linked data)
     require 'csv'
     work_date = t_date
     header = %w(作業日付 作業区分 動静番号 沿岸作業コード 連番 区分 従業員番号 氏名 機械コード 荷役機械名 機械の区分 免税軽油該当 作業内での連番 作業順 作業内容)
@@ -158,7 +158,7 @@ class ResultCargo < ApplicationRecord
     result_cargos.each do |cargo|
       result_cargo_workers = cargo.result_cargo_worker.where("user_id<>0")
       result_cargo_machines = cargo.result_cargo_machine
-      work_index  = -1 #  作業内での連番:同一作業依頼内での連番 0開始のため-1で初期化
+      work_index  = -1 #  作業内での連番:同一作業依頼内での連番 0開始のため-1で初期化 Sequential number within the work: Sequential number within the same work request. Initialize with -1 to start with 0.
       result_cargo_workers.each do |worker|
         next if worker.user.blank?
         work_list[worker.login_id] = [] unless work_list[worker.login_id]
@@ -182,7 +182,7 @@ class ResultCargo < ApplicationRecord
         
         output << CSV.generate_line(tmpline)
       end
-      work_index  = -1 #  作業内での連番:同一作業依頼内での連番 0開始のため-1で初期化
+      work_index  = -1 #  作業内での連番:同一作業依頼内での連番 0開始のため-1で初期化 Sequential number within the work: Sequential number within the same work request. Initialize with -1 to start with 0.
       result_cargo_machines.each do |machine|
         next if machine.machine.blank?
         machine_list[machine.machine_cd] = [] unless machine_list[machine.machine_cd]
@@ -211,7 +211,7 @@ class ResultCargo < ApplicationRecord
   end
 
   
-  #=== 実績用 荷役、荷役作業員、荷役機械のデータを返す
+  #=== 実績用 荷役、荷役作業員、荷役機械のデータを返す For actual results: Returns data on cargo handling, cargo handling workers, and cargo handling machines.
   def self.get_daily_work_data(t_date)
     work_data = ResultCargo.get_work_data(t_date)
     work_cds = work_data.pluck(:work_cd).uniq
@@ -272,7 +272,7 @@ class ResultCargo < ApplicationRecord
   end
 
 
-  #=== 荷役作業実績表用の集計データを返す
+  #=== 荷役作業実績表用の集計データを返す Returns aggregated data for cargo handling performance table
   def self.get_monthly_work_data(t_date)
     data_init = {
       :type=>"港湾運送",:clazz=>nil,
@@ -325,7 +325,7 @@ class ResultCargo < ApplicationRecord
     return {monthly:monthly_data,total:total_data}
   end
 
-  #=== 荷役作業明細表用の集計データを返す
+  #=== 荷役作業明細表用の集計データを返す Return summary data for material handling schedule
   def self.get_cargo_work_detail_data(s_date:,e_date:)
     r_cargos = ResultCargo.includes(:result_cargo_worker=>:woker,:result_cargo_machine=>:machine).where(:work_date=>(s_date..e_date)).order(:work_date=>:asc,:desp_index=>:asc)
     branch_name_hash = Branche.all.pluck(:cd,:name).to_h
@@ -384,7 +384,7 @@ class ResultCargo < ApplicationRecord
     matrix
   end
 
-  #=== 作業員毎作業一覧用の集計データを返す
+  #=== 作業員毎作業一覧用の集計データを返す Returns aggregated data for each worker's work list
   def self.get_woker_work_summary_data(s_date:,e_date:)
 
     branche_members = {}
@@ -458,7 +458,7 @@ class ResultCargo < ApplicationRecord
         if work_time.present?
           orver_time = (work_time.to_f/60).round(1)
         else
-          # -- 計算方法見直し
+          # -- 計算方法見直し Review of calculation method
           # UAT222
           if cargo_workers.present?
             s_time = cargo_workers.map{|cw| cw.s_time.present? ? WorkTimeAggregate.mk_time(cw.work_date,cw.s_time,cw.s_time) : nil}.compact.min
@@ -482,7 +482,7 @@ class ResultCargo < ApplicationRecord
 
   end
   
-  #=== 指定日の荷役実績、荷役作業員実績、荷役機械実績を返す
+  #=== 指定日の荷役実績、荷役作業員実績、荷役機械実績を返す Returns the cargo handling results, stevedoring worker results, and material handling machine results for the specified date.
   def self.get_work_data(t_date)
     return ResultCargo.includes(:result_cargo_worker,:result_cargo_machine=>:machine).where(:work_date=>t_date).order(:desp_index=>:asc)
   end

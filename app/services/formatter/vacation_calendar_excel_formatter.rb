@@ -62,10 +62,10 @@ class Formatter::VacationCalendarExcelFormatter < Formatter::Formatter
     empty_row = Array.new(column_size,"")
     member_group_by_branch_cd = group_by_branch_cd(@calendar[:menbers])
 
-    # テーブルヘッダー
+    # テーブルヘッダー | table header
     header = ["氏名", *days_str]
     
-    # テーブルボディ
+    # テーブルボディ | table body
     body = []
     if (members = member_group_by_branch_cd[cd]).present?
       body += members.map{|member|
@@ -87,7 +87,7 @@ class Formatter::VacationCalendarExcelFormatter < Formatter::Formatter
       }
     end
 
-    # テーブルフッター（集計行
+    # テーブルフッター（集計行 | Table footer (total row
     vacation_count = []
     woker_count = []
     days.each.with_index do |_,index|
@@ -102,7 +102,7 @@ class Formatter::VacationCalendarExcelFormatter < Formatter::Formatter
       ["出勤者数", *woker_count]
     ]
 
-    # 結合＆返却
+    # 結合＆返却 | Combine & Return
     ret = [header,*body,*footer]
     ret
   end

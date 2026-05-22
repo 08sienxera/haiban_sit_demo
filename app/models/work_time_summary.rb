@@ -2,7 +2,7 @@ class WorkTimeSummary < ApplicationRecord
   extend Common::Func
   default_scope {where(:deleted_at => nil)}
   #
-  #===日計データ登録
+  #===日計データ登録 | Daily accounting data registration
   def self.create_by_batch(aggr_flg,work_date,t_cd,worker_sum)
     lin = self.unscoped.find_by({:work_date=>work_date,:aggr_flg=>aggr_flg,:t_cd=>t_cd})
     if lin.blank?

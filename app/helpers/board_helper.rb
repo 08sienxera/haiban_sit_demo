@@ -1,5 +1,5 @@
 module BoardHelper
-  # 画像のプレビューを提供
+  # 画像のプレビューを提供 Provides image preview
   def img_previous(board)
     file_paths = board.get_file_path
     return "" unless file_paths.any?{|_,path| path.present?} 
@@ -17,7 +17,7 @@ module BoardHelper
           safe_join(imgs.map{|img| image_tag(img,:style=>"max-width:50%;width:__width__%;box-shadow: 0px 0px 10px #aaa;margin:3px 5px 1rem;") })
         end
         img_tags << ("<p class='file_name' style='margin:0;'>（ファイル名：#{board[key]}）</p>"+a_tag).html_safe
-      elsif Board::FILE_EXTENSIONS[:image].include?(file_extension.downcase) # 画像
+      elsif Board::FILE_EXTENSIONS[:image].include?(file_extension.downcase) # 画像 image
         a_tag = link_to({:action=>:file_output,:id=>board.id,:attr=>key},:style=>"text-decoration:none;") do
           imgs = [path].map{|p| p.start_with?("public/") ? p.sub(/^public/, "") : p}
           img_size << imgs.size
@@ -35,7 +35,7 @@ module BoardHelper
     html
   end
 
-  # 添付ファイルのダウンロードリストを提供
+  # 添付ファイルのダウンロードリストを提供 Provides a list of downloadable attachments.
   def file_download_links(board)
     links = board.get_file_path.map do |key,path|
       content_tag(:li) do

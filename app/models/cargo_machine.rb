@@ -1,5 +1,5 @@
 # coding: utf-8
-#= 配番機械
+#= 配番機械 numbering machine
 class CargoMachine < ApplicationRecord
   belongs_to :cargo
   belongs_to :machine

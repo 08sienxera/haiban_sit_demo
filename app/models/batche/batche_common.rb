@@ -8,11 +8,11 @@
 #*     変更	：
 #***************************************************************************
 #++
-#== バッチ共通クラス
+#== バッチ共通クラス Batch common class
 class Batche::BatcheCommon
   protected
   #
-  #===初期化
+  #===初期化 Initialization
   def self.logger()
     log_file = "log/#{self.name.gsub("Batche::","")}.log"
     log = Logger.new(log_file, 'daily')
@@ -25,19 +25,19 @@ class Batche::BatcheCommon
     return log
   end
   #
-  #===debugログ
+  #===debugログ debug log
   def self.log_debug(str)
     @log.debug(str)
     @ret << str
   end
   #
-  #===infoログ
+  #===infoログ info log
   def self.log_info(str)
     @log.info(str)
     @ret << str
   end
   #
-  #===エラーログ
+  #===エラーログ error log
   def self.log_error(str)
     @log.error(str)
     @ret << str

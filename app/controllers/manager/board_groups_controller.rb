@@ -1,14 +1,14 @@
-#= 掲示公開対象グループリクエスト処理クラス
+#= 掲示公開対象グループリクエスト処理クラス Group request processing class for posting and public access.
 class Manager::BoardGroupsController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable
   before_action :set_my_oth_variable,:except=>:index
 
-  #===掲示対象のユーザ一覧を取得
+  #===掲示対象のユーザ一覧を取得 Target user list
   def get_target_users
     t_id = params[:id]
     if t_id
-      # TODO　掲示対象作業員の取得
+      # TODO　掲示対象作業員の取得 Target user
       if board_group = BoardGroup.includes(:board_group_woker).find_by_id(t_id)
         board_group_targets = board_group.get_user_list
         ret = {:sts=>200, :data=>board_group_targets}

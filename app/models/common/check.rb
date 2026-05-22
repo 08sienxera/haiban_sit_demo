@@ -3,12 +3,17 @@
 #
 #=== 抽象チェックモジュール
 # 各クラスでincludeして利用する
+#=== Abstract Check Module
+# Include and use in each class
 module Common::Check
   #
-  #=== 数値チェック
+  #=== 数値チェック Numerical check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  # Arguments :: str String value
+  # :: nil_ok Boolean Nullability
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_suji(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -24,6 +29,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Numeric check (negative values ​​allowed)
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullity allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_suji_n(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -39,6 +48,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Numeric check (negative and decimal numbers allowed)
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullness allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_suji_f(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -54,6 +67,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Checks for half-width English characters
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullness allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_eiji(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -69,6 +86,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Check for half-width alphanumeric characters
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullness allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_eisuji(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -84,6 +105,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Checks for alphanumeric characters and symbols (-, _)
+  # Argument :: str String value
+  # :: nil_ok Boolean Null allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_eisuji_x(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -99,6 +124,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Checks for alphanumeric characters and symbols (-,_.~:@\/)
+  # Argument :: str String value
+  # :: nil_ok Boolean Null allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_eisuji_xx(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -114,6 +143,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Checks for alphanumeric characters and symbols (#)
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullability
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_hankaku_eisuji_color(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -129,6 +162,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Full-width Hiragana Check
+  # Argument :: str String Value
+  # :: nil_ok Boolean Nullability
+  # Return Value :: Boolean (True=OK, False=NG)
   def chk_zenkaku_hiragana(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -144,6 +181,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Email Address Check
+  # Argument :: str String Value
+  # :: nil_ok Boolean Null OK/NG
+  # Return Value :: Boolean (True=OK, False=NG)
   def chk_format_mail(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -164,6 +205,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== URL check
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullness allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_format_uri(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -182,6 +227,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Phone number check
+  # Argument :: str String value
+  # :: nil_ok Boolean Null allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_format_tel(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -197,6 +246,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Strict phone number check
+  # Argument :: str String value
+  # :: nil_ok Boolean Null allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_format_tel_strict(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -212,6 +265,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Booleam (True=OK,False=NG)
+  #=== Checks landline phone number
+  # Argument :: str String value
+  # :: nil_ok Boolean Null allowed/not allowed
+  # Return value :: Boolean (True=OK, False=NG)
   def chk_format_tel_fixed(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -228,6 +285,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Array [Booleam (True=OK,False=NG) , 整形後の日付文字列(%Y/%m/%d)]
+  #=== Date Check
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullability
+  # Return Value :: Array [Booleam (True=OK, False=NG) , Formatted Date String (%Y/%m/%d)]
   def chk_format_date(str, nil_ok = true)
     if str.blank? && nil_ok
       return [true,'']
@@ -279,6 +340,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Array [Booleam (True=OK,False=NG) , 整形後の時間文字列（%H:%M）]
+  #=== Time Check
+  # Argument :: str String value
+  # :: nil_ok Boolean Nullability
+  # Return Value :: Array [Booleam (True=OK, False=NG), Formatted Time String (%H:%M)]
   def chk_format_time(str, nil_ok = true)
     if str.blank? && nil_ok
       return [true,'']
@@ -311,6 +376,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Array [Booleam (True=OK,False=NG) , 整形後の日付時間文字列（%Y/%m/%d %H:%M）]
+  #=== Date and Time Check
+  # Argument :: str String Value
+  # :: nil_ok Boolean Nullability
+  # Return Value :: Array [Booleam (True=OK, False=NG) , Formatted Date and Time String (%Y/%m/%d %H:%M)]
   def chk_format_datetime(str, nil_ok = true)
     if str.blank? && nil_ok
       return [true,'']
@@ -333,6 +402,10 @@ module Common::Check
   # 引数 :: str String 値
   # :: nil_ok Booleam Null可否
   # 戻り値 ::　Array [Booleam (True=OK,False=NG) , 整形後の日付時間文字列（%Y/%m/%d %H:%M）]
+  #=== Time Period Check
+  # Argument :: str String Value
+  # :: nil_ok Boolean Nullability
+  # Return Value :: Array [Booleam (True=OK, False=NG) , Formatted Date and Time String (%Y/%m/%d %H:%M)]
   def chk_format_time_term(str, nil_ok = true)
     if str.blank? && nil_ok
       return true
@@ -345,10 +418,10 @@ module Common::Check
   end
 
   #
-  #=== CSVデータのチェック
+  #=== CSVデータのチェック Check CSV data
   def chk_csv_datas(fobj,len_ch=true)
     ret = {:cd=>true,:msg=>"",:counts=>{:T=>0,:I=>0,:U=>0,:E=>0}}
-    #ファイルサイズチェック
+    #ファイルサイズチェック File size check
     if (fobj.blank? or fobj.size < 1)
       ret[:msg] << I18n.t("system_errors.file_null")
       ret[:cd] = false
@@ -361,11 +434,11 @@ module Common::Check
       param = getparams()
       data = fobj.read
       reader = CSV.parse(data)
-      reader.shift        #1行目を読み飛ばし
+      reader.shift        #1行目を読み飛ばし Skip the first line
       ret[:counts][:T] += 1
       reader.each do |datas|
         ret[:counts][:T] += 1
-        #CSVデータをチェックする
+        #CSVデータをチェックする Check the CSV data.
         retmsg = ""
         if paramkey.length < datas.length && len_ch
           retmsg = I18n.t("system_errors.csv_format")
@@ -378,6 +451,8 @@ module Common::Check
             when "file","view"
               #CSVでファイルはチェックしない
               #反映時はスキップ注意
+              # Do not check the file in CSV format
+              # Be careful to skip when updating
             else
               retck = checkdata(param[key],val)
               unless retck[0].nil?

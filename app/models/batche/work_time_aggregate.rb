@@ -8,11 +8,11 @@
 #*     変更	：
 #***************************************************************************
 #++
-#=稼働時間集計バッチ
+#=稼働時間集計バッチ Operating time aggregation batch
 class Batche::WorkTimeAggregate < Batche::BatcheCommon
 
-  #===集計開始
-  # 作業時間の集計バッチにて出勤は時間の早い方、退勤は時間の遅い方を設定している。集計バッチにて出勤は作業Indexの若い方、退勤は作業Indexの最後の方を設定するように修正
+  #===集計開始 Start counting
+  # 作業時間の集計バッチにて出勤は時間の早い方、退勤は時間の遅い方を設定している。集計バッチにて出勤は作業Indexの若い方、退勤は作業Indexの最後の方を設定するように修正 In the work time aggregation batch, the earlier time is used for clock-in and the later time for clock-out. This should be modified so that the clock-in is set to the lowest work index and the clock-out is set to the lowest work index.
   def self.do(symd=nil,eymd=nil)
     @ret = []
     @log = self.logger()
@@ -70,9 +70,9 @@ class Batche::WorkTimeAggregate < Batche::BatcheCommon
           }
         end
 
-        #休暇情報の補完
+        #休暇情報の補完 Complementing vacation information
         vs = Vacation.where("vacation_day=?",work_date)
-        # UAT-276　不具合対応
+        # UAT-276　不具合対応 UAT-276 Bug Fix
         # vs = Vacation.where(["vacation_day=? or (origin_date=? and base_no='7') ",work_date,work_date])
         vs.each{|lin|
           base_no = (lin[:vacation_day] == work_date ? lin[:base_no] : 6)
@@ -128,16 +128,16 @@ class Batche::WorkTimeAggregate < Batche::BatcheCommon
     return @ret
   end
   #
-  #===作業員の作業時間＆残業時間サマリーデータ作成
+  #===作業員の作業時間＆残業時間サマリーデータ作成 Create a summary data of worker's working hours and overtime hours.
   def self.mk_worker_sum(worker_sum_by_date,lin,data_root)
 
     work_date = lin.first[:work_date]
     lin_sort_by_work_index = lin.order(:work_index)
-    # 出勤時間、退勤時間
+    # 出勤時間、退勤時間 Commuting hours, commuting hours
     s_time_all_nil = lin.all?{|l| l[:s_time].nil?}
     e_time_all_nil = lin.all?{|l| l[:e_time].nil?}
     time_1600 = WorkTimeAggregate.mk_time(work_date,"16:00","16:00")
-    # UAT301 作業Indexではなく、s_timeは一番早い時間、e_timeは一番遅い時間を使用
+    # UAT301 作業Indexではなく、s_timeは一番早い時間、e_timeは一番遅い時間を使用 UAT301 does not use the work index; instead, s_time uses the earliest time and e_time uses the latest time.
     s_time = s_time_all_nil ? nil : lin_sort_by_work_index.where.not(s_time: nil).map{|l| WorkTimeAggregate.mk_time(l[:work_date],l[:s_time],l[:s_time])}.min
     e_time = e_time_all_nil ? time_1600 : lin_sort_by_work_index.where.not(e_time: nil).map{|l| WorkTimeAggregate.mk_time(l[:work_date],l[:e_time],l[:e_time])}.max
 
@@ -166,7 +166,7 @@ class Batche::WorkTimeAggregate < Batche::BatcheCommon
   end
 
   #
-  #===機械の作業時間＆残業時間サマリーデータ作成
+  #===機械の作業時間＆残業時間サマリーデータ作成 Create a summary data of machine operation time and overtime hours.
   def self.mk_machine_sum(machine_sum_by_date,lin,data_root)
     unless machine_sum_by_date.has_key?(lin[:machine_cd])
       s_time = lin[:s_time].present? ? WorkTimeAggregate.mk_time(lin[:work_date],lin[:s_time],lin[:s_time]) : nil

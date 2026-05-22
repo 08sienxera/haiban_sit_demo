@@ -1,16 +1,16 @@
-#= 日別荷役作業実績PDF作成クラス 
+#= 日別荷役作業実績PDF作成クラス  Daily cargo handling work results PDF creation class
 class Pdf::DailyCargoWorkResultPdf < Pdf::ExpansionPdfCommon
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） Font size (body)
   DefFontSizeB = 5
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） Row height (body)
   TableRowHeight = 12
-  # ページあたりの行数
+  # ページあたりの行数 Number of lines per page
   TableRow = 38
-  # 列幅の比率設定
+  # 列幅の比率設定 Column width ratio settings
   TableColumnRatios = [5,5,15,5,12,4,5,*Array.new(6,4)]
 
 
-  #初期設定
+  #初期設定 Initial settings
   def initialize(cd,page_condition = {},name:nil,title:nil,sub_title:nil)
     super(cd,page_condition,name:name)
     @title = title || "タイトル未設定"
@@ -19,7 +19,7 @@ class Pdf::DailyCargoWorkResultPdf < Pdf::ExpansionPdfCommon
     @max_width = @pdf.bounds.right
   end
 
-  # ＰＤＦを生成
+  # ＰＤＦを生成 Generate PDF
   def create(daily_work_data)
     created_time = Time.now()
     table_header,table_body = convert_table_data(daily_work_data)

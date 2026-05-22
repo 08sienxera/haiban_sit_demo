@@ -1,6 +1,6 @@
 #= WorkerCommon::UsersControllerを継承
 class Bos::UsersController < WorkerCommon::UsersController
-  # 共有レイアウト呼出し
+  # 共有レイアウト呼出し Call shared layout
   layout 'main_layout'
   before_action :set_my_oth_variable, :only =>[:edit,:update_password,:update_setting]
   

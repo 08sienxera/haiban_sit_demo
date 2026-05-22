@@ -1,6 +1,6 @@
 class WorkerCommon::BoardTargetsController < ApplicationController
 
-  # 本文確認済み更新
+  # 本文確認済み更新 Text confirmed update
   def update
     if board_target = BoardTarget.find(params[:id])
       if board_target.user_id != get_uval(:id)

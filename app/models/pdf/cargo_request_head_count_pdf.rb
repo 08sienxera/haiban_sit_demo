@@ -1,7 +1,7 @@
 #= Pdf::CargoCommonPdfを継承
-#必要人数表PDF作成クラス
+#必要人数表PDF作成クラス Cargo handling workers, cargo handling machines
 class Pdf::CargoRequestHeadCountPdf < Pdf::CargoCommonPdf
-  #初期設定
+  #初期設定 Initial settings
   def initialize(cd,page_condition = {})
     @title = "必要人数表(調整用)"
     @title_under_line_width = 250

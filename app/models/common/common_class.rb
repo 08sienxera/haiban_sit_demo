@@ -15,19 +15,19 @@ class Common::CommonClass
   include Common::Check
   include Common::Format
 
-  #コンストラクタ
+  #コンストラクタ constructor
   def initialize(str)
     @param = Hash.new
     @paramkey = []
     @gname = str
     @other_datas = {}
   end
-  #パラメータ設定
+  #パラメータ設定 Parameter settings
   def setparams(key,datas)
     @param[key]=datas
     @paramkey << key
   end
-  #パラメータ設定(個別)
+  #パラメータ設定(個別) Parameter settings (individual)
   def setparam(key1,key2,value)
     @param[key1][key2]=value
     case @param[key1]["type"]
@@ -68,32 +68,32 @@ class Common::CommonClass
       end
     end
   end
-  #パラメータ設定
+  #パラメータ設定 Parameter settings
   def set_all_param(key2,value)
     @paramkey.each do |key|
       setparam(key,key2,value)
     end
   end
-  #パラメータ削除
+  #パラメータ削除 Delete parameter
   def unsetparams(key)
     @param.delete(key)
     @paramkey.delete(key)
   end
-  #パラメータデータの全削除
+  #パラメータデータの全削除 Complete deletion of parameter data
   def unset_all_paramsdata(key)
     @paramkey.each do |pkey|
       @param[pkey].delete(key)
     end
   end
-  #gnameの設定
+  #gnameの設定 gname settings
   def setgname(str)
     @gname=str
   end
-  #パラメータ出力
+  #パラメータ出力 Parameter output
   def getparams()
     return @param
   end
-  #パラメータ出力(個別)
+  #パラメータ出力(個別) Parameter output (individual)
   def getparam(key1)
     ret = ""
     unless @param[key1].nil?
@@ -101,7 +101,7 @@ class Common::CommonClass
     end
     return ret
   end
-  #パラメータ出力(個別)
+  #パラメータ出力(個別) Parameter output (individual)
   def getparamdata(key1,key2)
     ret = ""
     if key1.is_a?(Array)
@@ -122,7 +122,7 @@ class Common::CommonClass
     end
     return ret
   end
-  #パラメータデータの全出力
+  #パラメータデータの全出力 Full output of parameter data
   def get_all_paramsdata(key)
     ret = {}
     @paramkey.each do |pkey|
@@ -132,32 +132,32 @@ class Common::CommonClass
     end
     return ret
   end
-  #パラメータのキーリストを返す
+  #パラメータのキーリストを返す Returns a list of parameter keys.
   def getparamkey()
     return @paramkey
   end
-  #gnameの取得
+  #gnameの取得 Get gname
   def getgname()
     return @gname
   end
 
-  #パラメータに指定キーが存在するか返す
+  #パラメータに指定キーが存在するか返す Returns whether the specified key exists in the parameters.
   def has_key?(key)
     return @param.has_key?(key)
   end
-  #順序を変える
+  #順序を変える change order
   def set_index(key,index)
     tmp = @paramkey.slice!(0,index)
     key_index = @paramkey.index(key)
     @paramkey.delete_at(key_index) unless key_index.nil?
     @paramkey = tmp + [key] + @paramkey
   end
-  #順序を変える（末尾へ移動）
+  #順序を変える（末尾へ移動） Change the order (move to the end).
   def set_last_index(key)
     @paramkey.delete(key)
     @paramkey << key
   end
-  #入力モードかどうか
+  #入力モードかどうか Input mode or not
   def is_input?
     ret = 0
     get_all_paramsdata("inputFlg").each_value{|flg| ret += flg }
@@ -165,7 +165,7 @@ class Common::CommonClass
   end
 
 
-  #DBロード用SQLのSelect文の生成
+  #DBロード用SQLのSelect文の生成 Generating SQL SELECT statements for database loading
   def mksqlselect()
     retselect = []
     @param.each_pair do |key, palamndata|
@@ -181,7 +181,7 @@ class Common::CommonClass
       return nil
     end
   end
-  #DB登録用データの取得
+  #DB登録用データの取得 Retrieving data for database registration
   def mksqldata(updateuid,errok=true,rep=nil)
     retdata = Hash.new
     @param.each_pair do |key, palamndata|
@@ -204,7 +204,7 @@ class Common::CommonClass
     return retdata
   end
 
-  #検索用にパラメータをSet
+  #検索用にパラメータをSet Set parameters for searching
   def set_serch_params(ccobj)
     @paramkey.concat(ccobj.getparamkey())
     tmpparam = ccobj.getparams()
@@ -230,7 +230,7 @@ class Common::CommonClass
     set_all_param("inputFlg",1)
     unset_all_paramsdata("defVal")
   end
-  #DBロード用(検索)SQLのWhere句の生成
+  #DBロード用(検索)SQLのWhere句の生成 Generating a WHERE clause for SQL queries used for database loading (searching).
   def mksqlwhere(retwhere = [])
     if retwhere[0].nil? then retwhere[0]='' end
     @paramkey.each do |key|
@@ -289,7 +289,7 @@ class Common::CommonClass
     end
     return retwhere
   end
-  #DBロード用(検索)SQLのWhere句の生成(個別)
+  #DBロード用(検索)SQLのWhere句の生成(個別) Generating the WHERE clause for SQL queries used for database loading (searches) (individually).
   def mksqlwhere_info(key,palamndata,criteria,retwhere)
     unless !palamndata['msg'].nil?  ||
         ((palamndata['value'].nil? || palamndata['value']=="") && palamndata['defVal'].nil?)
@@ -332,7 +332,7 @@ class Common::CommonClass
     end
     return retwhere
   end
-  #DBロード用SQLのWhere句の生成(キー配列より作成)
+  #DBロード用SQLのWhere句の生成(キー配列より作成) Generating the WHERE clause for SQL queries used for database loading (created from a key array).
   def mkconditions(keys,defconditions=[""])
     conditions = Marshal.load(Marshal.dump(defconditions))
     keys.each do |key|
@@ -342,11 +342,11 @@ class Common::CommonClass
     end
     return conditions
   end
-  #ハッシュのコピー
+  #ハッシュのコピー copy of hash
   def hash_cp(obj)
     return Marshal.load(Marshal.dump(obj))
   end
-  #全データの取得
+  #全データの取得 Get all data
   def get_all_data(key2)
     retdata=[]
     @paramkey.each do |key|
@@ -357,14 +357,14 @@ class Common::CommonClass
     end
     return retdata
   end
-  #全エラーメッセージの取得
+  #全エラーメッセージの取得 Get all error messages
   def get_all_emsg()
     retstr= ""
     retdata = get_all_data('msg')
     retstr = retdata.join("\n")
     return retstr
   end
-  #DBからリストテーブルを取得する
+  #DBからリストテーブルを取得する Retrieve a list table from the database.
   def getlist(listin)
     retlist=[]
     if listin[:table].nil? then listin[:table]=LunchVendor end
@@ -391,7 +391,7 @@ class Common::CommonClass
     end
     return retlist
   end
-  #DBデータを格納する
+  #DBデータを格納する Store DB data
   def setdbdata(datas,list2str=false)
     if datas.blank?
       set_all_param("value",nil)
@@ -461,7 +461,7 @@ class Common::CommonClass
     }
   end
 
-  #格納されているデータを再チェックする
+  #格納されているデータを再チェックする Recheck the stored data.
   def check_in_data()
     ret = true
     @param.each_pair do |key, palamndata|
@@ -475,7 +475,7 @@ class Common::CommonClass
     return ret
   end
 
-  #POSTされたデータを取得しチェックを行う
+  #POSTされたデータを取得しチェックを行う Retrieve the POSTed data and perform checks.
   def setpostdata(params,sessiondata=nil,rep=nil,not_ess_ck = false)
     ret = true
     unless params[@gname].nil?
@@ -530,7 +530,7 @@ class Common::CommonClass
         @param[key]['value']=val
       end
     end
-    #検索条件などデータをセッションに追加/ロード
+    #検索条件などデータをセッションに追加/ロード Add/load data such as search criteria to the session.
     unless sessiondata.nil?
       unless params[@gname].nil?
         if ret
@@ -550,7 +550,7 @@ class Common::CommonClass
     end
     return ret
   end
-  #入力データのチェック
+  #入力データのチェック Check input data
   def checkdata(palamndata,val)
     type = palamndata['type']
     retmsg = nil
@@ -667,7 +667,7 @@ class Common::CommonClass
           end
         end
       when 'textJ','textKn','textKh','textAria'
-        #チェック不要？
+        #チェック不要？ No need to check?
       when 'select','selectP','radio','ckeck_list4list'
         unless palamndata['ck_in'].nil? || val==""
           list = palamndata['list']
@@ -688,7 +688,7 @@ class Common::CommonClass
           end
         end
       when 'check_one','hidden','hiddenv','ckeck_list','view'
-        #チェック不要
+        #チェック不要 No need to check
       else
         retmsg="no check [#{type}]!!"
       end
@@ -696,7 +696,7 @@ class Common::CommonClass
     return [retmsg,retval]
   end
 
-  #入力チェックのJavaScriptを返す
+  #入力チェックのJavaScriptを返す Return JavaScript for input validation.
   def get_input_js(key,inkey_name=nil,title_add="",not_ess_ck=false)
     retstr=""
     data = getparam(key)
@@ -753,7 +753,7 @@ class Common::CommonClass
     when 'radio'
       retstr << "strErrorMassage += check_Checkradio(fobj.elements['#{@gname}[#{inkey_name}]'],#{ess_flg},'#{title}');\n"
     when 'file'
-      # 複数ファイル対応
+      # 複数ファイル対応 Supports multiple files
       if data['multiple'].to_i==1
         retstr << "strErrorMassage += check_files(fobj.elements['#{@gname}[#{inkey_name}][]'],#{ess_flg},'#{title}','#{data['ext_ck']}');\n"
       else
@@ -768,13 +768,13 @@ class Common::CommonClass
     when 'textAria'
       retstr << "strErrorMassage += check_ess(fobj.elements['#{inkey_name}'],'#{title}');\n" if ess_flg == 1
     when 'hidden','hiddenv','view'
-      #チェックなし
+      #チェックなし No check
     else
       retstr << "strErrorMassage += '[#{inkey_name}]-[#{data['type']}] is not define\\n';\n"
     end
     return retstr.html_safe
   end
-  #入力チェックのJavaScriptを返す
+  #入力チェックのJavaScriptを返す Return JavaScript for input validation.
   def get_def_inck_js(not_ess_ck = false)
     inck_js=""
     @paramkey.each do |key|
@@ -785,7 +785,7 @@ class Common::CommonClass
     end
     return inck_js
   end
-  #必須チェックのJavaScriptを返す
+  #必須チェックのJavaScriptを返す Returns JavaScript for required checks.
   def get_ess_js(key,inkey_name=nil,title_add="",not_ess_ck=false)
     retstr=""
     data = getparam(key)
@@ -798,7 +798,7 @@ class Common::CommonClass
     when 'ckeck_list'
       retstr << "strErrorMassage += check_ess(fobj.elements['#{inkey_name}[]'],'#{title}');\n"
     when 'hidden','hiddenv','view'
-      #チェックなし
+      #チェックなし No check
     else
       retstr << "strErrorMassage += check_ess(fobj.elements['#{@gname}[#{inkey_name}]'],'#{title}');\n"
     end
@@ -813,7 +813,7 @@ class Common::CommonClass
         filepath = "#{dir_path}/#{b_name}_#{key}.dat"
         fobj = @param[key]["fobj"]
         if fobj.is_a?(ActionDispatch::Http::UploadedFile)
-          fobj.rewind #ポインタを先頭行へ
+          fobj.rewind #ポインタを先頭行へ Move the pointer to the first row.
           File.open(filepath,"wb"){ |f| f.write(fobj.read) }
         elsif @param[key]["value"].blank? && File.exist?(filepath)
           File.unlink(filepath)
@@ -824,6 +824,8 @@ class Common::CommonClass
   #
   #アップロードされたファイルを所定の位置に保存する
   #引数::key String パラメータキー
+  # Save the uploaded file to the specified location.
+  # Argument::key String parameter key
   #::file_nm String サーバ側のファイル名
   #::delck String 削除フラグ
   def save_file(key,file_nm,delck)
@@ -841,7 +843,7 @@ class Common::CommonClass
       filepath << "#{File.extname(param["value"])}"
     end
     if fobj.is_a?(ActionDispatch::Http::UploadedFile)
-      fobj.rewind #ポインタを先頭行へ
+      fobj.rewind #ポインタを先頭行へ #Pointer to the first line
       File.open(filepath,"wb"){ |f| f.write(fobj.read) }
       save_new = true
     elsif !delck.nil? && File.exist?(filepath)
@@ -856,6 +858,8 @@ class Common::CommonClass
   #
   #画像ファイルのリサイズ
   #引数::filepath String 対象ファイルのパス
+  #Resize image file
+  #Argument::filepath String Path of the target file
   #::img_w Integer 画像幅
   #::max_img_h  Integer 画像高さ
   def img_resize(filepath,img_w,max_img_h)
@@ -877,6 +881,9 @@ class Common::CommonClass
   #CSVデータの生成
   #引数::datas　ActiveRecords
   #返値::Array
+  #Generating CSV data
+  #Arguments::datas ActiveRecords
+  #Return value::Array
   def mk_csv_data(datas,titlerow=true)
     require 'csv'
     output = []
@@ -912,6 +919,8 @@ class Common::CommonClass
   #
   #CSV登録処理
   #引数::fobj　File CSVファイルオブジェクト
+  #CSV registration process
+  #Argument::fobj File: CSV file object
   #::table_obj ActiveRecord
   #::table_keys Array Or String 主キー
   #::uid Sting 更新ユーザID
@@ -919,20 +928,20 @@ class Common::CommonClass
     require 'csv'
     ret = chk_csv_datas(fobj)
     if ret[:cd]
-      fobj.rewind #ポインタを先頭行へ
+      fobj.rewind #ポインタを先頭行へ Move the pointer to the first row.
       ret[:counts][:T] = 0
       data = fobj.read
       reader = CSV.parse(data)
-      reader.shift        #1行目を読み飛ばし
+      reader.shift        #1行目を読み飛ばし Skip the first line
       ret[:counts][:T] += 1
       reader.each do |datas|
         ret[:counts][:T] += 1
         datas = mksqldata_from_csv(datas,uid)
         datas = datas.merge(merge_data) unless merge_data.nil?
         dataline = table_obj.create_data(table_keys,datas,uid,true,true)
-        if dataline[:created_at] == dataline[:updated_at] #新規登録
+        if dataline[:created_at] == dataline[:updated_at] #新規登録 New registration
           ret[:counts][:I] += 1
-        else #更新登録
+        else #更新登録 Update registration
           ret[:counts][:U] += 1
         end
       end
@@ -942,6 +951,8 @@ class Common::CommonClass
   #
   #=== CSVの１行データからＤＢ登録データを生成する
   #引数::datas Array CSVの１行データ
+  #=== Generate database registration data from a single row of data in a CSV file
+  # Arguments::datas Array Single row of data in a CSV file
   #::uid String 登録ユーザＩＤ
   def mksqldata_from_csv(datas,uid)
     require 'kconv'
@@ -955,7 +966,7 @@ class Common::CommonClass
     return mksqldata(uid)
   end
   #
-  #=== 差分データを生成
+  #=== 差分データを生成 Generate differential data
   def mk_diff_datas(no_check_keys,old_app_data,now_app_data,sub_title="")
     diff_datas = []
     @paramkey.each {|key|
@@ -975,13 +986,13 @@ class Common::CommonClass
     return diff_datas
   end
   #
-  #=== listのコードから文字列を取得する
+  #=== listのコードから文字列を取得する Retrieve a string from a list code
   def list_to_str(key,cd)
     list = getparamdata(key,"list")
     return list2str(list,cd)
   end
   #
-  #=== listのコードから文字列を取得する
+  #=== listのコードから文字列を取得する Retrieve a string from a list code
   def ckeck_list_str(key,vals)
     list = getparamdata(key,"list")
     retstr = []
@@ -990,7 +1001,7 @@ class Common::CommonClass
     }unless vals.blank?
     return retstr.join("、")
   end
-  #値を返す
+  #値を返す return value
   def get_str_value(key)
     return "" unless has_key?(key)
     palamndata = getparam(key)
@@ -1035,14 +1046,14 @@ class Common::CommonClass
   end
 
   #--
-  #=== その他データ管理
+  #=== その他データ管理 Other data management
   #++ 
 
-  #その他データ　セッター
+  #その他データ　セッター Other data setter
   def set_other(key,val)
     @other_datas[key] = val
   end
-  #その他データ　ゲッター
+  #その他データ　ゲッター Other data Getter
   def get_other(key)
     @other_datas[key]
   end

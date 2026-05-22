@@ -1,37 +1,37 @@
-#= 配番人数表PDF作成の根底クラス 
+#= 配番人数表PDF作成の根底クラス  The basic class for creating a PDF of the number of people assigned to the table
 class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
-  # フォントサイズ（ヘッダ）
+  # フォントサイズ（ヘッダ） Font size (header)
   DefFontSizeH = 7
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） Font size (body)
   DefFontSizeB = 9
-  # 行高さ（ヘッダ）
+  # 行高さ（ヘッダ） Row height (header)
   HeaderRowHeight = 16
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） Row height (body)
   BodyRowHeight = 19
-  # ページあたりの行数
+  # ページあたりの行数 Number of lines per page
   LineNum = 35
-  # 表サイズの大きさ（単位：%）
+  # 表サイズの大きさ（単位：%） Table size (unit: %)
   CR_TABLE_WIDTH_PER = 81
-  # 表サイズの大きさ（単位：%）
+  # 表サイズの大きさ（単位：%） Table size (unit: %)
   WK_TABLE_WIDTH_PER = 3
-  # 表サイズの大きさ（単位：%）
+  # 表サイズの大きさ（単位：%） Table size (unit: %)
   VAC_TABLE_WIDTH_PER = 16
-  # テーブル間のすきま（単位：ピクセル）
+  # テーブル間のすきま（単位：ピクセル） Gap between tables (unit: pixels)
   SPACE_BETWEEN_TABLE = 4
 
-  # 初期設定
+  # 初期設定 Initial setting
   def initialize(cd,page_condition = {})
     @body_top = 0
-    @body_under = 600 # 適当に初期化　最終値は横線の最低高さ
+    @body_under = 600 # 適当に初期化　最終値は横線の最低高さ  Initialize appropriately, the final value is the minimum height of the horizontal line
     super(cd,page_condition)
   end
 
-  # ＸＹ軸の目盛描画
+  # ＸＹ軸の目盛描画 XY axis scale drawing
   def stroke_axis()
     @pdf.stroke_axis()
   end
 
-  # ＰＤＦを生成
+  # ＰＤＦを生成 Generate PDF
   def create(t_date,t_date_requests,vac_table_data)
     days = I18n.t("date.day_names")
     @max_width = @pdf.bounds.right - @pdf.bounds.left
@@ -56,13 +56,13 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
     page_width = @pdf.bounds.right - @pdf.bounds.left
     @pdf.table([
       ["",page_title,""],
-      [sub_title,"","#{Time.now.strftime("%y.%m.%d %H:%M")} 作成\nPAGE #{page_num}"],  #24.04.05 16:17 作成
+      [sub_title,"","#{Time.now.strftime("%y.%m.%d %H:%M")} 作成\nPAGE #{page_num}"],  #24.04.05 16:17 作成 Created on 24.04.05 16:17
     ],
     :width=>page_width,
     :cell_style=>{
       :width=>page_width/3,
-      :border_color => 'FFFFFF',  # 線を非表示にする
-      :border_width => 0,  # 線の幅を0に設定
+      :border_color => 'FFFFFF',  # 線を非表示にする hide lines
+      :border_width => 0,  # 線の幅を0に設定 set line width to 0
       :valign => :bottom
     }
     ) do
@@ -79,7 +79,7 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
   end
 
   def cr_table(data:,start_pos:)
-    #== レイアウト調整
+    #== レイアウト調整 Layout adjustment
     text_direction_settings = {13=>1,14=>1,15=>1,16=>1,17=>1,18=>1}
     align_l = {:left=>[1,2,3,8]}
     align_r = {:right=>[4,20]}
@@ -92,44 +92,44 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
       end
     end
 
-    #== テーブル描画（ヘッダー
+    #== テーブル描画（ヘッダー) Layout adjustment
     startpos = start_pos
     @pdf.move_cursor_to(startpos)
     header = %w(No 作業名 貨物名 場所 数量 出勤 開始 終了 機械 FM DM WM ｸﾚｰﾝ ローダ バックホー 船内ローダ ドーザ リフト ＳＣ 他 計 )
-    hcolumn_size = [1,8,5,3,4,2,2,2,3,1,1,1,1,2,2,2,2,2,2,1,1,] # カラム幅の比率
+    hcolumn_size = [1,8,5,3,4,2,2,2,3,1,1,1,1,2,2,2,2,2,2,1,1,] # カラム幅の比率 Column width ratio
     drow_table_header(columns:header,size:hcolumn_size,width:@max_width*CR_TABLE_WIDTH_PER/100,offset:[0,0])
 
-    # #== テーブル描画（ボディ
+    # #== テーブル描画（ボディ) Table drawing (body)
     table_data,footer_data = convert_cr_table_data(data)
     bcolumn_size = hcolumn_size
-    # bcolumn_size = [1,8,5,3,4,2,2,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,] # カラム幅の比率
+    # bcolumn_size = [1,8,5,3,4,2,2,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,] # カラム幅の比率 Column width ratio
     (0..34).zip(table_data) do |data_with_no|
       drow_table_row(data_with_no,bcolumn_size,width:@max_width*CR_TABLE_WIDTH_PER/100,offset:[0,0],text_direction_settings:text_direction_settings,align_settings:align_settings)
     end
     
-    #== テーブル描画（フッター
+    #== テーブル描画（フッター) Table drawing (footer)
     # startpos = @pdf.cursor
     drow_table_footer(columns:footer_data,size:bcolumn_size,width:@max_width*CR_TABLE_WIDTH_PER/100,offset:[0,0],text_direction_settings:text_direction_settings,align_settings:align_settings)
   end
 
   
   def wk_table(data:,start_pos:)
-    #== テーブル描画（ヘッダー
+    #== テーブル描画（ヘッダー Table drawing (header
     startpos = start_pos
     @pdf.move_cursor_to(startpos)
     header = %w(作業員数)
     hcolumn_size = [4]
     drow_table_header(columns:header,size:hcolumn_size,width:@max_width*WK_TABLE_WIDTH_PER/100,offset:[@max_width*CR_TABLE_WIDTH_PER/100+SPACE_BETWEEN_TABLE,0])
 
-    # #== テーブル描画（ボディ
+    # #== テーブル描画（ボディ Table drawing (body
     table_data,footer_data = convert_wk_table_data(data)
     bcolumn_size = hcolumn_size
     (0..34).zip(table_data) do |data_with_no|
       drow_table_row(data_with_no,bcolumn_size,width:@max_width*WK_TABLE_WIDTH_PER/100,offset:[@max_width*CR_TABLE_WIDTH_PER/100+SPACE_BETWEEN_TABLE,0])
     end
 
-    #== テーブル描画（フッター
-    bcolumn_size = [4] # カラム幅の比率
+    #== テーブル描画（フッター Table drawing (footer
+    bcolumn_size = [4] # カラム幅の比率 Column width ratio
     drow_table_footer(columns:footer_data,size:bcolumn_size,width:@max_width*WK_TABLE_WIDTH_PER/100,offset:[@max_width*CR_TABLE_WIDTH_PER/100+SPACE_BETWEEN_TABLE,0])
   
 
@@ -137,30 +137,30 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
 
 
   def vac_table(data:,start_pos:)
-    #== レイアウト調整
+    #== レイアウト調整 Layout adjustment
     align_settings = {0=>:left, 1=>:right, 2=>:right, 3=>:right, 4=>:right, 5=>:right, 6=>:right}
 
-    #== テーブル描画（ヘッダー
+    #== テーブル描画（ヘッダー Table drawing (header
     startpos = start_pos
     @pdf.move_cursor_to(startpos)
     header = %w(所属 在籍 公休 明休 年休 出勤 公出)
-    hcolumn_size = [3,1,1,1,1,1,1] # カラム幅の比率
+    hcolumn_size = [3,1,1,1,1,1,1] # カラム幅の比率 Column width ratio
     drow_table_header(columns:header,size:hcolumn_size,width:@max_width*VAC_TABLE_WIDTH_PER/100,offset:[@max_width*(CR_TABLE_WIDTH_PER+WK_TABLE_WIDTH_PER)/100+SPACE_BETWEEN_TABLE*2,0])
 
-    # #== テーブル描画（ボディ
+    # #== テーブル描画（ボディ Table drawing (body
     table_data,footer_data,wk_type_total = convert_vac_table_data(data)
-    bcolumn_size = hcolumn_size # カラム幅の比率
+    bcolumn_size = hcolumn_size # カラム幅の比率 Column width ratio
 
     (0..table_data.count-1).zip(table_data) do |data_with_no|
       drow_table_row(data_with_no,bcolumn_size,width:@max_width*VAC_TABLE_WIDTH_PER/100,offset:[@max_width*(CR_TABLE_WIDTH_PER+WK_TABLE_WIDTH_PER)/100+SPACE_BETWEEN_TABLE*2,0],align_settings:align_settings)
     end
     
-    #== テーブル描画（フッター
+    #== テーブル描画（フッター Table drawing (footer
     startpos = @pdf.cursor
     align_settings[0] = :center
     drow_table_footer(columns:footer_data,size:bcolumn_size,width:@max_width*VAC_TABLE_WIDTH_PER/100,offset:[@max_width*(CR_TABLE_WIDTH_PER+WK_TABLE_WIDTH_PER)/100+SPACE_BETWEEN_TABLE*2,0],align_settings:align_settings)
 
-    #== テーブル下　小計
+    #== テーブル下　小計 Under the table subtotal
     
     put_text(text:"ＦＭ",pos:[@max_width*(CR_TABLE_WIDTH_PER+WK_TABLE_WIDTH_PER)/100+SPACE_BETWEEN_TABLE*2+10,@pdf.cursor - (DefFontSizeB*1)])
     put_text(text:"運転",pos:[@max_width*(CR_TABLE_WIDTH_PER+WK_TABLE_WIDTH_PER)/100+SPACE_BETWEEN_TABLE*2+10,@pdf.cursor - (DefFontSizeB*3)])
@@ -272,7 +272,7 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
 
 
   def stroke_sepalate_line()
-    bcolumn_size = [35,2,2,2,2,2,3] # カラム幅の比率
+    bcolumn_size = [35,2,2,2,2,2,3] # カラム幅の比率 Column width ratio
     cell_width = @max_width*CR_TABLE_WIDTH_PER/100/bcolumn_size.sum
     cur_x=0
 
@@ -294,8 +294,10 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
 
 
 
-# 集計データを表示用の2次元配列に変換する関数
+  # 集計データを表示用の2次元配列に変換する関数
   # == 休暇集計テーブル
+  # Function to convert aggregated data into a 2D array for display 
+  # == Leave summary table
   def convert_vac_table_data(vac_table_data)
     table_data = []; footer_data=[]; wk_type_total={fm:0,op:0,wk:0}
     vac_table_data.each do |b_cd,data|
@@ -317,7 +319,7 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
   end
 
   
-  # == 作業依頼テーブル
+  # == 作業依頼テーブル Work request table
 
 
 
@@ -396,7 +398,7 @@ class Pdf::CargoCommonPdf < Pdf::ExpansionPdfCommon
   end
   
   
-  # == 作業員数テーブル
+  # == 作業員数テーブル Number of workers table
   def convert_wk_table_data(wk_table_data)
     table_data = []; footer_data = [];
     wk_table_data.each do |cr|

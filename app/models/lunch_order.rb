@@ -7,10 +7,10 @@ class LunchOrder < ApplicationRecord
   
   OrderBranchGroup = {"10"=>["1","2"],"20"=>["3","4"]}
 
-  # 対象日切替時刻
+  # 対象日切替時刻 Target day switching time
   SwitchHour = 16 
 
-  #===表示対象日取得（SwitchHour時以降は翌日、以前は当日
+  #===表示対象日取得（SwitchHour時以降は翌日、以前は当日 Obtain display target date (after SwitchHour, the next day, previously the same day)
   def self.get_today
     today = Date.today
     if Time.now.hour < SwitchHour
@@ -20,34 +20,34 @@ class LunchOrder < ApplicationRecord
     end
   end
 
-  #===注文実績の取得
-  # 引数 : ユーザId(user_id),集計開始日,集計終了日
-  # 戻値 : 集計範囲内でuser_idが注文した合計数
+  #===注文実績の取得 Obtaining order history
+  # 引数 : ユーザId(user_id),集計開始日,集計終了日 Arguments: User ID (user_id), aggregation start date, aggregation end date
+  # 戻値 : 集計範囲内でuser_idが注文した合計数 Return value: Total number ordered by user_id within the aggregation range
   def self.get_orders(user_id,begin_date,end_date)
     orders = LunchOrder.where(:user_id=>user_id).where(["order_date between ? and ? ",begin_date,end_date])
     orders
   end
 
   #
-  #===昼食集計
+  #===昼食集計 Lunch tally
   def self.calc_total(t_date,branche_cd=nil)
     ret = {}
-    #注文日、注文先データ、メニューリスト
+    #注文日、注文先データ、メニューリスト Order date, order destination data, menu list
     wh = WhCalendar.find_by_t_date(t_date)
     ret[:day_info] = wh
     if wh.present?
       ret[:vendor] = wh.lunch_vendor
-      #メニューリスト
+      #メニューリスト menu list
       ret[:menu] = LunchMenu.getdatalist({:order=>:desp_index,:where=>{:lunch_vendor_id=>wh[:lunch_vendor_id]}})
     end
-    #配送先リスト
+    #配送先リスト Delivery list
     locations = LunchLocation.all.select("id,concat(s_name,'(',name,')') p_name").order(:desp_index)
     ret[:locations] = LunchLocation.getdatalist({:text=>:p_name,:datas=>locations}) + [["不要","-1"],["未注文","0"]]
-    #グループリスト
+    #グループリスト group list
     ret[:branches] = Branche.get_sum_list(t_date)
-    #ロックチェック
+    #ロックチェック lock check
     ret[:lock] = LunchOrderLock.ck_lock_all(t_date)
-    #集計初期化
+    #集計初期化 Aggregate initialization
     order_count = {-1=>{:users=>[],:order_num=>0}}
     ret[:menu].each{|txt,lunch_menu_id|
       order_count[lunch_menu_id.to_i] = {:users=>[],:order_num=>0}
@@ -70,6 +70,8 @@ class LunchOrder < ApplicationRecord
     data_tbl = self.joins("LEFT JOIN lunch_menus ON lunch_orders.lunch_menu_id = lunch_menus.id").where(where).order("lunch_menus.desp_index asc").group_by(&:lunch_menu_id)
     #課集計先
     #注文場所毎に合計数と対象ユーザを追加
+    #Division aggregation destination 
+    #Add total number and target users for each order location
     data_tbl.each{|menu_id,lunch_orders|
       all_wokers.each do |woker|
         # -- Worker info
@@ -97,11 +99,11 @@ class LunchOrder < ApplicationRecord
       end
     } if data_tbl.present?
 
-    #休暇申請データを取得
+    #休暇申請データを取得 Get vacation request data
     vt_map = VacationType.all.pluck(:base_no,:time_sheet_name).to_h
     vacation_data = Vacation.where(:vacation_day=>t_date).index_by(&:user_id)
 
-    #未申し込みユーザの取得
+    #未申し込みユーザの取得 Acquisition of unsubscribed users
     unapp_wokers = Woker.get_latest(t_date).where(:branch_cd=>%w(1 2 3 4)).joins(:user).select("wokers.*,users.id as user_id,users.name as user_name")
     unapp_wokers = unapp_wokers.where.not("users.id in (?)",applied) if applied.present?
     unapp_wokers = unapp_wokers.order("wokers.branch_cd asc, wokers.desp_index asc, users.name asc")
@@ -110,15 +112,15 @@ class LunchOrder < ApplicationRecord
       user_name = w.user_name
       woker_branch = w.branch_cd
       vacation = vacation_data[w.user_id] 
-      onwork = true #出勤有無
+      onwork = true #出勤有無 Whether to work or not
       if vacation.present?
-        # 全休の者は非表示、半休の者は表示
+        # 全休の者は非表示、半休の者は表示 Those who are on full leave are hidden, those who are on half leave are displayed.
         vac_str = vt_map[vacation.base_no]
         vac_str += vacation.at_work_str if vacation.base_no==6
         vac_str = "(#{vac_str})"
         user_name += vac_str
         onwork = false unless vacation.works_on?
-        onwork = cws_on_tdate.pluck(:login_id).include?(w.login_id) unless onwork # 配番作業員に設定されている場合
+        onwork = cws_on_tdate.pluck(:login_id).include?(w.login_id) unless onwork # 配番作業員に設定されている場合 If set as number dispatcher
       end
       orders[:total][0][-1][:users]  << [user_name,w.user_id,onwork]
       if orders.has_key?(woker_branch)
@@ -139,18 +141,24 @@ class LunchOrder < ApplicationRecord
   #   require_new_lunchorder_if_not_found:boolean 昼食注文が存在しない場合の挙動を制御
   #     true=>初期値をセットしたnew LunchOrderを返却
   #     false=>nilを返却
-  #
+  #=== get lunch order
+  # argument 
+  # user:User Target user 
+  # t_date:Date Target date 
+  # require_new_lunchorder_if_not_found:boolean Controls behavior when lunch order does not exist 
+  # true=>Return new LunchOrder with initial value set 
+  # return false=>nil
   def self.get_lunch_order(user,t_date=Date::today,require_new_lunchorder_if_not_found=false)
-    # user がUserクラスでない場合、エラーをスローする
+    # user がUserクラスでない場合、エラーをスローする If user is not a User class, throw an error
     raise ArgumentError, "Invalid user" unless user.is_a?(User)
     order = LunchOrder.find_by(:order_date=>t_date,:user_id=>user.id) || LunchOrder.new
 
-    # orderがあれば返却し終了
+    # orderがあれば返却し終了 If user is not a User class, throw an error
     return order unless order.new_record?
-    # 初期設定したorderが不要の場合nil返却し終了
+    # 初期設定したorderが不要の場合nil返却し終了 | If the initialized order is not needed, return nil and exit.
     return nil unless require_new_lunchorder_if_not_found
 
-    # 初期設定したlunch_orderを返す
+    # 初期設定したlunch_orderを返す Return the initialized lunch_order
     wh = WhCalendar.find_by_t_date(t_date)
 
     order[:order_date] = t_date
@@ -161,11 +169,11 @@ class LunchOrder < ApplicationRecord
     order[:created_uid] = user.login_id
     order[:updated_uid] = user.login_id
 
-    # 休暇登録があれば
+    # 休暇登録があれば If you have a vacation registration
     # vacation = Vacation.find_by(:user_id=>user.id,:vacation_day=>t_date)
     vacation = Vacation.find_by(:user_id=>user.id,:vacation_day=>t_date)
     if vacation
-      no_lunch_required_hour = 12 # 昼食不要の境界時刻
+      no_lunch_required_hour = 12 # 昼食不要の境界時刻 Boundary time when lunch is not required
       on_work = vacation.works_on?
       require_lunch = nil
       if on_work
@@ -181,53 +189,53 @@ class LunchOrder < ApplicationRecord
     order
   end
   #
-  #===テスト用昼食注文登録
+  #===テスト用昼食注文登録 Boundary time when lunch is not required
   def self.mk_test_order(tdates)
     ret = []
-    #乱数初期化
+    #乱数初期化 Random number initialization
     random = Random.new()
-    #期間
+    #期間 period
     term =[tdates[:length][:begin_date]..tdates[:length][:end_date]]
-    #配送先リスト
+    #配送先リスト Delivery list
     locations = LunchLocation.all.select(:id).map{|ll| ll[:id]}
     locations << "0"
-    #メニューリスト
+    #メニューリスト menu list
     lunch_menus = {}
     LunchMenu.all.each{|lm|
       lunch_menus[lm[:lunch_vendor_id]] ||= []
       lunch_menus[lm[:lunch_vendor_id]] << lm[:id]
     }
     
-    #カレンダー
+    #カレンダー calendar
     wh_list = WhCalendar.find_by_term(tdates[:length][:begin_date],tdates[:length][:end_date])
-    #ユーザリスト
+    #ユーザリスト user list
     wokers = [] ; woker_branche = {}
     Woker.select(:login_id,:branch_cd).where(:applicable=>Applicable.get_applicable(2,tdates[:length][:begin_date]),:branch_cd=>Branche::WorkerBranchCd).each{|woker|
       wokers << woker[:login_id]
       woker_branche[woker[:login_id]] = woker[:branch_cd]
     }
-    #従業員No->ユーザIDのリスト
+    #従業員No->ユーザIDのリスト Employee No.->List of user IDs
     userid_list = [] ; user_branche = {}
     User.where(:login_id=>wokers).each{|user|
       userid_list << user[:id]
       user_branche[user[:id]] = woker_branche[user[:login_id]]
     }
     user_num = userid_list.size.to_f
-    #休暇申請データ
+    #休暇申請データ Leave request data
     vacation_data = {}
     vacations = Vacation.where({:vacation_day=>term})
     vacations.each{|vacation|
       vacation_data[vacation[:vacation_day]] ||= {}
       vacation_data[vacation[:vacation_day]][vacation[:user_id]] = vacation
     }unless vacations.blank?
-    #注文済みデータ
+    #注文済みデータ Ordered data
     order_data = {}
     orders = self.where({:order_date=>term})
     orders.each{|order|
       order_data[order[:order_date]] ||= []
       order_data[order[:order_date]] << order[:user_id]
     }unless orders.blank?
-    #期間中の注文を登録
+    #期間中の注文を登録 Register your order during the period
     wh_list.each{|wk_date,wh_data|
       vacation_data[wk_date] = {} if vacation_data[wk_date].blank?
       order_data[wk_date] = {} if order_data[wk_date].blank?
@@ -235,18 +243,18 @@ class LunchOrder < ApplicationRecord
       
       if wh_data[:wh_flg] == 0
         l_wokers = Marshal.load(Marshal.dump(userid_list))
-        #休暇者を除外
+        #休暇者を除外 Exclude vacationers
         vacation_data[wk_date].each{|user_id,vd|
           l_wokers.delete(user_id) if vd[:base_no]!=1 && vd[:base_no]!=2
         }unless vacation_data.blank?
       else
         l_wokers = []
-        #休日出勤者のみ
+        #休日出勤者のみ Only those working on holidays
         vacation_data[wk_date].each{|user_id,vd|
           l_wokers << user_id if vd[:base_no]==1
         }unless vacation_data.blank?
       end
-      #注文済みユーザを除外
+      #注文済みユーザを除外 Exclude users who have already ordered
       order_data[wk_date].each{|user_id|
         l_wokers.delete(user_id)
       }unless order_data[wk_date].blank?

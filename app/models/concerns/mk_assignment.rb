@@ -1,9 +1,9 @@
 # coding: utf-8
-#=自動配番モジュール
+#=自動配番モジュール Automatic numbering module
 module MkAssignment
   SimLoopCount = 32
   #
-  #経過メッセージを作成
+  #経過メッセージを作成 Create progress message
   def mk_msg(queue)
     job = DelayedJob.find_by_queue(queue)
     msg = DelayedJobMsg.find_by_delayed_job_id(job[:id])
@@ -13,7 +13,7 @@ module MkAssignment
     msg
   end
   #
-  #前回FM配番のコピー
+  #前回FM配番のコピー Copy of the previous FM numbering
   def copy_fm(queue,work_date)
     work_date = Date.strptime(work_date, "%Y%m%d")
     used_cargo_ids = []
@@ -22,11 +22,11 @@ module MkAssignment
     msg[:msg] = "前回FM配番のコピー開始\n" ; msg.save!
     cargo_tbl = Cargo.where({:work_date=>work_date})
     cargo_tbl.each{|c|
-      next if c[:esta_flg] == 9 #荷役不成立の場合は自動配番をスキップ
+      next if c[:esta_flg] == 9 #荷役不成立の場合は自動配番をスキップ If cargo handling is unsuccessful, automatic assignment is skipped.
       msg[:msg] << "[#{c[:work_no]}][#{c[:work_name]}][(#{c[:work_cd]})#{c[:cargo_name]}]\n" ; msg.save!
-      # 前回作業の同work_name,work_cdの作業を取得
+      # 前回作業の同work_name,work_cdの作業を取得 Retrieve the work with the same work_name and work_cd from the previous operation.
       root_cg = Cargo.where(["work_date < ? and work_name = ? and work_cd=?",work_date,c[:work_name],c[:work_cd]]).order(:work_date=>:desc).first
-      # 前回作業同日の同work_name,work_cdの作業を再取得(※used_cargo_idsを除外)
+      # 前回作業同日の同work_name,work_cdの作業を再取得(※used_cargo_idsを除外) Re-retrieve the work for the same work_name and work_cd on the same day as the previous work (excluding used_cargo_ids).
       root_cg = Cargo.where(["work_date = ? and work_name = ? and work_cd=?",root_cg[:work_date],c[:work_name],c[:work_cd]]).where.not(id: used_cargo_ids).order(:desp_index=>:asc).first if root_cg.present?
 
 
@@ -41,7 +41,7 @@ module MkAssignment
           s_time = c[:i_time].present? ? WorkTimeAggregate.mk_time(work_date,c[:i_time],c[:i_time]) : nil
           e_time = c[:e_time].present? ? WorkTimeAggregate.mk_time(work_date,c[:e_time],c[:e_time]) : nil
 
-          #休暇チェック
+          #休暇チェック vacation check
           v = Vacation.find_by(:login_id=>root_wkr[:login_id],:vacation_day=>work_date)
           if v.present?
             vacation_day = v[:vacation_day]
@@ -50,12 +50,12 @@ module MkAssignment
             leav_time  = v[:leav_time]
             case base_no
             when 2,3,31,32,33,34,41,42
-              # 出勤時間
+              # 出勤時間 Working hours
               if arriv_time.present?
                 arriv_time = WorkTimeAggregate.mk_time(vacation_day,arriv_time,arriv_time)
                 s_time = arriv_time if s_time.blank? || (arriv_time > s_time)
               end
-              # 終了時間
+              # 終了時間 End time
               if leav_time.present?
                 leav_time = WorkTimeAggregate.mk_time(vacation_day,leav_time,leav_time)
                 e_time = leav_time if e_time.blank? || (leav_time < e_time)
@@ -102,7 +102,7 @@ module MkAssignment
   end
 
   #
-  #前回DM配番のコピー
+  #前回DM配番のコピー Copy of previous DM number
   def copy_dm(queue,work_date)
     work_date = Date.strptime(work_date, "%Y%m%d")
     used_cargo_ids = []
@@ -111,10 +111,10 @@ module MkAssignment
     msg[:msg] = "前回DM配番のコピー開始\n" ; msg.save!
     cargo_tbl = Cargo.where({:work_date=>work_date})
     cargo_tbl.each{|c|
-    next if c[:esta_flg] == 9 #荷役不成立の場合は自動配番をスキップ
-    # 前回作業の同work_name,work_cdの作業を取得
+    next if c[:esta_flg] == 9 #荷役不成立の場合は自動配番をスキップ Skip automatic numbering if cargo handling is unsuccessful
+    # 前回作業の同work_name,work_cdの作業を取得  Get the work with the same work_name and work_cd of the previous work
     root_cg = Cargo.where(["work_date < ? and work_name = ? and work_cd=?",work_date,c[:work_name],c[:work_cd]]).order(:work_date=>:desc).first
-    # 前回作業同日の同work_name,work_cdの作業を再取得(※used_cargo_idsを除外)
+    # 前回作業同日の同work_name,work_cdの作業を再取得(※used_cargo_idsを除外) Re-acquire the work of the same work_name and work_cd on the same day as the previous work (*excluding used_cargo_ids)
     root_cg = Cargo.where(["work_date = ? and work_name = ? and work_cd=?",root_cg[:work_date],c[:work_name],c[:work_cd]]).where.not(id: used_cargo_ids).order(:desp_index=>:asc).first if root_cg.present?
 
     msg[:msg] << "[#{c[:work_no]}][#{c[:work_name]}][(#{c[:work_cd]})#{c[:cargo_name]}]\n" ; msg.save!
@@ -129,7 +129,7 @@ module MkAssignment
           s_time = c[:i_time].present? ? WorkTimeAggregate.mk_time(work_date,c[:i_time],c[:i_time]) : nil
           e_time = c[:e_time].present? ? WorkTimeAggregate.mk_time(work_date,c[:e_time],c[:e_time]) : nil
 
-          #休暇チェック
+          #休暇チェック vacation check
           v = Vacation.find_by(:login_id=>root_wkr[:login_id],:vacation_day=>work_date)
           if v.present?
             vacation_day = v[:vacation_day]
@@ -138,12 +138,12 @@ module MkAssignment
             leav_time  = v[:leav_time]
             case base_no
             when 2,3,31,32,33,34,41,42
-              # 出勤時間
+              # 出勤時間 Working hours
               if arriv_time.present?
                 arriv_time = WorkTimeAggregate.mk_time(vacation_day,arriv_time,arriv_time)
                 s_time = arriv_time if s_time.blank? || (arriv_time > s_time)
               end
-              # 終了時間
+              # 終了時間 End time
               if leav_time.present?
                 leav_time = WorkTimeAggregate.mk_time(vacation_day,leav_time,leav_time)
                 e_time = leav_time if e_time.blank? || (leav_time < e_time)
@@ -189,21 +189,21 @@ module MkAssignment
   end
 
   #
-  #自動配番
+  #自動配番 Automatic numbering
   def auto_assignment(queue,work_date)
     msg = mk_msg(queue)
     msg[:msg] = "自動配番開始\n" ; msg.save!
     work_date = Date.strptime(work_date, "%Y%m%d")
     whs = WhSummary.find_by(["? between s_date and e_date",work_date])
-    excluded_users = []  #除外ユーザ（配番済みor完全休暇ユーザ）
-    registered_machines = [] #配番済み機械
-    #乱数初期化
+    excluded_users = []  #除外ユーザ（配番済みor完全休暇ユーザ） Excluded users (assigned or completely vacation users)
+    registered_machines = [] #配番済み機械 Assigned machines
+    #乱数初期化 Random number initialization
     random = Random.new()
     msg[:msg] << "配番データをロード\n" ; msg.save!
     cargos = {} ; cargo_ids = {0=>[],1=>[],:all=>[]}
     cargo_tbl = Cargo.where({:work_date=>work_date}).includes([:cargo_worker,:cargo_machine])
     cargo_tbl.each{|c|
-      next if c[:esta_flg] == 9 #荷役不成立の場合は自動配番をスキップ
+      next if c[:esta_flg] == 9 #荷役不成立の場合は自動配番をスキップ Skip automatic numbering if cargo handling is unsuccessful
       case c[:move_no]
       when "HB999991","HB000600","HB000610"
         cargo_ids[0] << c[:id]
@@ -222,7 +222,7 @@ module MkAssignment
           c_data[key] = c[key]
         end
       }
-      #配番済み作業者
+      #配番済み作業者 Assigned worker
       c_worker_locked = c.cargo_worker.where(:lock_flg=>1)
       c_worker_locked.each{|worker|
         c_data[:workers]["#{worker[:wk_type]}_#{worker[:wk_class]}"] ||= []
@@ -231,14 +231,14 @@ module MkAssignment
         worker.attribute_names.each{|key|
           case key
           when "id","lock_version","created_at","created_uid","updated_at","updated_uid","deleted_at","deleted_uid"
-            #スキップ
+            #スキップ skip
           else
             c_worker[key.to_sym] = worker[key]
           end
         }
         c_data[:workers]["#{worker[:wk_type]}_#{worker[:wk_class]}"] << c_worker
       }
-      #配番済み機械（機械はロック有無にかかわらず取込み
+      #配番済み機械（機械はロック有無にかかわらず取込み Number picking machine (equipment can be loaded regardless of whether it is locked or not)
       c.cargo_machine.each{|machine|
         c_data[:machines][machine[:wk_type]] ||= {}
         c_data[:machines][machine[:wk_type]][machine[:wk_index]] = machine
@@ -252,8 +252,8 @@ module MkAssignment
     }unless cargo_tbl.blank?
     msg[:msg] << "作業員データをロード\n" ; msg.save!
     worker_list = {}; competence_list = {}
-    #該当日休暇ユーザ取得
-    has_v_user = {}       #早退or公休〇の作業員リスト、配番ではできるだけ選択しないようにする
+    #該当日休暇ユーザ取得 Acquire vacation user for the corresponding day
+    has_v_user = {}       #早退or公休〇の作業員リスト、配番ではできるだけ選択しないようにする List of workers who leave early or take public holidays, avoid selecting them as much as possible when assigning numbers
     vacations = Vacation.where(["vacation_day=? ",work_date])
     vacations.each{|v|
       case v[:base_no]
@@ -269,13 +269,13 @@ module MkAssignment
         excluded_users << v[:login_id]
       end
     }
-    #当月残業時間集計
+    #当月残業時間集計 Total overtime hours for the current month
     total_work_time = CargoWorker.total_work_times(work_date,{:begin_date=>whs[:s_date],:end_date=>whs[:e_date]})
-    #配番可能ユーザをロード
+    #配番可能ユーザをロード Load numberable users
     applicable = Applicable.get_applicable(2,work_date)
     woker_info = {}
-    woker_competences1 = {}  #正規作業員
-    woker_competences2 = {}  #副作業員
+    woker_competences1 = {}  #正規作業員 regular worker
+    woker_competences2 = {}  #副作業員 Deputy worker
     Woker::CompetenceKey.each{|c|woker_competences1[c]={};woker_competences2[c]={};}
     data_tbl = Woker.where(["applicable=? and not login_id in(?)",applicable,excluded_users]).order(:desp_index)
     data_tbl = Woker.includes([:user]).where(["applicable=? and not login_id in(?)",applicable,excluded_users]).order(:desp_index)
@@ -307,7 +307,7 @@ module MkAssignment
         :cargo_ids => []
       }
     }
-    #配番優先ユーザデータをロード
+    #配番優先ユーザデータをロード Load numbering priority user data
     ca_workers = {}
     if cargo_ids[0].include?("HB999991")
       data_tbl = Woker.where(["applicable=? and competence_ca >4 ",applicable]).order(:desp_index)
@@ -319,24 +319,24 @@ module MkAssignment
     end
     msg[:msg] << "機械データをロード\n" ; msg.save!
     machines,machine_names,machine_bgc_class = Machine.get_assignment_list(work_date)
-    #配番
+    #配番 Number assignment
     
     msg[:msg] << "機械配番を実行\n" ; msg.save!
-    #-- 機械列の自動配番 -- (20241206_大澤追加)
+    #-- 機械列の自動配番 -- (20241206_大澤追加) Automatic numbering of machine rows -- (20241206_Osawa added)
     cargos.each{|cargo_id,c_data|
       c_mc_name = c_data["machine_nm"]
       next if c_mc_name.blank?
-      #-- 選定条件
-      #   配番の機械名と一致する機械名を探す
-      #   重複チェックはしない
+      #-- 選定条件 Selection conditions
+      #   配番の機械名と一致する機械名を探す Search for a matching machine name
+      #   重複チェックはしない No duplicate checking
       candidate = Machine.where("cd = ? OR name = ?",c_mc_name,c_mc_name)&.first
       next if candidate.blank?
 
-      #- 固定値
-      wk_index = 1 # 1枠で固定のため
+      #- 固定値 Fixed value
+      wk_index = 1 # 1枠で固定のため Because it is fixed in one frame
       wk_type = "mc"
 
-      #- 登録予約
+      #- 登録予約 Registration reservation
       c_data[:machines] ||= {}; c_data[:machines]["mc"] ||= {} 
       c_data[:machines]["mc"][wk_index] = {
         :cargo_id => c_data["id"],
@@ -362,13 +362,13 @@ module MkAssignment
       :cargo_class98=>["ｺﾝﾃﾅ","コンテナ"],
       :cargo_class17=>["ｽｸﾗｯﾌﾟ","スクラップ"],
     }
-    #優先・可能を配番
+    #優先・可能を配番 Priority and possible assignment
     [2,1].each{|level|
       machines.each{|m_type,mlist|
         cargo_class.each{|wkcd,key_wds|
           tlist = mlist.select{|m| m[wkcd] == level && m[:u_maintenance] == 0 && m[:mainte].nil? && !registered_machines.include?(m[:id])}
           if tlist.present?
-            #場所指定で場合分け
+            #場所指定で場合分け Case of place specification
             plist = {:blank => []}
             tlist.each{|m|
               has_place = false
@@ -382,7 +382,7 @@ module MkAssignment
               }
               plist[:blank] << m unless has_place
             }
-            #作業データを走査
+            #作業データを走査 Survey work data
             cargos.each{|cargo_id,c_data| 
               if c_data["cargo_name"].present? && key_wds.any?{|key_wd| c_data["cargo_name"].include?(key_wd)}
                 if c_data["#{m_type}_m"].to_i > 0 || m_type == "ot"
@@ -398,7 +398,7 @@ module MkAssignment
                   candidates = plist[:blank] if candidates.nil?
                   unless candidates.blank?
                     registered = 0
-                    if c_data["#{m_type}_m"].to_i > 0  #<-必要人数あり＝取扱者
+                    if c_data["#{m_type}_m"].to_i > 0  #<-必要人数あり＝取扱者 Required number of workers
                       if c_data[:machines].has_key?("dr")
                         registered = c_data[:machines]["dr"].count{|idx,rm| rm[:m_type] == m_type}
                       else
@@ -425,7 +425,7 @@ module MkAssignment
                           :work_time => c_data["work_time"],
                           :m_type => m_type,
                         }
-                        #候補リストから削除
+                        #候補リストから削除 Delete from candidate list
                         registered_machines << candidate[:id]
                         candidates.delete(candidate)
                         mlist.delete(candidate)
@@ -454,7 +454,7 @@ module MkAssignment
                           :work_time => c_data["work_time"],
                           :m_type => m_type,
                         }
-                        #候補リストから削除
+                        #候補リストから削除 Delete from candidate list
                         registered_machines << candidate[:id]
                         candidates.delete(candidate)
                         mlist.delete(candidate)
@@ -469,11 +469,11 @@ module MkAssignment
         }
       }
     }
-    #場所のみ指定機械を配番
+    #場所のみ指定機械を配番 Place only machine assignment
     machines.each{|m_type,mlist|
       tlist = mlist.select{|m| (m[:wk_place1].present? || m[:wk_place2].present? || m[:wk_place3].present?) && m[:u_maintenance] == 0 && m[:mainte].nil? && !registered_machines.include?(m[:id])}
       unless tlist.blank?
-        #場所指定で場合分け
+        #場所指定で場合分け Case of place specification
         plist = {}
         tlist.each{|m|
           has_place = false
@@ -485,7 +485,7 @@ module MkAssignment
             end
           }
         }
-        #作業データを走査
+        #作業データを走査 Survey work data
         cargos.each{|cargo_id,c_data| 
           if c_data["work_place"].present?
             if c_data["#{m_type}_m"].to_i > 0 || m_type == "ot"
@@ -498,7 +498,7 @@ module MkAssignment
               }
               unless candidates.blank?
                 registered = 0
-                if c_data["#{m_type}_m"].to_i > 0  #<-必要人数あり＝取扱者
+                if c_data["#{m_type}_m"].to_i > 0  #<-必要人数あり＝取扱者  #<-Required number of people=handlers
                   if c_data[:machines].has_key?("dr")
                     registered = c_data[:machines]["dr"].count{|idx,rm| rm[:m_type] == m_type}
                   else
@@ -525,7 +525,7 @@ module MkAssignment
                       :work_time => c_data["work_time"],
                       :m_type => m_type,
                     }
-                    #候補リストから削除
+                    #候補リストから削除 Delete from candidate list
                     registered_machines << candidate[:id]
                     candidates.delete(candidate)
                     mlist.delete(candidate)
@@ -554,7 +554,7 @@ module MkAssignment
                       :work_time => c_data["work_time"],
                       :m_type => m_type,
                     }
-                    #候補リストから削除
+                    #候補リストから削除 Delete from candidate list
                     registered_machines << candidate[:id]
                     candidates.delete(candidate)
                     mlist.delete(candidate)
@@ -567,7 +567,7 @@ module MkAssignment
         }
       end
     }
-    #他取扱者機械を配番
+    #他取扱者機械を配番 Assign other handlers' machines
     cargos.each{|cargo_id,c_data|
       machines.each{|m_type,mlist|
         next if m_type=="ot" || m_type=="bs"
@@ -600,7 +600,7 @@ module MkAssignment
               :work_time => c_data["work_time"],
               :m_type => m_type,
             }
-            #候補リストから削除
+            #候補リストから削除 Delete from candidate list
             registered_machines << candidate[:id]
             candidates.delete(candidate)
             mlist.delete(candidate)
@@ -617,25 +617,25 @@ module MkAssignment
       wk_winfo = Marshal.load(Marshal.dump(woker_info))
       case (sim_no % 4)
       when 1
-        #配番、車両整備、道具（６号）→本船→沿岸
+        #配番、車両整備、道具（６号）→本船→沿岸  Numbering, vehicle maintenance, tools (No. 6) → Ship → Coast
         cid_list = cargo_ids[0] + cargo_ids[1]
       when 2
-        #超過時間の昇順
+        #超過時間の昇順 Ascending order of overtime
         cid_list = cargo_ids[:all].sort_by{|cid|  wk_cargos[cid]["orver_time"] }
       when 3
-        #超過時間の降順
+        #超過時間の降順 Descending order of overtime
         cid_list = cargo_ids[:all].sort_by{|cid|  wk_cargos[cid]["orver_time"] * -1 }
       when 0
-        #配番、車両整備、道具（６号）→沿岸→本船
+        #配番、車両整備、道具（６号）→沿岸→本船 Numbering, vehicle maintenance, tools (No. 6) → Coast → Vessel
         cid_list = cargo_ids[0] + cargo_ids[1].sort_by{|cid|  wk_cargos[cid]["work_no"] * -1 }
       end
       cid_list.each{|cargo_id|
         c_data = wk_cargos[cargo_id]
         case c_data["move_no"]
         when "HB999991"
-          #力量キー
+          #力量キー competency key
           c_key="ca"
-          #配番済みグループを除外
+          #配番済みグループを除外 competency key
           branch_cds = ["1","2","3","4"]
           c_data[:workers].each{|type_class,workers|
             workers.each{|worker|
@@ -654,7 +654,7 @@ module MkAssignment
                 c_data[:workers]["#{wk_type}_#{wk_class}"] = []
               end
               (c_data[num_key] - registered).times{
-                #対象グループCDを絞る
+                #対象グループCDを絞る Narrow down target group CDs
                 if branch_cds.blank?
                   branch_cds = wk_wokers[c_key].keys
                   branch_cd = branch_cds[random.rand(branch_cds.size)]
@@ -662,7 +662,7 @@ module MkAssignment
                   branch_cd = branch_cds[0]
                   branch_cds.delete(branch_cd)
                 end
-                #配番は以下の方が最優先
+                #配番は以下の方が最優先 Priority is given to the following for numbering:
                 t_login_id = "dummy"
                 t_login_id = ca_workers[branch_cd] if ca_workers.has_key?(branch_cd)
                 if wk_wokers[c_key][branch_cd].blank?
@@ -774,10 +774,10 @@ module MkAssignment
               end
             end
           }
-          #dr:取扱者の処理
+          #dr:取扱者の処理 dr: Handler processing
           if dr_needs.present?
             wk_type = "dr"
-            #登録済み機械データから配置
+            #登録済み機械データから配置 Placement from registered machine data
             wk_cargo_workers = {}
             c_data[:machines][wk_type].each{|wk_index,machine|
               if machine[:m_type]!="bs" && machine[:m_type]!="ot"
@@ -793,7 +793,7 @@ module MkAssignment
                 end
               end 
             }unless c_data[:machines][wk_type].blank?
-            #不足分を空いたところに詰める
+            #不足分を空いたところに詰める fill in the missing amount in the empty space
             dr_needs.each{|wk_class,need|
               if need[:m].to_i > 0 || need[:s].to_i > 0
                 need[:m].times{|wi|
@@ -814,7 +814,7 @@ module MkAssignment
                 }
               end
             }
-            #登録済み作業員データを確認し、必要人数を削除&&作業設定からマークを削除
+            #登録済み作業員データを確認し、必要人数を削除&&作業設定からマークを削除 Check the registered worker data, delete the required number of workers & & delete the mark from work settings
             c_data[:workers].each{|type_class,workers|
               if type_class =~/^#{wk_type}/
                 workers.each{|worker| 
@@ -849,7 +849,7 @@ module MkAssignment
           if wk_needs.present?
             wk_type = "wk"
             wk_cargo_workers = {}
-            #前から詰めた場合
+            #前から詰めた場合 When packed from the front
             wk_index = 1
             wk_needs.each{|wk_class,need|
               need.times{
@@ -857,7 +857,7 @@ module MkAssignment
                 wk_index += 1
               }
             }
-            #登録済み機械データから調整
+            #登録済み機械データから調整 Adjustment from registered machine data
             c_data[:machines][wk_type].each{|wk_index,machine|
               if machine[:machine_cd]=~/ｽｲｰﾊﾟ/ || machine[:machine_cd]=~/散水/ || machine[:machine_cd]=~/掃除機/ || machine[:machine_cd]=~/三洋掃/
                 tmp_wk_class = wk_cargo_workers[wk_index]
@@ -870,7 +870,7 @@ module MkAssignment
                 }
               end
             }unless c_data[:machines][wk_type].blank?
-            #登録済み作業員データを確認し、必要人数を削除&&作業設定からマークを削除
+            #登録済み作業員データを確認し、必要人数を削除&&作業設定からマークを削除 Check the registered worker data, delete the required number of workers & & delete the mark from work settings
             c_data[:workers].each{|type_class,workers|
               if type_class =~/^#{wk_type}/
                 workers.each{|worker| 
@@ -899,7 +899,7 @@ module MkAssignment
           end
         end
       }
-      #評価
+      #評価 evaluation
       assessment = do_assessment(wk_cargos,wk_winfo)
       msg[:msg] << "自動配番#{sim_no}回目：未配番人数=[#{assessment[:shortage]}]、臨時=[#{assessment[:partners]}]、時間外偏差=[#{assessment[:orver_time_sd]}]\n"; msg.save!
       sym_ret[sim_no] = {
@@ -907,7 +907,7 @@ module MkAssignment
         :assessment => assessment,
       }
     }
-    #評価もっともよい評価のシミュレーションを選択
+    #評価もっともよい評価のシミュレーションを選択 Select the simulation with the best rating
     best_sym = choice_assessment(sym_ret)
     msg[:msg] << "#{best_sym}回目のシミュレーションを保存\n"; msg.save!
     begin
@@ -946,7 +946,7 @@ module MkAssignment
     end
     msg[:msg] << "自動配番完了\n" ; msg.save!
   end
-  #必要人数カラム名から作業カテゴリ、担当作業を取得
+  #必要人数カラム名から作業カテゴリ、担当作業を取得  Get the work category and work in charge from the required number of people column name
   def get_wk_type_class(num_key)
     case num_key
     when "fm_m" ; return ["fm","fm"];
@@ -970,14 +970,14 @@ module MkAssignment
     else  ; return ["-","-"];
     end
   end
-  #荷役従事者データ作成&候補者リストから削除
+  #荷役従事者データ作成&候補者リストから削除 Creation of cargo handling worker data & deletion from candidate list
   def mk_cargo_worker(c_data, login_id, woker_info, competences, wk_type, wk_class, wk_index=0)
-    #作業員の作業順
+    #作業員の作業順 Work order of workers
     work_index = 0
     c_data[:workers].each_value{|workers|
       work_index += workers.count{|worker| worker[:login_id] == login_id}
     }
-    #バスフラグチェック
+    #バスフラグチェック bus flag check
     bus_flg = 0
     if c_data[:machines].has_key?(wk_type) && c_data[:machines][wk_type].has_key?(wk_index)
       bus_flg = 1 if c_data[:machines][wk_type][wk_index][:m_type] == "bs"
@@ -1001,23 +1001,23 @@ module MkAssignment
       :lock_flg => 0,
     }
 
-    #出勤時間＆終了時間
+    #出勤時間＆終了時間 Starting time & finishing time
     s_time = WorkTimeAggregate.mk_time(c_data["work_date"],c_data["i_time"],Cargo::RegularITime) if c_data["i_time"].present?
     e_time = WorkTimeAggregate.mk_time(c_data["work_date"],c_data["e_time"],Cargo::RegularETime) if c_data["e_time"].present?
 
-    #休暇チェック
+    #休暇チェック vacation check
     if woker_info[:vacation].present?
       base_no = woker_info[:vacation][:base_no]
       if [2,3,31,32,33,34,41,42].include?(base_no)
         vacation_day = woker_info[:vacation][:vacation_day]
         arriv_time   = woker_info[:vacation][:arriv_time]
         leav_time    = woker_info[:vacation][:leav_time]
-        # 出勤時間
+        # 出勤時間 Working hours
         if arriv_time.present?
           arriv_time = WorkTimeAggregate.mk_time(vacation_day,arriv_time,arriv_time)
           s_time = arriv_time if s_time.blank? || (arriv_time > s_time)
         end
-        # 終了時間
+        # 終了時間 End time
         if leav_time.present?
           leav_time = WorkTimeAggregate.mk_time(vacation_day,leav_time,leav_time)
           e_time = leav_time if e_time.blank? || (leav_time < e_time)
@@ -1028,9 +1028,9 @@ module MkAssignment
     c_worker[:e_time] = e_time if e_time.present?
 
 
-    #就業時間＆超過時間
+    #就業時間＆超過時間 Hours of Employment & Overtime
     if s_time.present? && e_time.present?
-      #bus_flg補正
+      #bus_flg補正 bus_flg correction
       if bus_flg == 1
         time_0700 = WorkTimeAggregate.mk_time(c_data["work_date"],"07:00","07:00")
         adj_s_time = c_worker[:s_time] - 30*60
@@ -1050,7 +1050,7 @@ module MkAssignment
     return c_worker
   end
   #
-  #力量リストから削除して重複しないようにする
+  #力量リストから削除して重複しないようにする Delete from the competency list to avoid duplication
   def delete_competences(woker_competences,login_id)
     woker_competences.each{|c_key,competences|
       if c_key == "ca"
@@ -1061,7 +1061,7 @@ module MkAssignment
     }
     return woker_competences
   end
-  #該当の力量キーを特定
+  #該当の力量キーを特定 Identify the relevant competency key
   def get_competence_key(num_key,c_data,wk_index,wk_type,wk_class)
     machine_cd = ""; machine_type = "";
     ret_key = "none"
@@ -1231,6 +1231,10 @@ module MkAssignment
   #作業の残用時間が0の場合は累積残業時間が高い方から、
   #作業の残用時間が1以上の場合は累積残業時間が低い方から、
   #公休〇はできるだけ選ばない
+  ##===Select a worker from the list of available workers 
+  #If the remaining work time is 0, the cumulative overtime time is higher, 
+  #If the remaining work time is 1 or more, the cumulative overtime time will be calculated from the lowest 
+  #Do not choose public holidays as much as possible
   def choice_worker(random,c_data,woker_list,woker_infos)
     return nil if woker_list.blank?
     tmp_list = woker_list.keys
@@ -1245,17 +1249,17 @@ module MkAssignment
     return tmp_list[random.rand(tmp_list.size)]
   end
   #
-  #===試算評価
+  #===試算評価 Estimate evaluation
   def do_assessment(cargos,wk_winfo)
     orver_times = []
     competences = []
     ret = {
-      :shortage=>0,         #未配番人数（必要人数を満たしているか（配番人数-必要人数)
-      :partners=>0,         #労協等の配番数
-      :orver_time_var=>nil, #月残業時間の分散
-      :orver_time_sd=>nil,  #月残業時間の標準偏差
-      :competence_var=>nil, #力量の分散
-      :competence_sd=>nil,  #力量の標準偏差
+      :shortage=>0,         #未配番人数（必要人数を満たしているか（配番人数-必要人数) Number of unassigned people (does the required number of people meet (number of assigned people - required number of people)
+      :partners=>0,         #労協等の配番数 Number of labor unions, etc.
+      :orver_time_var=>nil, #月残業時間の分散 Distribution of monthly overtime hours
+      :orver_time_sd=>nil,  #月残業時間の標準偏差 Standard deviation of monthly overtime hours
+      :competence_var=>nil, #力量の分散 Dispersion of competence
+      :competence_sd=>nil,  #力量の標準偏差 standard deviation of competence
     }
     cargos.each{|cargo_id,c_data|
       worker_count = 0
@@ -1277,12 +1281,12 @@ module MkAssignment
         ret[:shortage] += (c_data[:need_count] - worker_count)
       end
     }
-    #残業時間
+    #残業時間 overtime hours
     sum = orver_times.reduce(0){|sum,wi| sum + wi.to_i }
     mean = sum.to_f / (orver_times.size)
     ret[:orver_time_var] = (orver_times.present? ? orver_times.reduce(0){|sum,wi| sum + (wi.to_i - mean) ** 2 } / (orver_times.size) : 0)
     ret[:orver_time_sd] = Math.sqrt(ret[:orver_time_var])
-    #力量
+    #力量 strength
     sum = competences.reduce(0){|sum,wi| sum + (wi.blank? ? 3 : wi) }
     mean = sum.to_f / (competences.size)
     ret[:competence_var] = (competences.present? ? competences.reduce(0){|sum,wi| sum + ((wi.blank? ? 3 : wi) - mean) ** 2 } / (competences.size) : 0)
@@ -1290,8 +1294,8 @@ module MkAssignment
     return ret
   end
   #
-  #===評価もっともよい評価のシミュレーションを選択
-  #時間外偏差の上位５つの中から最もうまく配番できたものを選択
+  #===評価もっともよい評価のシミュレーションを選択 Select the simulation with the best rating
+  #時間外偏差の上位５つの中から最もうまく配番できたものを選択 Select the most successful number from among the top five after-hours deviations.
   def choice_assessment(sym_ret)
     tmp_list = sym_ret.keys
     tmp_list = tmp_list.sort_by{|sim_no| sym_ret[sim_no][:assessment][:orver_time_sd] }
@@ -1301,7 +1305,7 @@ module MkAssignment
   end
 
   #
-  #===配番データを結果にコピー
+  #===配番データを結果にコピー Copy numbering data to results
   def do_copy_cargo(queue,work_date,uid)
     msg = mk_msg(queue)
     crf = %i[id cargo_id work_date login_id work_time orver_time s_time e_time work_index bus_flg]

@@ -4,8 +4,8 @@ class WorkerCommon::UsersController < ApplicationController
   before_action :set_cmn_oth_variable, :only =>[:edit,:update_password,:update_setting]
 
 
-  #=== 変更リクエスト処理
-  #paramの:targetで呼ぶ関数を切り替え
+  #=== 変更リクエスト処理 Change request processing
+  #paramの:targetで呼ぶ関数を切り替え Switch the function called using `param:target`.
   def edit
     case params[:target]
     when 'password'
@@ -18,12 +18,12 @@ class WorkerCommon::UsersController < ApplicationController
     end
   end
 
-  #=== ユーザ設定変更リクエスト処理
+  #=== ユーザ設定変更リクエスト処理 Processing user settings change requests
   def edit_setting
     render 'edit_setting'
   end
 
-  #=== ユーザ設定更新
+  #=== ユーザ設定更新 Update user settings
   def update_setting
     flash[:error_msgs] = []
     bbs_max_count,question,answer = params[:user].values_at(:bbs_max_count,:remind_question,:remind_answer)
@@ -66,12 +66,12 @@ class WorkerCommon::UsersController < ApplicationController
     end
   end
 
-  #=== ログインパスワード変更リクエスト処理
+  #=== ログインパスワード変更リクエスト処理 Processing login password change request
   def edit_password
     render 'edit_password'
   end
 
-  #=== ログインパスワード更新
+  #=== ログインパスワード更新 Login password update
   def update_password
     flash.now[:error_msgs] ||= []
     require_fields = [:password]
@@ -81,7 +81,7 @@ class WorkerCommon::UsersController < ApplicationController
     new_password = input.delete(:password_update)
     new_password_confirmation = input.delete(:password_update_confirmation)
     
-    # 入力されたパスワードが有効かチェック
+    # 入力されたパスワードが有効かチェック Check if the entered password is valid.
     if input[:password].present?
       flash.now[:error_msgs] << "「パスワード」が一致しません。" if !@user.match_password?(input[:password])
     else
@@ -94,7 +94,7 @@ class WorkerCommon::UsersController < ApplicationController
       flash.now[:error_msgs] << "「変更後パスワード」または「変更後パスワード(確認用)」が未入力です。"
     end
     
-    # リマインドパスワード補完(初回ログイン時以外はUserテーブルの登録情報で補完します)
+    # リマインドパスワード補完(初回ログイン時以外はUserテーブルの登録情報で補完します) Password reminder (passwords will be automatically filled in using the information registered in the User table, except for the first login).
     if flash.now[:error_msgs].length > 0
       redirect_param = user_params(require_fields)
       @user.attributes = redirect_param
@@ -123,7 +123,7 @@ class WorkerCommon::UsersController < ApplicationController
     end
   end
 
-  #=== エラー画面
+  #=== エラー画面 error screen
   def error
   end
 
@@ -140,7 +140,7 @@ class WorkerCommon::UsersController < ApplicationController
     when 'password'
       @title = "パスワード変更"
       @visible_remind_field = @user.remind_question.blank?
-      @disable_link = session[UserSessionKey][:first_login] # ホームリンクの無効化
+      @disable_link = session[UserSessionKey][:first_login] # ホームリンクの無効化 Disable home link
 
     when 'setting'
       @title = "ユーザ設定"

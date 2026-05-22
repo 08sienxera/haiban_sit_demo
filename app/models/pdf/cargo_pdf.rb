@@ -1,29 +1,29 @@
 class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
-  # 作業カテゴリリスト
+  # 作業カテゴリリスト Work category list
   OneCharIdentifier = {hd_w:"ハ",db_w:"土",hs_w:"配",sn_w:"船",eg_w:"沿",ot_w:"他"}
-  # 揚積区分リスト
+  # 揚積区分リスト Lifting classification list
   IoIdentifier = {0=>"",1=>"揚",2=>"積",3=>"揚積",4=>"その他"}
   DirtIdentifier = {0=>"",1=>"揚",2=>"積",3=>"揚積",4=>"その他"}
-  # 作業区分リスト
+  # 作業区分リスト Work classification list
   WorkClassIdentifier = {1=>"本船",2=>"沿岸",9=>"休み"}
   
-  # 行高さ（ヘッダー）
+  # 行高さ（ヘッダー） Row height (header)
   HeaderRowHeight = 16
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） Row height (body)
   BodyRowHeight = 23
-  # ページあたりの行数（ヘッダとフッタを除く
+  # ページあたりの行数（ヘッダとフッタを除く Number of lines per page (excluding headers and footers)
   TableRowNum = 50
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） Font size (body)
   DefFontSizeB = 8
-  # パネル色（配番作業員
+  # パネル色（配番作業員 Panel color (numbering worker
   WokerPanelColor = 'dcdcdc'
-  # パネル色（配番機械
+  # パネル色（配番機械 Panel color (numbering machine
   MachinePanelColor = 'dcdcdc'
 
-  # PDFマージン
+  # PDFマージン PDF margin
   BottomMargin = 0
 
-  # 初期設定
+  # 初期設定 Initial settings
   def initialize(cd,page_condition = {},name:nil,title:nil)
     super(cd,page_condition,name:name)
     @title = title || "荷役作業予定　及び　配番表"
@@ -31,7 +31,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
     @max_width = @pdf.bounds.right - @pdf.bounds.left
   end
 
-  # PDF作成
+  # PDF作成 PDF creation
   def create(t_date,cargos,assigned_datas,vacation_wokers,title:@title)
     days = I18n.t("date.day_names")
     page_title = title
@@ -40,18 +40,18 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
     # @table_row_num = [cargos.count,TableRowNum].max
     @table_row_num = TableRowNum
 
-    #== タイトル、作成日、対象
+    #== タイトル、作成日、対象 Title, creation date, target
     sub_title = "小名浜海陸運送（株）　業務部"
 
-    #== レイアウト崩れ対応
-    # main_table関数内に書き込み開始位置（start_list_index）を渡す
-    # main_table関数内で指定位置に達すると描画を終了し、終了位置を返す
-    # 終了位置がcargos.length以下の場合、次ページを追加しループを継続する
+    #== レイアウト崩れ対応 Corresponding to layout collapse
+    # main_table関数内に書き込み開始位置（start_list_index）を渡す Pass the write start position (start_list_index) in the main_table function
+    # main_table関数内で指定位置に達すると描画を終了し、終了位置を返す When the specified position is reached in the main_table function, the drawing ends and the end position is returned.
+    # 終了位置がcargos.length以下の場合、次ページを追加しループを継続する If the end position is less than cargos.length, add the next page and continue the loop
     start_list_index = 0
     count = 0
     loop_flg = true
 
-    # UAT-181 フォント変更
+    # UAT-181 フォント変更 UAT-181 Font change
     @pdf.font(FONT_G)
 
     while loop_flg do
@@ -73,8 +73,8 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
   private
 
   def header(page_title,sub_title,t_date_str,created_date_str,page_num=1)
-    # 描画位置、サイズは見ながら調整
-    # ハードコーディングしている
+    # 描画位置、サイズは見ながら調整 Adjust the drawing position and size while looking at it.
+    # ハードコーディングしている It's hard-coded
     left = @pdf.bounds.left
     center = @pdf.bounds.right/2 
     right = @pdf.bounds.right
@@ -114,7 +114,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
   end
 
   def main_table(start_index,cargos,assigned_datas,vacation_wokers)
-    # start_index => cargosの開始位置を指定
+    # start_index => cargosの開始位置を指定 start_index => Specify the starting position of cargos
     start_vpos = @pdf.cursor
     hcolumn_size_l = [1,5,4.5,2.5,2]
     hcolumn_size_c = [2,5]
@@ -128,8 +128,8 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
     header_r = ["荷役機械","取 扱 者","船 内 ・ 沿 岸","労供","人数","出勤","備　　　考"]
     header_width_r = @max_width/column_size*hcolumn_size_r.sum
 
-    #== 準備
-    # 行描画終了条件の計算（フッタ一致に達するまで
+    #== 準備 Prepare
+    # 行描画終了条件の計算（フッタ一致に達するまで Calculating line drawing end condition (until footer match is reached)
     footer_text = ""
     vacation_wokers.each do |v_name,w_name_list|
       footer_text += "＜#{v_name}＞ "
@@ -139,11 +139,11 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
     footer_height = @pdf.height_of(footer_text, size:DefFontSizeB,inline_format: true)
     footer_height = DefFontSizeB if footer_height < DefFontSizeB
 
-    #== テーブル描画（ヘッダー
-    # 左
+    #== テーブル描画（ヘッダー Table drawing (header
+    # 左 left
     @pdf.move_cursor_to(start_vpos)
     drow_table_header(columns:header_l,size:hcolumn_size_l,width:header_width_l,height:header_height,offset:[0,0],under_line:false,bg_color:"dddddd")
-    # 中(グリッドレイアウト)
+    # 中(グリッドレイアウト) Medium (grid layout)
     grid_x_size = hcolumn_size_c.sum
     grid_width = [[hcolumn_size_c.sum],hcolumn_size_c]
     grid_y_size = 2
@@ -161,14 +161,14 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
       cur_pos_y += step_y
     end
     
-    # 右
+    # 右 right
     @pdf.move_cursor_to(start_vpos)
     drow_table_header(columns:header_r,size:hcolumn_size_r,width:header_width_r,height:header_height,offset:[@max_width-header_width_r,0],under_line:false,bg_color:"dddddd")
 
-    # 共通二重線
+    # 共通二重線 common double line
     put_cell(pos: [0,@pdf.cursor], size: [@max_width,2],line_weight: 0.5)
 
-    #== テーブル描画（ボディ
+    #== テーブル描画（ボディ Table drawing (body
     bcolumn_size = [*hcolumn_size_l,*hcolumn_size_c,*hcolumn_size_r]
     wrap_setting = {5=>1,6=>2,6=>2,6=>2,6=>2}
 
@@ -183,14 +183,14 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
 
       # work_no
       work_no = t_cargo&.work_no
-      # 行の描画高さを計算
+      # 行の描画高さを計算 Calculate the drawing height of a row
       
       sorce_data = data.present? ? [no.to_s, *data] : bcolumn_size.map{""}
 
       row_height = calc_row_height(sorce_data,DefFontSizeB,DefFontSizeB)
 
       end_index = -1 if cargos.length==0
-      # リストの最後に到達または描画高さが指定値に到達したら現在位置をend_indexに代入
+      # リストの最後に到達または描画高さが指定値に到達したら現在位置をend_indexに代入 When the end of the list is reached or the drawing height reaches the specified value, assign the current position to end_index
       if @pdf.cursor-row_height < footer_height+BottomMargin #total_height > end_line
         end_index = start_index + index-1
       else
@@ -200,12 +200,12 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
 
     end
 
-    #== テーブル描画（フッタ
+    #== テーブル描画（フッタ Table drawing (footer
     footer_base_ypos = @pdf.cursor
     put_cell(pos: [0,footer_base_ypos],size: [@max_width,footer_height],line_weight: 0.5)
     put_text(text:footer_text,pos: [0+DefFontSizeB,footer_base_ypos],size: [@max_width-DefFontSizeB,footer_height],font_size:DefFontSizeB,valign: :center,style: :bold)
 
-    # 描画完了したデータのcargos位置を返す
+    # 描画完了したデータのcargos位置を返す Returns the cargo position of the data that has been drawn
     return end_index
   end
 
@@ -295,10 +295,10 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
     calc_results = [min_height]
     max_columns = {:fm=>[1],:mc=>[1],:dm=>[2],:wi_dr=>[3,6],:wk=>[10]}
 
-    # 列ごとにループして計算　MAX値を保持
+    # 列ごとにループして計算　MAX値を保持 Loop calculation for each column and keep the MAX value
     table_row_value.each do |cell|
       next unless cell.instance_of?(Hash)
-      # 変数初期化
+      # 変数初期化 Variable initialization
       wk_type, assign_data = cell.to_a[0]
 
       max_column = max_columns[wk_type]
@@ -309,14 +309,14 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
         workers, machines, memo = v.values_at(:wokers,:machines,:memo)
         workers ||=[]; machines ||=[]; memo ||="";
 
-        # 作業員　行数
+        # 作業員　行数 Variable initialization
         worker_row_size = 0
         if workers.present?
           worker_row_size = (workers.length.to_f/max_column[index].to_f).ceil
           worker_row_size = 1 if worker_row_size==0
         end
 
-        # 機械　行数
+        # 機械　行数 Machine number of lines
         machine_row_size = 0
         if machines.present?
           machine_row_size = (machines.length.to_f/max_column[index].to_f).ceil
@@ -341,7 +341,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
   end
 
 
-  #== オーバーライド
+  #== オーバーライド override
   def put_cell(pos:,size:,text:"",text_direction:0,font_size:DefFontSizeB,align: :left,valign: :center,offset:0,voffset:0,overflow: :ellipsis,bg_color:nil,font_color:nil,line_weight:nil,multiple_text_reverse:false)
     unless text.instance_of?(Hash)
       return super(pos:pos,size:size,text:text,text_direction:text_direction,font_size:font_size,align:align,valign:valign,offset:offset,voffset:voffset,overflow: overflow,bg_color:bg_color,font_color:font_color,line_weight:line_weight,multiple_text_reverse: multiple_text_reverse)
@@ -356,7 +356,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
     wrap_num = 0
     space = wk_type==:wi_dr ? 2 : 0
     step = wk_type==:fm ? 1 : 2
-    light_font_color = "000000" # 機械の文字を薄くしていたが黒に変更
+    light_font_color = "000000" # 機械の文字を薄くしていたが黒に変更 The text on the machine was made lighter but changed to black.
     
     @pdf.bounding_box(pos, width: size[0], height: size[1], overflow: overflow ) do
       inner_width = (size[0]/wrap.sum) - space
@@ -373,7 +373,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
           def_wrap_pos  += 1
         end
         wrap_pos = def_wrap_pos
-        # 配番機械パネルの描画
+        # 配番機械パネルの描画 Drawing of numbered machine panel
         machines.each.with_index do |value, index|
           value = value || ""
           name,color = value.split("_")
@@ -384,7 +384,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
           else
             bg_color = nil
           end
-          # bg_color = "ffffff" unless valid_color?(bg_color) # 無効な色の場合に白色で描画
+          # bg_color = "ffffff" unless valid_color?(bg_color) # 無効な色の場合に白色で描画 Draw white if invalid color
           
           if index>0 && index%wrap[k]==0
             wrap_pos += step
@@ -398,7 +398,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
           
         end
         wrap_pos = def_wrap_pos+step-1
-        # 配番作業員パネルの描画
+        # 配番作業員パネルの描画 Drawing the numbered worker panel
         workers.each.with_index do |value, index|
           value ||= ""
           name,color = value.split("_")
@@ -451,13 +451,13 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
       ]
       tmp_line[3] = cargo[:s_time]&.strftime("%H:%M") || ""
 
-      # 荷役機械  8,wi-dr
+      # 荷役機械  8,wi-dr Cargo handling machine 8,wi-dr
       tmp_line[6] = {mc: {
         :wokers=>nil,
         :machines=>[cargo[:machine_nm]],
         :memo=>cargo[:momo_mc]
       }}
-      # 船内 ・ 沿岸  9,wk
+      # 船内 ・ 沿岸  9,wk Onboard / Coastal 9,wk
       tmp_line[9] = cargo[:rk_np].to_s || ""
       tmp_line[10] = cargo.get_wk_w.to_s
       tmp_line[11] = cargo[:i_time]&.strftime("%H:%M") || ""
@@ -473,7 +473,7 @@ class Pdf::CargoPdf < Pdf::ExpansionPdfCommon
       end
       tmp_line[12] = tmp_line[12]-["",nil]
       tmp_line[12] = "" if tmp_line[12].length==0
-      # 荷役作業者、荷役機械
+      # 荷役作業者、荷役機械 Cargo handling workers, cargo handling machines
       if cargo_assign_data = assigned_datas[cargo[:id]] 
         works = cargo_assign_data[:wk_types]
         # MC

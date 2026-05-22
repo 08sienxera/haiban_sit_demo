@@ -1,28 +1,28 @@
-#= 作業依頼書PDF作成クラス
+#= 作業依頼書PDF作成クラス | Work request form PDF creation class
 class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
 
-  # 作業カテゴリリスト
+  # 作業カテゴリリスト | Work category list
   OneCharIdentifier = {hd_w:"ハ",db_w:"土",hs_w:"配",sn_w:"船",eg_w:"沿",ot_w:"他"}
-  # 揚積区分リスト
+  # 揚積区分リスト | Lifting classification list
   IoIdentifier = {0=>"",1=>"揚",2=>"積",3=>"揚積",4=>"その他"}
-  # 作業区分リスト
+  # 作業区分リスト | Work classification list
   WorkClassIdentifier = {1=>"本船",2=>"沿岸",9=>"休み"}
 
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） | Font size (body)
   DefFontSizeB = 7
-  # 行高さ（ヘッダー）
+  # 行高さ（ヘッダー） | Row height (header)
   HeaderRowHeight = 11
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） | Row height (body)
   BodyRowHeight = 33
-  # 行高さ（ヘッダー）
+  # 行高さ（ヘッダー） | Row height (header)
   LineNum = 12
 
-  # XY軸目盛の描画
+  # XY軸目盛の描画 | Drawing the XY axis scale
   def stroke_axis()
     @pdf.stroke_axis()
   end
 
-  # PDF作成
+  # PDF作成 | PDF creation
   def create(t_date,cargo_requests)
     days = I18n.t("date.day_names")
     @max_width = @pdf.bounds.right - @pdf.bounds.left
@@ -60,8 +60,8 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
     :width=>page_width,
     :cell_style=>{
       :width=>page_width/3,
-      :border_color => 'FFFFFF',  # 線を非表示にする
-      :border_width => 0,  # 線の幅を0に設定
+      :border_color => 'FFFFFF',  # 線を非表示にする | hide lines
+      :border_width => 0,  # 線の幅を0に設定 | set line width to 0
       :valign => :bottom
     }
     ) do
@@ -79,18 +79,18 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
 
   
   def body(cr_list)
-    #== テーブル描画（ヘッダー
+    #== テーブル描画（ヘッダー | Table drawing (header
     header = %w(No 作業名 貨物名 場所 数量 時間 機械 FM DM WM ｸﾚｰﾝ ローダ バックホー 船内ローダ ブル リフト ＳＣ 他 運転 作業 出勤 備考)
-    hcolumn_size = [1,5,4,2,3,2,2,1,1,1,1,2,2,2,2,2,2,1,1,1,2,4] # カラム幅の比率
+    hcolumn_size = [1,5,4,2,3,2,2,1,1,1,1,2,2,2,2,2,2,1,1,1,2,4] # カラム幅の比率 | Column width ratio
     drow_table_header(header,hcolumn_size)
     
-    #== テーブル描画（ボディ
-    bcolumn_size = hcolumn_size # カラム幅の比率
+    #== テーブル描画（ボディ | Table drawing (body
+    bcolumn_size = hcolumn_size # カラム幅の比率 | Column width ratio
     (0..LineNum).zip(cr_list) do |cr_with_no|
       drow_table_row(cr_with_no,bcolumn_size)
     end
     
-    #== テーブル描画（フッター
+    #== テーブル描画（フッター | Table drawing (footer
     footer = Array.new(bcolumn_size.length,"")
     sum_fm_m = 0
     sum_dm_m = 0
@@ -218,7 +218,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
       tmp_line[20] = cargo_request[:i_time]&.strftime("%H:%M") || ""
       tmp_line[21] = []
 
-      # 備考欄の値  *tmp_line[27]
+      # 備考欄の値  *tmp_line[27] | Notes field value *tmp_line[27]
       [%i(hd_w db_w hs_w sn_w eg_w ot_w),%i(note)].each do |symbol_ary|
         tmp_ary = []
         symbol_ary.each do |key|
@@ -233,7 +233,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
     text_direction__settings = {11=>1,12=>1,13=>1,14=>1,15=>1,16=>1}
     cnt = 0
     tmp_line.zip(size) do |value,size|
-      # 0を空文字に補完
+      # 0を空文字に補完 | Complete 0 to empty string
       value = "" if value=="0"
       value = value.map{|v| v=="0" ? "" : v} if value.instance_of?(Array)
       
@@ -253,7 +253,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
 
     end
 
-    #-- matterの書き込み
+    #-- matterの書き込み | writing matter
     if cargo_request && (cargo_request[:matter1].present? || cargo_request[:matter2].present?)
       @matters_list << [cargo_request[:matter1],[(cell_width*size[0..6].sum) +2,current_pos_y-(DefFontSizeB*2)],'ffffff']
       @matters_list << [cargo_request[:matter2],[(cell_width*size[0..6].sum) +2,current_pos_y-(DefFontSizeB*3)],'ffffff']
@@ -290,7 +290,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
   end
 
   def stroke_sepalate_line()
-    bcolumn_size = [24,2,2,2,2,2,10] # カラム幅の比率
+    bcolumn_size = [24,2,2,2,2,2,10] # カラム幅の比率 | Column width ratio
     cell_width = @max_width / bcolumn_size.sum
     cur_x=0
     bcolumn_size.each do |x|
@@ -310,7 +310,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
 
 
 
-  #== 描画関係　汎用関数
+  #== 描画関係　汎用関数 | Drawing-related general-purpose functions
   def put_cell(pos:,size:,text:"",text_direction:0,font_size:DefFontSizeB,align: :left,valign: :top,offset:0,voffset:0,overflow: :ellipsis,bg_color:nil)
     if bg_color
       @pdf.fill_color bg_color
@@ -320,7 +320,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
     @pdf.bounding_box(pos, width: size[0], height: size[1], overflow: overflow ) do
       text = [text] unless text.instance_of?(Array)
 
-      # text_dirction: 0->textが配列の場合、縦に配置　　1->textが配列の場合、横に配置
+      # text_dirction: 0->textが配列の場合、縦に配置　　1->textが配列の場合、横に配置 | text_direction: 0->If text is an array, place it vertically 1->If text is an array, place it horizontally
       if text_direction == 1
         inner_width = size[0]/text.length
         text.each.with_index do |value, index|
@@ -329,7 +329,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
           at_y = size[1] - (voffset * font_size)
           @pdf.text_box value,
                     size: font_size,
-                    at: [at_x,at_y],  # 左下が基準　＝＞[0,0]ボックスの左下
+                    at: [at_x,at_y],  # 左下が基準　＝＞[0,0]ボックスの左下 | Bottom left is the reference => Bottom left of the [0,0] box
                     width: inner_width - offset, 
                     height: size[1], 
                     align: align, 
@@ -341,7 +341,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
         text.each.with_index do |value, index|
           @pdf.text_box value,
                     size: font_size,
-                    at: [align==:left ? offset : 0, size[1] - (index + voffset) * font_size],  # 左下が基準　＝＞[0,0]ボックスの左下
+                    at: [align==:left ? offset : 0, size[1] - (index + voffset) * font_size],  # 左下が基準　＝＞[0,0]ボックスの左下 | Bottom left is the reference => Bottom left of the [0,0] box
                     width: size[0]-offset, 
                     height: size[1], 
                     align: align, 
@@ -365,7 +365,7 @@ class Pdf::SagyoRequestsPdf < Pdf::PdfCommon
     end
     @pdf.text_box text,
               size: font_size,
-              at: pos,  # 左下が基準　＝＞[0,0]ボックスの左下
+              at: pos,  # 左下が基準　＝＞[0,0]ボックスの左下 Bottom left is the reference => Bottom left of the [0,0] box
               width: size[0], 
               height: size[1], 
               align: align, 

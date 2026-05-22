@@ -1,10 +1,10 @@
 class Operator::HomeController < ApplicationController
-  # 共有レイアウト呼出し
+  # 共有レイアウト呼出し Calling a shared layout
   layout 'operator_layout'
   before_action :login_ck, :except => [:error]
   before_action :ck_operator, :except => [:error]
 
-  #=== メニュー画面
+  #=== メニュー画面 Menu screen
   def menu
     @title = "トップ"
     @lunch_date = LunchOrder.get_today
@@ -14,7 +14,7 @@ class Operator::HomeController < ApplicationController
     @inc_css = [:operator_vacation]
   end
 
-  #=== エラー画面
+  #=== エラー画面 error screen
   def error
   end
 

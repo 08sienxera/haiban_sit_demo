@@ -14,11 +14,16 @@ class Batche::CkJob < Batche::BatcheCommon
     # (2)実行予定時間より１時間経過したJOBがあれば通知する
     # （JOBのワーカーが止まっている場合を検知したい）
     # バッチ作成し、crontabで１時間毎に実行してもらいたい。
+    # (1) Notify if an error occurs and delete the relevant job.
+    # (This will never finish because it will retry the job.)
+    # (2) Notify if there is a job that has been running for more than one hour beyond its scheduled execution time.
+    # (We want to detect when a job worker has stopped.)
+    # Create a batch file and have it run every hour using crontab.
     ret = []
     @@log = self.logger()
     @@log.info("batch start #{self.name}----")
     @@myname = self.name.gsub("Batche::","")
-    #DelayedJobでエラーが発生していたら通知し、該当JOBを削除する
+    #DelayedJobでエラーが発生していたら通知し、該当JOBを削除する If an error occurs in DelayedJob, notify the system and delete the job in question.
     tbl = DelayedJob.where("last_error<>''")
     unless tbl.blank?
       tbl.each{|lin|
@@ -40,7 +45,7 @@ class Batche::CkJob < Batche::BatcheCommon
         lin.destroy
       }
     end
-    #DelayedJobで実行予定時間より１時間経過したJOBがあれば通知する
+    #DelayedJobで実行予定時間より１時間経過したJOBがあれば通知する DelayedJob will notify if there are any jobs that have been running for more than one hour longer than their scheduled execution time.
     tbl = DelayedJob.where("run_at<'#{1.hour.ago}'")
     unless tbl.blank?
       body = ""

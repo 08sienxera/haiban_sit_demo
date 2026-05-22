@@ -1,5 +1,5 @@
 #= Pdf::CargoWorkerBasePdfを継承
-#配番表（予定）PDF作成クラス 
+#配番表（予定）PDF作成クラス  Numbering list (planned) PDF creation class
 class Pdf::CargoWorkerSchedulePdf < Pdf::CargoWorkerBasePdf
   private
   def convert_table_data(daily_cargo_list,rel_data,col_size)

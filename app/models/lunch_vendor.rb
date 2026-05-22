@@ -4,11 +4,11 @@ class LunchVendor < ApplicationRecord
   extend Common::Func
   default_scope {where(:deleted_at => nil)}
   
-  # 平日公休日フラグリスト
+  # 平日公休日フラグリスト Weekday public holiday flag list
   WhList = [["平日用","0"],["土曜日用","6"],["日曜日用","1"],["祝日用","2"]]
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     form.setparams("name",{"title"=>self.human_attribute_name(:name),"type"=>"textJ",'size'=>"18","maxlength"=>"16","inputFlg"=>1,"essFlg"=>1,"align"=>"L"})
@@ -19,12 +19,12 @@ class LunchVendor < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     form = self.set_input_form(key)
     form.setparams('id',{'title'=>'ID','type'=>'hidden','size'=>'20','maxlength'=>'16','inputFlg'=>0,'essFlg'=>0,'align'=>'R','noserch'=>"1"})
@@ -32,7 +32,7 @@ class LunchVendor < ApplicationRecord
     return form
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     form.set_all_param("inputFlg",0)
@@ -44,7 +44,7 @@ class LunchVendor < ApplicationRecord
     return form
   end
   #
-  #===カレンダー初期値用リスト作成
+  #===カレンダー初期値用リスト作成 Creating a list for initial calendar values
   def self.get_def_vendor
     ret = {}
     all_data = self.all.order(:desp_index)

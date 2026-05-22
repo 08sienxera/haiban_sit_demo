@@ -1,4 +1,4 @@
-#= 作業員毎作業一覧エクセル作成クラス
+#= 作業員毎作業一覧エクセル作成クラス Work list Excel creation class for each worker
 class  Excel::WorkerWkClassWkPlaceSummaryExcel < Excel::ExcelClass
   require File.expand_path('../../../lib/excel/excel_format_builder.rb', __dir__)
 
@@ -9,7 +9,7 @@ class  Excel::WorkerWkClassWkPlaceSummaryExcel < Excel::ExcelClass
     super(name)
   end
 
-  #=== エクセルを作成
+  #=== エクセルを作成 create excel
   def create()
     init_cell_format()
     set_data()
@@ -20,12 +20,12 @@ class  Excel::WorkerWkClassWkPlaceSummaryExcel < Excel::ExcelClass
   
   private
 
-  # セルの書式設定オブジェクト
+  # セルの書式設定オブジェクト cell formatting object
   def init_cell_format()
     base_style = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(10).align('center').vcenter().borders([1,1,1,1]).wrap(true)
     @def_style = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(10).align('center').vcenter().borders([1,1,1,1]).wrap(true).get_format
     @large_font_style = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(12).align('center').vcenter().borders([1,1,1,1]).get_format
-    # 色付きセル書式
+    # 色付きセル書式 colored cell format
     @color_cell_styles = {:next_num=>8}
     @format_data[:sheets].each do |sh|
       sh[:sheet_data][1..].each do |row|
@@ -37,7 +37,7 @@ class  Excel::WorkerWkClassWkPlaceSummaryExcel < Excel::ExcelClass
         end
       end
     end
-    # 色文字セル書式
+    # 色文字セル書式 color text cell format
     @color_font_styles = {:next_num=>@color_cell_styles[:next_num]}
     @format_data[:sheets].each do |sh|
       sh[:sheet_data][1..].each do |row|
@@ -93,8 +93,11 @@ class  Excel::WorkerWkClassWkPlaceSummaryExcel < Excel::ExcelClass
     # 行高さ : 25
     # 列幅(1列目) : 15
     # 列幅(2列目以降) : 12
+    # Row height: 25 
+    # Column width (1st column): 15 
+    # Column width (from 2nd column): 12
     @worksheets.each.with_index do |work_sheet,i|
-      work_sheet.freeze_panes(1,1)# 見出し固定
+      work_sheet.freeze_panes(1,1) # 見出し固定 Fixed heading
       sheet_data = @format_data[:sheets][i]
       row_size = sheet_data[:sheet_data].size
       col_size =  sheet_data[:sheet_data][0].size
@@ -109,9 +112,9 @@ class  Excel::WorkerWkClassWkPlaceSummaryExcel < Excel::ExcelClass
   def set_print_cofig()
     @worksheets.each do |work_sheet|
       work_sheet.set_paper(8) #A3
-      work_sheet.set_landscape #ヨコ 
-      work_sheet.fit_to_pages(1, 1) # ページ内比率(全体表示)
-      work_sheet.set_margins_LR(0.25) # Left,Right　単位：インチ(1inch = 25.4m)
+      work_sheet.set_landscape #ヨコ  Horizontal
+      work_sheet.fit_to_pages(1, 1) # ページ内比率(全体表示) Page ratio (full display)
+      work_sheet.set_margins_LR(0.25) # Left,Right　単位：インチ(1inch = 25.4m) Left, Right Unit: inch (1inch = 25.4m)
       work_sheet.set_margins_TB(0.75) # Top,Bottom
 
     end

@@ -4,10 +4,12 @@ class Applicable < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
   # グループセクション　
   # グループ or 作業員
+  # Group section 
+  # group or worker
   SectionList = [["グループ","1"],["作業員","2"]] 
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     form.setparams("section",{"title"=>self.human_attribute_name(:section),"type"=>"select",'size'=>"8","maxlength"=>"8","inputFlg"=>1,"essFlg"=>1,"align"=>"L",
@@ -16,17 +18,17 @@ class Applicable < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     return self.set_input_form(key)
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     form.set_all_param("inputFlg",0)
@@ -37,13 +39,13 @@ class Applicable < ApplicationRecord
     return form
   end
   #
-  #===適用改定日の取得
+  #===適用改定日の取得 Get the applicable revision date
   def self.get_applicable(section,t_date=Date.today)
     dataline = self.where(["section=? and applicable <= ?",section,t_date]).order(:applicable=>:desc).first
     return dataline ? dataline[:applicable] : nil
   end
   #
-  #===改定日リストの生成
+  #===改定日リストの生成 Generate revision date list
   def self.get_applicable_list(section)
     dtatbl = self.where(:section=>section).order(:applicable=>:desc)
     ret = []

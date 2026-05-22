@@ -1,5 +1,5 @@
 #= Pdf::CargoWorkerBasePdfを継承
-#配番表（実績）PDF作成クラス 
+#配番表（実績）PDF作成クラス  Numbering list (actual results) PDF creation class
 class Pdf::CargoWorkerResultPdf < Pdf::CargoWorkerBasePdf
   private
   def convert_table_data(daily_cargo_list,rel_data,col_size)
@@ -24,8 +24,8 @@ class Pdf::CargoWorkerResultPdf < Pdf::CargoWorkerBasePdf
         end
         if cargo_workers = cargo.result_cargo_worker.to_a
           tmp_ary[13] = cargo_workers.map{|cw| cw[:user_id]}.filter{|user_id| user_id.to_i!=0}.uniq.length
-          # UAT183 「労供」欄の入力値を使用
-          tmp_ary[14] = cargo.rk_np.to_i # 臨時作業員列
+          # UAT183 「労供」欄の入力値を使用 UAT183 Use input value in “Labor” field
+          tmp_ary[14] = cargo.rk_np.to_i # 臨時作業員列 Temporary worker column
           tmp_ary[15] = tmp_ary[13] + tmp_ary[14]
           (13..15).each{|num| tmp_ary[num] = tmp_ary[num].zero? ? "" : tmp_ary[num].to_s}
         end

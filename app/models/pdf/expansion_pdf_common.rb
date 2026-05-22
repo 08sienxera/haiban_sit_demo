@@ -1,26 +1,26 @@
 #= Pdf::PdfCommonを継承
-#カスタマイズ性の高い描画機能を追加
+#カスタマイズ性の高い描画機能を追加 Added highly customizable drawing function
 class Pdf::ExpansionPdfCommon < Pdf::PdfCommon
 
-  # 標準フォントサイズ（ヘッダ）
+  # 標準フォントサイズ（ヘッダ） Standard font size (header)
   DefFontSizeH = 7 
-  # 標準フォントサイズ（ボディ）
+  # 標準フォントサイズ（ボディ） Standard font size (body)
   DefFontSizeB = 9
 
-  # 初期設定
+  # 初期設定 Initial settings
   def initialize(cd,page_condition = {},name:nil)
     super(cd,page_condition)
     @name = name if name
   end
 
-  # 出力ファイル名を返す
+  # 出力ファイル名を返す return output file name
   def name()
     return @name || @filename
   end
 
 
   private
-  #== 描画関係　汎用関数
+  #== 描画関係　汎用関数 Drawing-related general-purpose functions
   def set_grid(x_size:,y_size:,width:,height:,at:)
     @start_at = at
     @grid_width = width
@@ -69,7 +69,7 @@ class Pdf::ExpansionPdfCommon < Pdf::PdfCommon
     @pdf.bounding_box(pos, width: size[0], height: size[1], overflow: overflow ) do
       text = [text] unless text.instance_of?(Array)
 
-      # text_dirction: 0->textが配列の場合、縦に配置　　1->textが配列の場合、横に配置
+      # text_dirction: 0->textが配列の場合、縦に配置　　1->textが配列の場合、横に配置 | text_direction: 0->If text is an array, place it vertically 1->If text is an array, place it horizontally
       if text_direction == 1
         draw_horizontal_text(text, size, offset, voffset, font_size, align, valign, font_color)
       else
@@ -111,7 +111,7 @@ class Pdf::ExpansionPdfCommon < Pdf::PdfCommon
     posses.each do |pos|
       @pdf.text_box text,
                 size: font_size,
-                at: pos,  # 左下が基準　＝＞[0,0]ボックスの左下
+                at: pos,  # 左下が基準　＝＞[0,0]ボックスの左下 | Bottom left is the reference => Bottom left of the [0,0] box
                 width: size[0], 
                 height: size[1], 
                 align: align, 
@@ -133,7 +133,7 @@ class Pdf::ExpansionPdfCommon < Pdf::PdfCommon
       @pdf.fill_color font_color if font_color
       @pdf.text_box value,
                 size: font_size,
-                at: [at_x,at_y],  # 左下が基準　＝＞[0,0]ボックスの左下
+                at: [at_x,at_y],  # 左下が基準　＝＞[0,0]ボックスの左下 | Bottom left is the reference => Bottom left of the [0,0] box
                 width: inner_width - offset, 
                 height: size[1], 
                 align: align, 
@@ -155,7 +155,7 @@ class Pdf::ExpansionPdfCommon < Pdf::PdfCommon
       @pdf.fill_color font_color if font_color
       @pdf.text_box value,
                 size: font_size,
-                at: [align==:left ? offset : 0, size[1] - (index + voffset) * font_size],  # 左下が基準　＝＞[0,0]ボックスの左下
+                at: [align==:left ? offset : 0, size[1] - (index + voffset) * font_size],  # 左下が基準　＝＞[0,0]ボックスの左下 | Bottom left is the reference => Bottom left of the [0,0] box
                 width: size[0]-offset, 
                 height: height, 
                 align: align, 

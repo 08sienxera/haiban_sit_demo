@@ -1,4 +1,4 @@
-#= 改定日マスタリクエスト処理
+#= 改定日マスタリクエスト処理 | Revision Date Master Request Processing
 class Manager::ApplicablesController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

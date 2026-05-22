@@ -1,5 +1,5 @@
 # coding: utf-8
-#= JOB管理
+#= JOB管理 JOB management
 class DelayedJob < ApplicationRecord
   extend Common::Func
   

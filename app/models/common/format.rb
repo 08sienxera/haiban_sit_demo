@@ -3,11 +3,16 @@
 #
 #=== 抽象フォーマットモジュール
 # 各クラスでincludeして利用する
+#=== Abstract Format Module
+# Include and use in each class
 module Common::Format
   #
   #=== 数値- の半角→全角文字への置換
   # 引数 :: str String 値
   # 戻り値 ::　String 変換後の文字列
+  #=== Replace half-width hyphens with full-width characters
+  # Arguments :: str String value
+  # Return value :: String converted string
   def h2z(str)
     str = str.to_s unless str.is_a?(String)
     retstr=str.tr('0123456789-','０１２３４５６７８９－') unless str.blank?
@@ -17,6 +22,9 @@ module Common::Format
   #=== 文字列日付(yyyy/mm/dd)→日付オブジェクトの変換
   # 引数 :: str String 値
   # 戻り値 ::　Date 日付オブジェクト
+  #=== Converts a string date (yyyy/mm/dd) to a date object
+  # Arguments :: str String value
+  # Return value :: Date Date object
   def to_dateobj(str)
     retobj = nil
     case str.class.to_s
@@ -38,11 +46,15 @@ module Common::Format
   #=== 全角→半角文字への置換
   # 引数 :: str String 値
   # 戻り値 ::　String 変換後の文字列
+  #=== Full-width character to half-width character replacement
+  # Argument :: str String value
+  # Return value :: String converted string
   def em2half(str)
     retstr=str.tr('ａ-ｚＡ-Ｚ０-９','a-zA-Z0-9').upcase if str.class.to_s == "String"
     return retstr
   end
   #カンマ編集
+  #Edit comma
   def money_format(num)
     if num.is_a?(Integer)
       strnum = num.to_s
@@ -52,6 +64,7 @@ module Common::Format
     return (strnum =~ /[-+]?\d{4,}/) ? (strnum.reverse.gsub(/\G((?:\d+\.)?\d{3})(?=\d)/, '\1,').reverse) : num
   end
   #お金単位追加
+  #Add money unit
   def money_unit(num,locale=nil)
     locale = Common::Func.get_locale if locale.nil?
     minus = (num.to_i < 0 ? "-":"")
@@ -67,6 +80,10 @@ module Common::Format
   # 引数 :: str String 値
   # ::vmaxlength　Int　表示文字数
   # 戻り値 ::　String 先頭からvmaxlength文字までのの文字列
+  #=== Cut a string midway
+  # Argument :: str String value
+  # ::vmaxlength Int Number of characters to display
+  # Return value :: String String from the beginning up to vmaxlength characters
   def str_cut(str,vmaxlength = nil,bwd= "...")
     if str.class.to_s == "String"
       retstr = str
@@ -83,6 +100,8 @@ module Common::Format
   #
   #=== パスワード生成(ランダム英数字)
   # 引数 :: len Integer 生成する文字列の長さ
+  #=== Password generation (random alphanumeric characters)
+  # Arguments :: len Integer Length of the string to generate
   def mk_password(len = 8)
     str_array = ("a".."z").to_a + ("A".."Z").to_a + ("2".."9").to_a + ["-","_","@"]
     %w[o l O ].each{|delstr| str_array.delete(delstr)}
@@ -102,6 +121,10 @@ module Common::Format
   # 引数 :: s　integer　開始
   #     :: e　integer　終了
   #     :: listin　Hash　制御データ
+  #=== Generate a list of numbers
+  # Arguments :: s integer start
+  # :: e integer end
+  # :: listin Hash control data
   def get_numlist(s,e,listin={})
     retlist=[]
     listin[:type]='array' if listin[:type].nil?
@@ -127,6 +150,10 @@ module Common::Format
   # 引数 :: s　Date　開始
   #     :: e　Date　終了
   #     :: listin　Hash　制御データ
+  #=== Generate a list of dates
+  # Arguments :: s Date Start
+  # :: e Date End
+  # :: listin Hash Control data
   def get_daylist(s,e,listin={})
     retlist=[]
     listin[:type]='array' if listin[:type].nil?
@@ -150,7 +177,7 @@ module Common::Format
     end
     return retlist
   end
-  #日付時間のフォーマット
+  #日付時間のフォーマット date time format
   def setftime_td(s,format)
     begin
       if s.is_a?(Time) || s.is_a?(Date)
@@ -163,7 +190,7 @@ module Common::Format
       return s.to_s
     end
   end
-  #日付時間のフォーマット
+  #日付時間のフォーマット date time format
   def setftime(s,format)
     begin
       return s.strftime(format)
@@ -171,7 +198,7 @@ module Common::Format
       return s
     end
   end
-  #Listから文字列を取得する
+  #Listから文字列を取得する Get string from List
   def list2str(list,cd)
     list.each{|txt,lcd| return txt if lcd == cd.to_s} unless list.blank?
     return cd
@@ -180,6 +207,10 @@ module Common::Format
   #num:変換元数字
   #str_array:文字列配列
   #digit:最大桁数
+  #Getting a number string in base N
+  #num: Source digit
+  #str_array: String array
+  #digit: Maximum number of digits
   def n_decimal(num,str_array,digit=4)
     ret = []
     asize = str_array.size

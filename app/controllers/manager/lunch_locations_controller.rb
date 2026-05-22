@@ -1,4 +1,4 @@
-#= 昼食配送先マスタ
+#= 昼食配送先マスタ Lunch delivery destination master
 class Manager::LunchLocationsController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

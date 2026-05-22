@@ -1,5 +1,5 @@
 # coding: utf-8
-#= 荷役メッセージ
+#= 荷役メッセージ Cargo handling message
 class CargoMsg < ApplicationRecord
   belongs_to :user , :optional => true
   belongs_to :woker, primary_key: :login_id, foreign_key: :login_id

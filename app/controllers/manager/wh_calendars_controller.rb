@@ -1,6 +1,6 @@
 class Manager::WhCalendarsController < Manager::HomeController
 
-  #=== 年度カレンダーを表示
+  #=== 年度カレンダーを表示 Display year calendar
   def index
     @my_setting = {:table=>WhCalendar,
       :def_where=>[],
@@ -20,6 +20,11 @@ class Manager::WhCalendarsController < Manager::HomeController
   # t_date : 設定変更対象日を指定
   # t_col : 設定変更対象を指定
   # t_val : 設定値を指定
+  #=== Change settings for a specified date
+  # Request parameters
+  # t_date: Specify the date to change settings
+  # t_col: Specify the setting to change
+  # t_val: Specify the setting value
   def update
     case params[:t_col]
     when "wh_flg"
@@ -50,7 +55,7 @@ class Manager::WhCalendarsController < Manager::HomeController
     end
   end
 
-  #=== 対象年月のサマリーを作成
+  #=== 対象年月のサマリーを作成 Create a summary for the target year and month.
   def show
     case params[:id]
     when "mkCol"

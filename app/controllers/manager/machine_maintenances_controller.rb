@@ -1,4 +1,4 @@
-#= 配番機械メンテナンススケジュール
+#= 配番機械メンテナンススケジュール Numbering Machine Maintenance Schedule
 class Manager::MachineMaintenancesController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

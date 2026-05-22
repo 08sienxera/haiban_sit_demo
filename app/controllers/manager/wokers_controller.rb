@@ -1,4 +1,4 @@
-#= 配番作業員マスタ
+#= 配番作業員マスタ Assigned Worker Master
 class Manager::WokersController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable
@@ -10,8 +10,8 @@ class Manager::WokersController < Manager::HomeController
     search_data = session.dig("serch_data","Woker")
     search_applicable = search_data&.dig("applicable") #=> format"2024/07/08"
     if search_data.present?
-      condition[:applicable] = Date.parse(search_applicable) if search_applicable.present? # true=>改定日指定 false=>all指定
-    else #検索なし
+      condition[:applicable] = Date.parse(search_applicable) if search_applicable.present? # true=>改定日指定 false=>all指定 true=>Specify revision date false=>Specify all
+    else #検索なし #No search
       condition[:applicable] = Applicable.where(:section=>2).order(:applicable=>:desc).first&.applicable
     end
     @my_setting[:def_where] = condition

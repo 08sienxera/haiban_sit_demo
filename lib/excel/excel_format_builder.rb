@@ -6,7 +6,7 @@ class Excel::ExcelFormatBuilder
     @format_object = nil
   end
 
-  #-- 操作
+  #-- 操作 | operation
   def get_style()
     return @style
   end
@@ -36,7 +36,7 @@ class Excel::ExcelFormatBuilder
   end
 
 
-  #-- 書式設定
+  #-- 書式設定 | Formatting
   def size(size)
     add({:size=>size})
     self

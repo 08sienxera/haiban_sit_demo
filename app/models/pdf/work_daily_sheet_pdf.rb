@@ -1,15 +1,15 @@
-#= 出勤日報・残業届PDF作成クラス 
+#= 出勤日報・残業届PDF作成クラス | Daily attendance report/overtime report PDF creation class
 class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
-  # 行高さ（ヘッダ）
+  # 行高さ（ヘッダ） | Row height (header)
   HeaderRowHeight = 16
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） | Row height (body)
   BodyRowHeight = 11.5
-  # ページあたりの行数
+  # ページあたりの行数 | Number of lines per page
   TableRowNum = 60
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） | Font size (body)
   DefFontSizeB = 7
 
-  # 初期設定
+  # 初期設定 | Initial settings
   def initialize(cd,page_condition = {})
     super(cd,page_condition)
     @title = "作業予定及配番表　並　出勤日報、残業届"
@@ -17,7 +17,7 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
     @max_width = @pdf.bounds.right - @pdf.bounds.left
   end
 
-  # PDF作成
+  # PDF作成 | PDF creation
   def create(t_date,grouping_woker_data,rel_data)
     days = I18n.t("date.abbr_day_names")
     page_title = @title
@@ -30,9 +30,9 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
       login_id_list.each_slice(TableRowNum).with_index.each do |sliced_id_list,index|
         loop_num = index + 1
         start_new_page() unless cnt == 0
-        #== 押印欄
+        #== 押印欄 | Seal column
         seal_box()
-        #== タイトル、作成日、対象
+        #== タイトル、作成日、対象 | Title, creation date, target
         sub_title = "#{rel_data[:branches][branch_cd]}　　　　(業務部)"
         header(page_title,sub_title,t_date_str,created_date_str)
         @pdf.move_cursor_to(715)
@@ -59,7 +59,7 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
   
   private
   def seal_box()
-    #== レイアウト設定
+    #== レイアウト設定 | Layout settings
     height = 60 
     layout_left = [
       "勤　労　部",
@@ -80,12 +80,12 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
     ]
 
     
-    edge = height*row_height_ratios[2]/row_height_ratios.sum # 押印欄　正方形の辺の長さ
+    edge = height*row_height_ratios[2]/row_height_ratios.sum # 押印欄　正方形の辺の長さ | Seal column: Length of square side
     width = edge*columns_size.sum
     width_left = edge*columns_size[0]
     width_right = edge*columns_size[1]
 
-    #== 勤労部　押印欄
+    #== 勤労部　押印欄 | Labor Department Seal column
     grid_x_size = columns_size[0]
     set_grid(x_size:grid_x_size,y_size:row_height_ratios.sum,width:width_left,height:height,at:[@pdf.bounds.right-width,@pdf.bounds.top])
 
@@ -102,7 +102,7 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
       cur_pos_y += step_y
     end
 
-    #== 業務部　押印欄
+    #== 業務部　押印欄 | Business Department Seal column
     grid_x_size = columns_size[1]
     set_grid(x_size:grid_x_size,y_size:row_height_ratios.sum,width:width_right,height:height,at:[@pdf.bounds.right-width+width_left,@pdf.bounds.top])
 
@@ -129,19 +129,19 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
 
   def main_table(login_id_list,rel_data,loop_num)
     start_vpos = @pdf.cursor
-    hcolumn_size_l = [2,8,5,6,6,6,6,2,6,6,2] # カラム幅の比率
-    hcolumn_size_r = [8,5,5,6] # カラム幅の比率
+    hcolumn_size_l = [2,8,5,6,6,6,6,2,6,6,2] # カラム幅の比率 | Column width ratio
+    hcolumn_size_r = [8,5,5,6] # カラム幅の比率 | Column width ratio
     header_height = 20
     header_l = ["No", "氏 名", "手配時間", "作 業 名", "職 種", "備 考", "出 欠","","出勤時間", "退勤時間",""]
     header_width_l = @max_width/(hcolumn_size_l.sum + hcolumn_size_r.sum)*hcolumn_size_l.sum
     header_r = ["汚 れ 手 当 等",["貨 物", "船 内", "体 調", "睡眠時間"]]
     header_width_r = @max_width/(hcolumn_size_l.sum + hcolumn_size_r.sum)*hcolumn_size_r.sum
 
-    #== テーブル描画（ヘッダー
-    # 左
+    #== テーブル描画（ヘッダー | Table drawing (header
+    # 左 left
     @pdf.move_cursor_to(start_vpos)
     drow_table_header(columns:header_l,size:hcolumn_size_l,width:header_width_l,height:header_height,offset:[0,0],under_line:false)
-    # 右(グリッドレイアウト)
+    # 右(グリッドレイアウト) | Right (grid layout)
     grid_x_size = hcolumn_size_r.sum
     grid_width = [[hcolumn_size_r.sum],hcolumn_size_r]
     grid_y_size = 2
@@ -158,11 +158,11 @@ class Pdf::WorkDailySheetPdf < Pdf::ExpansionPdfCommon
       end
       cur_pos_y += step_y
     end
-    # 共通二重線
+    # 共通二重線 | common double line
     put_cell(pos: [0,@pdf.cursor],size: [header_width_l + header_width_r,2])
 
     
-    #== テーブル描画（ボディ
+    #== テーブル描画（ボディ | Table drawing (body
     bcolumn_size = [*hcolumn_size_l,*hcolumn_size_r]
     table_data = convert_worker_table_data(login_id_list,rel_data)
     # table_data*=2

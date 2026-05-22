@@ -1,4 +1,4 @@
-#= 昼食注文先マスタ
+#= 昼食注文先マスタ Lunch Order Master
 class Manager::LunchVendorsController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

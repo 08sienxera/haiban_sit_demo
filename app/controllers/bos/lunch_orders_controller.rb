@@ -5,7 +5,7 @@ class Bos::LunchOrdersController < Bos::HomeController
   before_action :set_order_lunch_variables,:only=>[:edit,:update]
   DISPLAYBRANCHGROUP = [["10","1","2"],["20","3","4"]]
 
-  #===昼食集計画面
+  #===昼食集計画面 Lunch tally screen
   def index
     @title = "昼食集計"
     @skip_total = true
@@ -31,7 +31,7 @@ class Bos::LunchOrdersController < Bos::HomeController
 
   end
 
-  #===注文ロック
+  #===注文ロック order lock
   def create
     begin
       order_date = Date.strptime(params[:t_date], "%Y%m%d")
@@ -59,13 +59,13 @@ class Bos::LunchOrdersController < Bos::HomeController
     return
   end
 
-  #===昼食更新画面
+  #===昼食更新画面 Lunch update
   def edit
     @title = "昼食更新"
     render :template=>"manager/lunch_orders/edit"
   end
 
-  #===昼食更新処理
+  #===昼食更新処理 Lunch update
   def update
     begin
       @order[:order_date] = @t_date

@@ -1,10 +1,10 @@
 class CargoMaster < ApplicationRecord
     extend Common::Func
     default_scope {where(:deleted_at => nil)}
-    # 集計カテゴリリスト
+    # 集計カテゴリリスト Aggregate category list
     AggregateCategories=[["集計なし","0"],["港湾運送","1"],["倉庫","2"],["代理店","3"]]
 
-    #===入力画面フォームの生成
+    #===入力画面フォームの生成 Generation of input screen form
     def self.set_input_form(key)
         form = Common::CommonClass.new(key)
         form.setparams("move_no",{"title"=>self.human_attribute_name(:move_no),"type"=>"textA",'size'=>"9","maxlength"=>"8","inputFlg"=>1,"essFlg"=>1,"align"=>"L"})
@@ -16,18 +16,18 @@ class CargoMaster < ApplicationRecord
         return form
     end
     #
-    #===更新画面フォームの生成
+    #===更新画面フォームの生成 Generate update screen form
     def self.set_edit_form(key)
         return self.set_input_form(key)
     end
     #
-    #===CSVフォームの生成
+    #===CSVフォームの生成 Generate CSV form
     def self.set_csv_form(key)
         form = self.set_input_form(key)
         return form
     end
     #
-    #===一覧画面フォームの生成
+    #===一覧画面フォームの生成 Generate list screen form
     def self.set_list_form(key)
         form = self.set_input_form(key)
         form.set_all_param("inputFlg",0)

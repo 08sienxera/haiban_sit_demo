@@ -39,9 +39,9 @@ class Formatter::WorkerWorkSummaryExcelFormatter < Formatter::Formatter
             day_yyyymmdd = day.strftime("%Y%m%d")
             search_key = "#{login_id}_#{day_yyyymmdd}"
 
-            # 配番作業データあり
-            # 休暇データあり
-            # **表示データ
+            # 配番作業データあり | With numbering work data
+            # 休暇データあり | Vacation data available
+            # **表示データ | Display data
             # [     data1    ]
             # [data2L][data2R]
             # [data3L][data3R]

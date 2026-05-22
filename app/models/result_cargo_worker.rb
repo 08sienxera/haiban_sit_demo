@@ -6,7 +6,7 @@ class ResultCargoWorker < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
 
   #
-  #==当月指定日までの作業時間、残業時間集計
+  #==当月指定日までの作業時間、残業時間集計 Aggregation of working hours and overtime hours up to the specified date of the current month
   def self.total_work_times(tdate,term)
     ret = {}
     datas = self.where(["work_date >= ? and work_date < ? ",term[:begin_date],tdate])
@@ -20,9 +20,9 @@ class ResultCargoWorker < ApplicationRecord
   end
 
   #
-  #===実績登録後の休暇申請への設定
+  #===実績登録後の休暇申請への設定 Settings for vacation requests after registering results
   def update_vacation
-    # 休暇申請を取得
+    # 休暇申請を取得 Get leave request
     vacation = Vacation.find_by({:user_id=>self[:user_id],:vacation_day=>self[:work_date]})
     return if vacation.blank?
     if vacation.base_no == 6

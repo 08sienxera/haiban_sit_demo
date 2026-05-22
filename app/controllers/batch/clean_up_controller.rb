@@ -9,7 +9,7 @@
 #*     変更	：
 #***************************************************************************
 #++
-#=== 一時データ等削除バッチ起動
+#=== 一時データ等削除バッチ起動 Batch to delete temporary data
 class Batch::CleanUpController < ApplicationController
   def index
     ret = Batche::CleanUp.do

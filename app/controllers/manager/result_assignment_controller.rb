@@ -3,30 +3,30 @@ class Manager::ResultAssignmentController < Manager::HomeController
   before_action :get_set_tdate
   before_action :set_my_global_variable
 
-  #=== 配番確定(実績登録)画面を表示
+  #=== 配番確定(実績登録)画面を表示 Display the assignment confirmation (record registration) screen.
   def index
     @title="配番確定(実績登録)"
     @cargo = ResultCargo.where({:work_date=>@t_date[:t_date]}).order(:desp_index).includes([:result_cargo_worker,:result_cargo_machine])
     
-    #配番ユーザデータ取得
+    #配番ユーザデータ取得 Retrieve assigned user data
     this_mm = get_month(@t_date[:t_date])
     @branches = Branche.get_assignment_list(@t_date[:t_date])
     @wokers,@woker_names = Woker.get_assignment_list(@t_date,@branches,this_mm)
-    #休暇種別
+    #休暇種別 Leave type
     @vacation_types = {"0"=>"公休日"}.merge(VacationType.getdatalist({:key=>:base_no,:text=>:name,:type=>"hash"}))
-    #配番機械データ取得
+    #配番機械データ取得 Machine assignment data acquisition
     @machines,@machine_names,@machine_bgc_class = Machine.get_assignment_list(@t_date[:t_date])
-    #言付けデータ取得
+    #言付けデータ取得 Message data acquisition
     @msgs = CargoMsg.get_assignment_list(@t_date[:t_date])
     
-    #表示設定
+    #表示設定 Display settings
     @inc_css = [:wk_assignment]
     @inc_js= ["manager/commn_assignment","manager/result_assignment","manager/wk_assignment_helper","eventUtil"]
 
     @def_font_size = 10
     @def_tbl_setting = Cargo.tbl_setting
 
-    #編集可否
+    #編集可否 Editability
     @can_edit = ResultCargo.can_edit(@t_date[:t_date],get_uval(:login_id))
     @can_lock = ResultCargo.can_lock_user?(get_uval(:login_id))
     @lock_user = ResultCargo.locked_by(@t_date[:t_date])
@@ -41,7 +41,7 @@ class Manager::ResultAssignmentController < Manager::HomeController
     render :template=>"manager/wk_assignment/index"
   end
 
-  #=== 配番データコピー
+  #=== 配番データコピー Assignment data copy
   def create
     delay_queue="ResultAssignment_#{params[:work_date]}"
     job = DelayedJob.find_by(["queue like ?","ResultAssignment_%"])
@@ -56,7 +56,7 @@ class Manager::ResultAssignmentController < Manager::HomeController
     end
     render :json => ret.to_json, :status => 200 
   end
-  #=== 実績更新
+  #=== 実績更新 Achievements updated
   def update
     ret = {:ret=>200,:msg=>""}
     begin
@@ -108,7 +108,7 @@ class Manager::ResultAssignmentController < Manager::HomeController
     end
   end
 
-  #=== 編集画面ロック
+  #=== 編集画面ロック Edit screen lock
   def lock
     err_msgs = []
     work_date_str = params[:work_date].to_s
@@ -150,7 +150,7 @@ class Manager::ResultAssignmentController < Manager::HomeController
 
   private
   #
-  #=== 表示対象日付取得：10時以降は翌日
+  #=== 表示対象日付取得：10時以降は翌日 Date to display: After 10:00 AM, the next day
   def get_set_tdate
     @today= Date.today
     if params[:t_date].present? && params[:t_date] =~ /\d{8}/

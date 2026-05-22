@@ -4,23 +4,23 @@ class CargoRequest < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
 
   has_one :cargo
-  # 作業人数合計　集計フィールドリスト
+  # 作業人数合計　集計フィールドリスト Total number of workers Summary field list
   WokerNumKey = %w[fm_m dm_m wm_m cr_m ld_m ld_s bh_m bh_s sl_m sl_s bl_m bl_s lf_m lf_s sc_m sc_s ot_m hd_w db_w hs_w sn_w eg_w ot_w wk_w]
-  # 作業区分リスト
+  # 作業区分リスト Work classification list
 
   WorkClasses = [["本船","1"],["沿岸","2"],["休み","9"]]
-  # 揚積区分リスト
+  # 揚積区分リスト Lifting classification list
   IOFlg = [["",""],["揚","1"],["積","2"],["揚積","3"],["その他","4"]]
-  # 汚れ作業区分リスト
+  # 汚れ作業区分リスト Dirty work classification list
   DirtFlg = [["","0"],["汚れ","1"]]
-  # 配番状況確定区分リスト
+  # 配番状況確定区分リスト Numbering status confirmed category list
   EstaFlg = [["","0"],["配番中","1"],["成立","2"],["不成立","9"]]
-  # 部署リスト
+  # 部署リスト Department list
   Departments = [["港運営業第一課","2"],["コンテナ木材課","9"],["管理課","11"]]
-  # 担当作業リスト
+  # 担当作業リスト Responsible work list
   WkClasses = {""=>"","fm"=>"FM","dm"=>"DM","wm"=>"WM","cr"=>"ｸﾚｰﾝ","ld"=>"ローダ","bh"=>"ﾊﾞｯｸﾎｰ","sl"=>"船内ﾛｰﾀﾞ","bl"=>"ブル","lf"=>"リフト","sc"=>"SC","tl"=>"TL","ot"=>"他作業","hd"=>"ハンドル","db"=>"土場作業","hs"=>"配車作業","sn"=>"船内作業","eg"=>"沿岸作業"}
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     form.setparams('work_date',{'title'=>self.human_attribute_name(:work_date),'type'=>'hidden','size'=>'11','maxlength'=>'10','inputFlg'=>1,'essFlg'=>1,'align'=>'C'})
@@ -53,12 +53,12 @@ class CargoRequest < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     form = self.set_input_form(key)
     form.setparam('work_date','type',"textD")
@@ -79,8 +79,8 @@ class CargoRequest < ApplicationRecord
     search_data = session.dig("serch_data","Woker")
     search_applicable = search_data&.dig("applicable") #=> format"2024/07/08"
     if search_data.present?
-      condition[:applicable] = Date.parse(search_applicable) if search_applicable.present? # true=>改定日指定 false=>all指定
-    else #検索なし
+      condition[:applicable] = Date.parse(search_applicable) if search_applicable.present? # true=>改定日指定 false=>all指定 true=>Specify revision date false=>Specify all
+    else #検索なし No search
       condition[:applicable] = Applicable.where(:section=>2).order(:applicable=>:desc).first&.applicable
     end
     @my_setting[:def_where] = condition

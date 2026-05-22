@@ -1,5 +1,5 @@
 
-#= 現場作業者はコメント機能中止のため未使用
+#= 現場作業者はコメント機能中止のため未使用 Field workers are not using the comment function as it has been disabled.
 class Operator::BoardCommentsController < Operator::HomeController
   before_action :login_ck, :except => [:error]
   before_action :set_my_oth_variable, :except => [:create]

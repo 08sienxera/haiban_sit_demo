@@ -6,30 +6,30 @@ class BoardGroup < ApplicationRecord
 
     CanModGroupType = "list"
     #
-    #===入力画面フォームの生成
+    #===入力画面フォームの生成 Generation of input screen form
     def self.set_input_form(key)
         form = Common::CommonClass.new(key)
-        # name: グループ名称
+        # name: グループ名称 name: Group name
         form.setparams("name",{"title"=>self.human_attribute_name(:name),"type"=>"textJ",'size'=>"40","maxlength"=>"32","inputFlg"=>1,"essFlg"=>1,"align"=>"L"})
-        # desp_index: 表示順
+        # desp_index: 表示順 desp_index: means straight
         form.setparams("desp_index",{"title"=>self.human_attribute_name(:desp_index),"type"=>"textN",'size'=>"10","maxlength"=>"8","inputFlg"=>1,"essFlg"=>1,"align"=>"R"})
-        # group_type: 対象タイプ
+        # group_type: 対象タイプ group_type: Target type
         form.setparams("group_type",{"title"=>self.human_attribute_name(:group_type),"type"=>"hidden",'size'=>"4","maxlength"=>"4","inputFlg"=>1,"essFlg"=>1,"align"=>"C","defVal"=>CanModGroupType})
         return form
     end
     #
-    #===更新画面フォームの生成
+    #===更新画面フォームの生成 Generate update screen form
     def self.set_edit_form(key)
         return self.set_input_form(key)
     end
     #
-    #===CSVフォームの生成
+    #===CSVフォームの生成 Generate CSV form
     def self.set_csv_form(key)
         form = self.set_input_form(key)
         return form
     end
     #
-    #===一覧画面フォームの生成
+    #===一覧画面フォームの生成 Generate list screen form
     def self.set_list_form(key)
         form = self.set_input_form(key)
         form.set_all_param("inputFlg",0)
@@ -40,18 +40,18 @@ class BoardGroup < ApplicationRecord
         return form
     end
     #
-    #=== マスタ用　更新可否を返す
+    #=== マスタ用　更新可否を返す Generate list screen form
     def can_mod_group_type?
         (self[:group_type] == CanModGroupType)
     end
     #
-    #===掲示済みの対象者更新
+    #===掲示済みの対象者更新 For master: Return update availability
     def resettting_target
         p "!!!!!!"*20
         p  "ToDo:BoardGroup.resettting_target"
     end
 
-    #===掲示対象のユーザ一覧を取得
+    #===掲示対象のユーザ一覧を取得 Update posted target audience
     def get_user_list
         case self.group_type
         when 'all'

@@ -6,13 +6,13 @@ class BoardTarget < ApplicationRecord
   belongs_to :user
 
   #
-  #===コールバック
+  #===コールバック callback
   after_update do
     self.board.recount_all
   end
 
   #
-  #===閲覧検索フォームの生成
+  #===閲覧検索フォームの生成 Generate browsing search form
   def self.set_serch_form(key)
     #[AuthFlg].each{|list| list.delete(SERCH_ALL) if list.index(SERCH_ALL).present? }
 
@@ -31,7 +31,7 @@ class BoardTarget < ApplicationRecord
     return s_form
   end
 
-  #===本文確認を確認済みに更新
+  #===本文確認を確認済みに更新 Update text confirmation to confirmed
   def confirm_m(login_id)
     if self.login_id == login_id
       self.update!(:confirmation_m_at=>Time.now,:updated_uid=>login_id,:updated_at=>Time.now)      
@@ -39,7 +39,7 @@ class BoardTarget < ApplicationRecord
       self.board.save
     end
   end
-  #===コメント確認を確認済みに更新
+  #===コメント確認を確認済みに更新 Update comment confirmation to confirmed
   def confirm_s(login_id)
     if self.login_id == login_id
       self.update!(:confirmation_s_at=>Time.now,:updated_uid=>login_id,:updated_at=>Time.now)      

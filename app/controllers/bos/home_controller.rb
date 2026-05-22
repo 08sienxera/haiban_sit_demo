@@ -4,14 +4,14 @@ class Bos::HomeController < ApplicationController
   before_action :login_ck, :except => [:error]
   before_action :ck_bos, :except => [:error]
 
-  #ホームトップ画面
+  #ホームトップ画面 Home top screen
   def menu
     @title = "トップ"
     @info = session    
     @menu_list = get_menu_list(get_uval(:id))
     # render :json=>@menu_list
 
-    # 未読掲示の有無
+    # 未読掲示の有無 Unread board
     unread_boad = BoardTarget.includes(:board).unread(get_uval(:id)).filter{|bt| 
       if bt.board.blank?
         false
@@ -23,11 +23,11 @@ class Bos::HomeController < ApplicationController
     @current_monthly = get_month(Date.today)
 
   end
-  #エラー画面
+  #エラー画面 Error screen
   def error
   end
 
-  #エラー画面
+  #エラー画面 Error screen
   private
   def set_t_date()
     get_set_tdate()

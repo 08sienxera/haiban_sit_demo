@@ -10,7 +10,7 @@
 #***************************************************************************
 #++
 
-#===稼働時間集計
+#===稼働時間集計 Work time aggregation
 class Batch::WorkTimeAggregateController < ApplicationController
   def index
     ret = Batche::WorkTimeAggregate.do(params[:symd],params[:eymd])

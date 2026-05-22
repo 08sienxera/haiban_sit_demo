@@ -9,11 +9,22 @@
 #*     変更	：
 #***************************************************************************
 #++
+# encoding: utf-8 
+#-- 
+#******************************************************************************** 
+#* System name: 
+#* Subsystem name: Excel output common class 
+#* File name: 
+#* Comment: 
+#* Created: 2011/12/30 SEIKO N.Ooshige 
+#* Change: 
+#******************************************************************************** 
+#++
 
-#= Excel出力共通クラス 
+#= Excel出力共通クラス  Excel output common class
 class Excel::ExcelClass
   require "writeexcel"
-  #初期設定
+  #初期設定 Initial settings
   def initialize(cd,out_dir:FILE_OUT_DIR)
     unless File.exist?(out_dir)
       Dir::mkdir(out_dir,0755)
@@ -22,23 +33,23 @@ class Excel::ExcelClass
     @workbook = WriteExcel.new(@filepath)
     @workbook.set_tempdir("#{out_dir}")
     ######################################################
-    # 書式を作成
+    # 書式を作成 create format
     ######################################################
-    #基本
+    #基本 basic
     @font={:font=>"ＭＳ Ｐゴシック",:size=>11,:color=>8,
            :align=>"center",:valign=>"vcenter",:text_wrap=>1,
            :border_color=>8}
 #    format[:d]=@workbook.add_format(@font)
 #    format[:d_l]=@workbook.add_format(@font.merge({:align=>"left"}))
   end
-  #Excelを保存し後始末
+  #Excelを保存し後始末 Save Excel and clean up afterwards
   def fin()
    @workbook.close
    @workbook=nil
    return @filepath
    
   end
-  #一意のシート名を生成する
+  #一意のシート名を生成する Generate unique sheet names
   def get_sheet_name(name)
     wk_name = NKF.nkf('-w -X', name).tr("A-Za-z0-9","Ａ-Ｚａ-ｚ０-９").tr('あ-ん', 'ア-ン')
     count = 0
@@ -49,7 +60,7 @@ class Excel::ExcelClass
     }
     return (count == 0 ? "#{wk_name}" : "#{wk_name}_#{count}")
   end
-  #色Indexのテスト
+  #色Indexのテスト Color Index Test
   def test_color_index(worksheet,row,maxno)
     worksheet.set_row(row, 20)
     maxno.times{|wi|
@@ -59,13 +70,13 @@ class Excel::ExcelClass
       worksheet.write(row,wi,wi,tmp_form)
     }
   end
-  #行番号の取得
+  #行番号の取得 Get line number
   def test_col_nos(worksheet,row,maxno)
     maxno.times{|wi|
       worksheet.write(row,wi,wi,@format[:s][:d])
     }
   end
-  #文字列の途中カット
+  #文字列の途中カット Cut in the middle of string
   def str_cut(value,vmaxlength)
     return "" if value.blank?
     return value if vmaxlength.blank?
@@ -78,7 +89,7 @@ class Excel::ExcelClass
     end
   end
 
-  #エクセルオブジェクトを返す 
+  #エクセルオブジェクトを返す  return excel object
   def excel
     return @workbook
   end
@@ -91,6 +102,14 @@ class Excel::ExcelClass
   # fsize: int
   # border: bool,integer,array
   # props: ハッシュ形式の初期値
+  #Return Excel format object 
+  # argument 
+  # align: str 'left','center','right' 
+  # fcolor,bgcolor: str Color specified in Excel 
+  # fweight: bool nil,false -> standard,true -> bold 
+  # fsize: int 
+  # border: bool,integer,array 
+  # props: initial value in hash format
   def get_format(align: nil,fcolor: nil,bgcolor: nil,fweight: nil,fsize: nil,border: nil,props:{})
     ret_format =  @workbook.add_format(props)
     ret_format.set_align(align) if align

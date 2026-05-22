@@ -1,16 +1,16 @@
-#= 免税軽油稼働実績表PDF作成クラス 
+#= 免税軽油稼働実績表PDF作成クラス | Duty-free light oil operation record PDF creation class
 class Pdf::TaxFreeMachinesPdf < Pdf::ExpansionPdfCommon
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） | Font size (body)
   DefFontSizeB = 8
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） | Row height (body)
   TableRowHeight = 18
-  # ページあたりの行数
+  # ページあたりの行数 | Number of lines per page
   TableRow = 25
-  # 行幅の割合設定
+  # 行幅の割合設定 | Line width percentage setting
   TableColumnRatios = [2,*Array.new(31,1),1.5,1]
 
 
-  # 初期設定
+  # 初期設定 | Initial settings
   def initialize(cd,page_condition = {},name:nil,title:nil,sub_title:nil)
     super(cd,page_condition,name:name)
     @title = title || "タイトル未設定"
@@ -19,7 +19,7 @@ class Pdf::TaxFreeMachinesPdf < Pdf::ExpansionPdfCommon
     @max_width = @pdf.bounds.right
   end
 
-  # PDFを作成
+  # PDFを作成 | Create PDF
   def create(lo_machines,result_cargo_machines,calendar)
     created_time = Time.now()
     table_header,table_body = convert_table_data(lo_machines,result_cargo_machines,calendar)
@@ -67,9 +67,9 @@ class Pdf::TaxFreeMachinesPdf < Pdf::ExpansionPdfCommon
     t_data = table_header + table_body
     t_data += Array.new(TableRow-table_body.length){Array.new(table_header.first.length,"")}
     @pdf.table(t_data, :column_widths => column_widths,:cell_style => { :size => 8,:height => TableRowHeight }) do |t|
-      t.row(0).border_bottom_width = 6 # 1行目の下線を無効にする
-      t.column(1..31).borders = [:top,:right,:bottom] # 1行目の下線を無効にする
-      t.column(1..31).border_lines = [:solid,:dotted,:solid,:solid] # 1行目の下線を無効にする
+      t.row(0).border_bottom_width = 6 # 1行目の下線を無効にする | Disable underline on first line
+      t.column(1..31).borders = [:top,:right,:bottom] # 1行目の下線を無効にする | Disable underline on first line
+      t.column(1..31).border_lines = [:solid,:dotted,:solid,:solid] # 1行目の下線を無効にする | Disable underline on first line
       [10,20].each{|v| t.column(v).border_lines = [:solid,:solid,:solid,:solid]}
       set_border_width(t,1,outer_width:2)
     end

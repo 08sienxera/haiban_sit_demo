@@ -6,18 +6,18 @@ class Machine < ApplicationRecord
   before_update :convert_color
     
   default_scope {where(:deleted_at => nil)}
-  # 機械種別
+  # 機械種別 Machine type
   MType = [["ローダ","ld"],["バックホー","bh"],["船内ローダ","sl"],["ブル","bl"],["リフト","lf"],["SC","sc"],["バス","bs"],["その他","ot"]]
-  # 実績集計区分
+  # 実績集計区分 Actual aggregation category
   ACategory = [["トラクタショベル","A"],["クレーン","C"],["ドーザ","D"],["フォークリフト","F"],["ストラドルキャリヤー","S"],["集計なし","N"]]
-  # 対象値リスト
+  # 対象値リスト target value list
   Target  = [["対象","1"],["対象外","0"]]
-  # 配番停止リスト
+  # 配番停止リスト Numbering stop list
   UMaintenance = [["配番対象","0"],["配番停止","1"]]
-  # 配番貨物レベル
+  # 配番貨物レベル Assigned cargo level
   CargoClass = [["優先","2"],["可","1"],["指定無","0"],["不可","-1"]]
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     branch_list = Branche.getdatalist({:key=>:cd,:text=>:name,:order=>:desp_index,:where=>{:applicable=>Applicable.get_applicable(1)},:all=>'所属なし'})
@@ -49,17 +49,17 @@ class Machine < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     return self.set_input_form(key)
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     %w[light_oil maintenance].each{|pkey| form.setparam(pkey,"type","select")}
@@ -74,7 +74,7 @@ class Machine < ApplicationRecord
     return form
   end
   #
-  #===配番用機械リスト
+  #===配番用機械リスト Machine list for numbering
   def self.get_assignment_list(t_date)
     assignment_list = {} ; names = {} ; colors=[]
     holiday_list = MachineMaintenance.get_holiday_4_assignment_list(t_date)

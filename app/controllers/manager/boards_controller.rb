@@ -7,7 +7,7 @@ class Manager::BoardsController < Manager::HomeController
   after_action :set_board,:only=>[:create,:update]
 
 
-  #=== 掲示閲覧一覧画面(管理)
+  #=== 掲示閲覧一覧画面(管理) Bulletin board viewing list screen (admin)
   def show
     @title="掲示閲覧一覧"
     begin
@@ -26,14 +26,14 @@ class Manager::BoardsController < Manager::HomeController
     @tab_keys=["confirmation_m_at"]
   end
 
-  #=== 掲示新規登録画面
+  #=== 掲示新規登録画面 Bulletin board viewing list screen (admin)
   def new
     @inc_js ||= []
     @inc_js << "manager/board_target.js"
     @title = "掲示 新規登録"
   end
 
-  #=== 掲示更新画面
+  #=== 掲示更新画面 Bulletin board update screen
   def edit
     @title = "掲示 更新"
   end
@@ -48,7 +48,7 @@ class Manager::BoardsController < Manager::HomeController
     board_targets = params[:board_targets]
     params["Board_in"]["board_group_id"] = "0" if params["Board_in"]["board_group_id"].blank?
     params["board_group_id"] = "0" if params["board_group_id"].blank?
-    # 掲示公開対象（after_actionで使用
+    # 掲示公開対象（after_actionで使用) Target for posting and public display (used in after_action)
     if board_targets.present?
       require 'json'
       @board_target_reg_list = JSON.parse(board_targets)
@@ -69,7 +69,7 @@ class Manager::BoardsController < Manager::HomeController
     params["Board_in"]["board_group_id"] = "0" if params["Board_in"]["board_group_id"].blank?
     params["board_group_id"] = "0" if params["board_group_id"].blank?
 
-    # 掲示公開対象（after_actionで使用
+    # 掲示公開対象（after_actionで使用) Target for public posting (used in after_action)
     if board_targets.present?
       require 'json'
       @board_target_reg_list = JSON.parse(board_targets)
@@ -108,12 +108,12 @@ class Manager::BoardsController < Manager::HomeController
     @my_setting[:new_in] = true
     @my_setting[:new_copy] = false
     
-    # 自身の送信した掲示のみ表示
+    # 自身の送信した掲示のみ表示 Only display posts you have sent.
     @my_setting[:def_where] = is_manager? ? [] : ["created_uid = ?",get_uval(:login_id)]
 
   end
   
-  #掲示対象フォーム用　ユーザデータ、選択済みユーザリスト
+  #掲示対象フォーム用　ユーザデータ、選択済みユーザリスト User data and selected user list for the posting form.
   def set_target_user
     @get_board_target_req_url = url_for(:controller=>:board_groups,:action=>:get_target_users,:id=>"__board_group_id__")
     @board_targets = []
@@ -121,14 +121,14 @@ class Manager::BoardsController < Manager::HomeController
     @dataline = @board
     target_login_ids = @board.present? ? BoardTarget.where(:board_id=>@board.id)&.pluck(:login_id) : []
     @board_targets = User.where(:login_id=>target_login_ids).pluck(:name,:login_id)
-    # 掲示公開グループフォーム用
+    # 掲示公開グループフォーム用 For publicly available group forms
     @board_group_list = {}
     BoardGroup.all.each do |bg|
       t_user_list = bg.get_user_list
       users = User.where(:login_id=>t_user_list).map{|user| [user.login_id,user.name]}
       @board_group_list["#{bg[:name]}_#{bg[:id]}"]  = users
     end
-    # ユーザ選択フォーム用
+    # ユーザ選択フォーム用 For user selection forms
     @user_list = {}
     User.where(:auth_flg=>0..4).each do |user|
       @user_list[user.auth_flg] ||= []
@@ -146,9 +146,9 @@ class Manager::BoardsController < Manager::HomeController
     @cc.set_index("board_targets",1)
   end
 
-  #掲示の後処理
+  #掲示の後処理 Post-posting procedures
   def set_board
-    #PDFファイルの画像化&対象者設定＆メール通知
+    #PDFファイルの画像化&対象者設定＆メール通知 Convert PDF files to images, define target audience, and send email notifications.
     @dataline ||= Board.last
     return if @dataline.blank?
     if Rails.env.development?

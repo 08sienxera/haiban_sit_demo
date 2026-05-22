@@ -8,25 +8,25 @@ class User < ApplicationRecord
   
   
   #--
-  #===定数
+  #===定数 constant
   #++
-  # 休暇申請リマインド受信設定
+  # 休暇申請リマインド受信設定 Leave request reminder settings
   HolidayMailFlg = [["受信しない","0"],["受信","1"]]
-  # 権限フラグリスト
+  # 権限フラグリスト Permission flag list
   AuthFlg = [["現場職","0"],["事務職","2"],["親方","3"],["管理課","4"]]
-  # 掲示メール受信設定
+  # 掲示メール受信設定 Notification email reception settings
   BbsMailFlg = [["受信しない","0"],["重要のみ","1"],["全て受信","2"]]
-  # 基本表示掲示件数
+  # 基本表示掲示件数 Basic display number of posted items
   DefaultBbsMaxCount = 10
-  # SIT管理ユーザ
+  # SIT管理ユーザ SIT management user
   SIT_Admin = "xadmin"
-  # 初期リマインド質問
+  # 初期リマインド質問 Initial reminder questions
   DefaultRemindQuestion = "小名浜港の港湾荷役といえば？" 
-  # 初期リマインド回答
+  # 初期リマインド回答 Initial reminder response
   DefaultRemindAnswer = "小名浜海陸運送"
   
   #
-  #===セッターメソッド　オーバーライド
+  #===セッターメソッド　オーバーライド Setter Method Override
   # def mail=(mail)
   #   self[:mail] = mail.blank? ? nil : mail
   # end
@@ -35,7 +35,7 @@ class User < ApplicationRecord
   # end
     
   #
-  #=== パスワードハッシュ処理
+  #=== パスワードハッシュ処理 Password hashing
   before_save do
     if self[:password].blank? || self.password.length==32
       self[:password] = self.password_was.blank? ? "" : self.password_was
@@ -44,13 +44,13 @@ class User < ApplicationRecord
     end
     # self.attributes.each {|key,val| self[key]=nil if val==''}
   end
-  #=== 利用可能機能設定データを追加
+  #=== 利用可能機能設定データを追加 Added available feature settings data.
   after_create :mk_user_auth
-  #=== 利用可能機能設定データを追加
+  #=== 利用可能機能設定データを追加 Added available feature settings data.
   after_update :mk_user_auth
 
   #
-  #===ログイン画面入力フォームの生成
+  #===ログイン画面入力フォームの生成 Generating a login screen input form
   def self.set_login_form(form_key = "login")
     form = Common::CommonClass.new(form_key)
     form.setparams('login_id',{'title'=>self.human_attribute_name(:login_id),'type'=>'textA','size'=>'20','maxlength'=>'16','inputFlg'=>1,'essFlg'=>1})
@@ -58,14 +58,14 @@ class User < ApplicationRecord
     return form
   end
 
-  #===Login_id入力フォームの生成
+  #===Login_id入力フォームの生成 Generation of Login_id input form
   def self.set_remind_form(form_key = "remind")
     form = Common::CommonClass.new(form_key)
     form.setparams('login_id',{'title'=>self.human_attribute_name(:login_id),'type'=>'textA','size'=>'20','maxlength'=>'16','inputFlg'=>1,'essFlg'=>1})
     return form
   end
   #
-  #===回答フォームの生成
+  #===回答フォームの生成 Generate answer form
   def self.set_answer_form(form_key = "answer")
     form = Common::CommonClass.new(form_key)
     form.setparams('remind_question',{'title'=>self.human_attribute_name(:remind_question),'type'=>'textJ','size'=>'35','maxlength'=>'32','inputFlg'=>0,'essFlg'=>0})
@@ -74,7 +74,7 @@ class User < ApplicationRecord
   end
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     branch_list = Branche.getdatalist({:key=>:cd,:text=>:name,:where=>{:applicable=>Applicable.get_applicable(1)},:order=>:desp_index,:all=>""})
@@ -87,7 +87,7 @@ class User < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generating an update screen form
   def self.set_edit_form(key)
     form = self.set_input_form(key)
     form.setparam('password','essFlg',0)
@@ -95,7 +95,7 @@ class User < ApplicationRecord
     return form
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     form = self.set_input_form(key)
     form.setparam('password','essFlg',0)
@@ -108,7 +108,7 @@ class User < ApplicationRecord
     return form
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generating a list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     skeys = ["login_id","name","auth_flg","branch_cd"]
@@ -129,7 +129,7 @@ class User < ApplicationRecord
     return form
   end
   #
-  #===ユーザ検索フォームの生成
+  #===ユーザ検索フォームの生成 User search form generation
   def self.set_serch_form(key)
     #[AuthFlg].each{|list| list.delete(SERCH_ALL) if list.index(SERCH_ALL).present? }
 
@@ -154,8 +154,8 @@ class User < ApplicationRecord
     return s_form
   end
 
-  #===ログインチェック処理
-  # 引数:: params Hash POSTデータ
+  #===ログインチェック処理 Login check process
+  # 引数:: params Hash POSTデータ Arguments:: params Hash POST data
   # :: strwhere String 追加条件文
   # 戻り値 ::　Booleam (True=ログインOK,False=ログイン処理なし)
   def self.login_check(params,form,strwhere = nil)
@@ -179,7 +179,7 @@ class User < ApplicationRecord
     end
   end
  
-  #==== 引数パスワードがユーザパスワードと一致するか返す
+  #==== 引数パスワードがユーザパスワードと一致するか返す Returns whether the argument password matches the user password.
   def match_password?(password)
     self.password == User.password_to_hash(password)
   end
@@ -195,7 +195,7 @@ class User < ApplicationRecord
   end
 
 
-  #==== パスワードをランダムパスワードに変更
+  #==== パスワードをランダムパスワードに変更 Change your password to a random password.
   def reset_password()
     new_password = nil
     User.transaction do
@@ -203,18 +203,18 @@ class User < ApplicationRecord
       self.password = new_password
       self.last_logined_at =nil
       self.save
-      # メール通知は要件外
+      # メール通知は要件外 Email notifications are not required.
       # UserMailer.with(user: self,password: new_password).notify_new_password_mail.deliver_now if self.mail.present?
     end
     return new_password
   end
 
-  #==== 基本表示掲示件数を取得、未設定の場合、基本値を返す
+  #==== 基本表示掲示件数を取得、未設定の場合、基本値を返す Gets the default number of displayed items; if not set, returns the default value.
   def get_bbs_max_count
     return self.bbs_max_count ||= DefaultBbsMaxCount
   end
 
-  #==== 指定日が稼働日か返す
+  #==== 指定日が稼働日か返す Will the specified date be a working day?
   def workday?(t_date)
     wh = WhCalendar.find_by_t_date(t_date)
     vacation = Vacation.find_by(login_id:self.login_id,vacation_day:t_date,sts:1)
@@ -228,6 +228,9 @@ class User < ApplicationRecord
   #==== ユーザのリマインド質問を返す
   #引数に指定したIDのユーザが存在しない、または指定ユーザにリマインド質問が未登録の場合
   #デフォルト質問を返す
+  #==== Returns the user's reminder question
+  # If the user with the specified ID does not exist, or if the specified user has not registered a reminder question
+  # Returns the default question
   def self.get_remind_question(login_id)
     user = User.find_by_login_id(login_id)
     if user && user.remind_question.present?
@@ -237,11 +240,11 @@ class User < ApplicationRecord
     end
   end
 
-  #==== パスワードリマインドに回答し、結果を真偽値で返す
+  #==== パスワードリマインドに回答し、結果を真偽値で返す Respond to the password reminder and return the result as a boolean value.
   def answer_remind_question(answer)
     case self.remind_question
     when nil then
-      # user.questionがnilの場合はデフォルト質問に対応する回答で検証
+      # user.questionがnilの場合はデフォルト質問に対応する回答で検証 If user.question is nil, the answer corresponding to the default question is used for verification.
       if answer == DefaultRemindAnswer
         return true
       else
@@ -280,18 +283,18 @@ class User < ApplicationRecord
     password
     
   end
-  #
+  #Create/delete settings for available features for master craftsmen and office workers.
   #==親方・事務職 利用可能機能設定の作成／削除
   def mk_user_auth
     ua = UserAuth.unscoped.find_by_login_id(self[:login_id])
     if self[:deleted_at].present? && ua.present?
-      #削除されたら権限設定も削除
+      #削除されたら権限設定も削除 #If deleted, permission settings will also be deleted.
       ua[:deleted_at] = self[:deleted_at]
       ua[:deleted_uid] = self[:deleted_uid]
       ua.save
     elsif [2,3].include?(self[:auth_flg])
       if ua.blank?
-        #事務職・親方で権限設定が無い場合は全て不可で新規作成
+        #事務職・親方で権限設定が無い場合は全て不可で新規作成 #If there are no permission settings for office workers or foremen, all are disabled and a new creation will be created.
         ua = {
           :login_id => self[:login_id],
           :created_uid => self[:updated_uid],
@@ -300,12 +303,12 @@ class User < ApplicationRecord
         UserAuth::AuthList.each{|key| ua[key] = 2}
         UserAuth.create(ua)
       elsif ua[:deleted_at].present?
-        #事務職・親方で権限設定が過去に登録され、論理削除されている場合は復活
+        #事務職・親方で権限設定が過去に登録され、論理削除されている場合は復活 #If permission settings for office workers or foremen were previously registered and then logically deleted, they can be restored.
         ua[:deleted_at] = nil
         ua.save
       end
     elsif ua.present? && ua[:deleted_at].nil?
-      #事務職・親方以外で権限設定がある場合は論理削除
+      #事務職・親方以外で権限設定がある場合は論理削除 #Logical deletion if permission is set for anyone other than office staff or foremen.
       ua[:deleted_at] = Time.now()
       ua[:deleted_uid] = self[:updated_uid]
       ua.save

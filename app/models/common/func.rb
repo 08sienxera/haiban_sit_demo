@@ -3,31 +3,33 @@
 #
 #=== 抽象ActiveRecordの共通関数モジュール
 # 各クラスでextendして利用する
+#=== Common function module for abstract ActiveRecord
+# Extend and use in each class
 
-#画面遷移エラー
+#画面遷移エラー Screen transition error
 class BadRequestError < StandardError; end
-#バリデーションエラー
+#バリデーションエラー Validation error
 class ValidateParamsError < StandardError; end
-#ログインチェックエラー
+#ログインチェックエラー Login check error
 class LoginCheckError < StandardError; end
-#重複登録エラー
+#重複登録エラー Duplicate registration error
 class DuplicationError < StandardError; end
-#存在無しエラー
+#存在無しエラー non-existence error
 class NotFoundError < StandardError; end
-#上限チェックエラー
+#上限チェックエラー Upper limit check error
 class LimitOverError < StandardError; end
-#画像リサイズエラー
+#画像リサイズエラー Image resizing error
 class ImageResizeError < StandardError; end
 
 module Common::Func
   #
-  #===一覧取得
-  #引数:: page Integer ページNo
+  #===一覧取得 Get list
+  #引数:: page Integer ページ No Argument:: page Integer Page No.
   #:: select String 抽出項目
   #:: where Array 抽出条件
   #:: order String 抽出順
   #:: include String 外部接続
-  # 戻り値 ::　テーブルデータ　ActiveRecord
+  # 戻り値 ::　テーブルデータ　ActiveRecord Return value :: Table data ActiveRecord
   def get_list(page,select,where,order,include=nil,limit = LIST_LIMIT)
     data = self.paginate(:page => page, :per_page => limit)
     data = data.select(select) if select.present?
@@ -42,6 +44,9 @@ module Common::Func
   #===1行データ取得
   #引数:: conditions Array 抽出条件
   # 戻り値 ::　テーブルデータ　ActiveRecord
+  #===Retrieve 1 row of data
+  #Arguments:: conditions Array Extraction criteria
+  #Return value:: Table data ActiveRecord
   def get_first(conditions)
     data = self.find_by(conditions)
     return data
@@ -50,6 +55,8 @@ module Common::Func
   #
   #=== 登録・更新
   #引数:: p_key String||Array 主キー
+  #=== Registration/Update
+  #Argument:: p_key String||Array Primary Key
   #:: datas Hash 登録・更新データ
   #:: uid String 登録・更新ユーザID
   #:: mul_flg 重複可否フラグ(可：true,不可：false)
@@ -88,13 +95,13 @@ module Common::Func
       elsif unscoped && dataline[:deleted_at].present?
         dataline[:deleted_at] = nil
       end
-      dataline[:updated_at] = Time.now  #CSV更新件数補正
+      dataline[:updated_at] = Time.now  #CSV更新件数補正 CSV update count correction
       dataline.update(datas)
     end
     return dataline
   end
   #
-  #=== 全削除（deleted_atにデータを入れる）
+  #=== 全削除（deleted_atにデータを入れる） Delete all data (place the data in deleted_at).
   def delete_all(uid,where)
     deldata = {:deleted_at=>Time.now(),:deleted_uid=>uid}
     self.where(where).update_all(deldata)
@@ -103,6 +110,8 @@ module Common::Func
   #
   #===リストテーブルを生成する
   #引数::listin　Hash　制御データ
+  #===Generate a list table
+  #Arguments::listin Hash control data
   def getdatalist(listin)
     extend Common::Format
     retlist=[]
@@ -137,7 +146,7 @@ module Common::Func
     return retlist
   end
   #
-  #===リスト取得(共通名称)
+  #===リスト取得(共通名称) #===Get list (common name)
   def get_my_list(type="array")
     return self.getdatalist({:key=>:id,:text=>:name,
         :order=>"desp_index asc",:type => type})
@@ -154,7 +163,7 @@ module Common::Func
     return ""
   end
   #
-  #===ユニークデータ抽出
+  #===ユニークデータ抽出 Unique data extraction
   def get_uniq_data(datalist,key)
     ret = []
     datalist.each{|data|
@@ -165,11 +174,11 @@ module Common::Func
 
 
   #
-  #=== 文字列の途中カット
-  # 引数 :: str String 値
-  # ::vmaxlength　Int　表示文字数
-  # ::bwd String 後文字
-  # 戻り値 ::　String 先頭からvmaxlength文字までのの文字列
+  #=== 文字列の途中カット Cutting a string midway
+  # 引数 :: str String 値 Argument :: str String value
+  # ::vmaxlength　Int　表示文字数 ::vmaxlength　Int　Number of displayed characters
+  # ::bwd String 後文字 ::bwd String End character
+  # 戻り値 ::　String 先頭からvmaxlength文字までのの文字列 Return value: String The string from the beginning up to vmaxlength characters.
   def str_cut(str,vmaxlength = nil, bwd = "...")
     if str.class.to_s == "String"
       retstr = str
@@ -182,7 +191,7 @@ module Common::Func
     return retstr
   end
   #
-  #=== 時間の差分を取得
+  #=== 時間の差分を取得 Get time difference
   def h_between(st,et)
     ret = 1
     if st =~ /(\d{2}):(\d{2})/ && et =~ /(\d{2}):(\d{2})/
@@ -193,7 +202,7 @@ module Common::Func
     return ret
   end
   #
-  #=== 比率を算出(%)
+  #=== 比率を算出(%) Calculate the ratio (%)
   def cal_rate(numer,denom,keta)
     return 0 if numer == 0 || numer.blank?
     return 100 if denom == 0 || denom.blank?
@@ -201,14 +210,14 @@ module Common::Func
     return BigDecimal("#{ret.round}") / (10 ** keta)
   end
   #
-  #=== 緯度経度の２点間の距離を求める
-  ARTH_A = 6378.137			#地球の半径(赤道半径)
-  ARTH_B = 6356.752314140	#地球の半径(極半径)
+  #=== 緯度経度の２点間の距離を求める Find the distance between two points using latitude and longitude.
+  ARTH_A = 6378.137			#地球の半径(赤道半径) Earth's radius (equatorial radius)
+  ARTH_B = 6356.752314140	#地球の半径(極半径) Earth's radius (polar radius)
   def calc_distance(lat1,lon1,lat2,lon2)
     return 9999999 if lat1.blank? || lon1.blank? || lat2.blank? || lon2.blank?
-    d_lat = ((lat1 - lat2) * Math::PI/ 180.0 )         #緯度差（ラジアン）
-    d_lon = ((lon1 - lon2) * Math::PI/ 180.0 )         #経度差（ラジアン）
-    y_lat = (((lat1 + lat2)/2) * Math::PI/ 180.0 )     #緯度の平均値
+    d_lat = ((lat1 - lat2) * Math::PI/ 180.0 )         #緯度差（ラジアン） Latitude difference (radians)
+    d_lon = ((lon1 - lon2) * Math::PI/ 180.0 )         #経度差（ラジアン） Difference in longitude (radians)
+    y_lat = (((lat1 + lat2)/2) * Math::PI/ 180.0 )     #緯度の平均値 Average latitude
     e2 = (ARTH_A**2 - ARTH_B**2) / ARTH_A**2
     m_num = ARTH_A * (1 - e2)
     w  = Math.sqrt(1 - e2 * Math.sin(y_lat)**2 )
@@ -217,13 +226,13 @@ module Common::Func
     return Math.sqrt((d_lat * m)**2 + (d_lon * n * Math.cos(y_lat))**2)
   end
   #
-  #=== Sjis変換用
+  #=== Sjis変換用 For SJIS conversion
   def for_kconv_sjis(val)
     ret = val.gsub(/([―ソЫ噂浬欺圭構蚕十申曾箪貼能表暴予禄兔喀媾彌拿杤歃濬畚秉綵臀藹觸軆鐔饅鷭])/){|w5c| "#{w5c}\\"}
     return ret.gsub(/([￥／：＊？“＜｜＞”\\\/:\*\?\"<>\|])/,"")
   end
   #
-  #=== 日付の月数差分
+  #=== 日付の月数差分 Difference in the number of months between dates
   def date_diff_m(s_date,e_date)
     return 0 unless s_date.is_a?(Date)
     return 0 unless e_date.is_a?(Date)

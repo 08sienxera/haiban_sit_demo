@@ -9,20 +9,29 @@
 #*     変更	：
 #***************************************************************************
 #++
+#-- 
+#******************************************************************************** 
+#* System name: 
+#* Subsystem name: PDF output common class 
+#* Note: Japanese font required 
+#* Created: 2014/01/30 SEIKO 
+#* Change: 
+#******************************************************************************** 
+#++
 
-#= PDF出力共通クラス
+#= PDF出力共通クラス | PDF output common class
 class Pdf::PdfCommon
   require "prawn"
   include Common::Format
   include ApplicationHelper
-  #フォント（ヘルベチカ）
+  #フォント（ヘルベチカ） | Font (Helvetica)
   FONT_A = "Helvetica"
-  #フォント(明朝)
+  #フォント(明朝) | Font (Mincho)
   FONT_M = "vendor/fonts/ipaexm.ttf"
-  #フォント(ゴシック)
+  #フォント(ゴシック) | Font (Gothic)
   FONT_G = "vendor/fonts/ipaexg.ttf"
 
-  #初期設定
+  #初期設定 | Initial settings
   def initialize(cd,page_condition = {})
     unless File.exist?(PDF_OUT_DIR)
       Dir::mkdir(PDF_OUT_DIR,0755)
@@ -31,7 +40,7 @@ class Pdf::PdfCommon
     @filepath="#{PDF_OUT_DIR}/#{@filename}"
     def_page_condition = {
       :page_size => 'A4',
-      :page_layout => :portrait,  # 用紙向き ( 縦:portrait、横:landscape )
+      :page_layout => :portrait,  # 用紙向き ( 縦:portrait、横:landscape ) | Paper orientation (portrait, landscape)
       :top_margin => 40,
       :bottom_margin => 30,
       :left_margin => 20,
@@ -42,17 +51,17 @@ class Pdf::PdfCommon
     @page_w = @pdf.bounds.right
     @page_h = @pdf.bounds.height
   end
-  #PDFを保存し後始末
+  #PDFを保存し後始末 | Save the PDF and clean up afterwards
   def fin()
-   @pdf.render_file(@filepath)         #ファイルへ書き込む
+   @pdf.render_file(@filepath)         #ファイルへ書き込む | write to file
    @pdf = nil
    return @filepath
   end
-  #改ページ
+  #改ページ | page break
   def start_new_page(page_condition = {})
     @pdf.start_new_page(@page_condition.merge(page_condition))
   end
-  #縦を引く
+  #縦を引く | draw vertically
   def v_line(x,y,l,width = 1)
     def_line = @pdf.line_width
     @pdf.line_width = width
@@ -61,7 +70,7 @@ class Pdf::PdfCommon
     @pdf.stroke
     @pdf.line_width = def_line
   end
-  #アンダーラインを引く
+  #アンダーラインを引く | draw an underline
   def u_line(x,y,w,width = 1)
     def_line = @pdf.line_width
     @pdf.line_width = width

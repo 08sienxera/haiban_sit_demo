@@ -9,10 +9,10 @@
 #***************************************************************************
 #++
 
-#= IDC 生き死にチェック連携用
+#= IDC 生き死にチェック連携用 For IDC life/death check integration
 class KeeperCkController < ApplicationController
   skip_before_action :verify_authenticity_token
-  #=== チェックを実行
+  #=== チェックを実行 run check
   def index
       ret = "OK"
       count = User.count(:id)

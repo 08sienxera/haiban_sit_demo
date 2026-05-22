@@ -1,12 +1,12 @@
-#= 沿岸作業マスタ
+#= 沿岸作業マスタ Coastal work master
 class Manager::CargoMastersController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable
   before_action :set_my_oth_variable,:except=>:index
 
 
-  #=== パラメータに指定した沿岸作業データを返す
-  #param[:format]によりレスポンス形式をjson、htmlで切替
+  #=== パラメータに指定した沿岸作業データを返す Returns coastal work data specified in the parameters.
+  #param[:format]によりレスポンス形式をjson、htmlで切替 The response format can be switched between JSON and HTML using `param[:format]`.
   def show
     if params[:format] == "json"
       data = CargoMaster.find_by_move_no(params[:id])

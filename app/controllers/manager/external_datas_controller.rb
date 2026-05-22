@@ -1,7 +1,7 @@
 class Manager::ExternalDatasController < Manager::HomeController
   before_action :set_my_global_variable
 
-  #=== 管理共通（CSV一括登録画面表示）
+  #=== 管理共通（CSV一括登録画面表示) Common management (CSV bulk registration screen display)
   def csv_in
     @title = I18n.t("page_titles.csv_in",:name=>"勤務時間取込（既存連携）")
     @out_file_name = I18n.t("page_titles.index",:name=>"hogehoge")
@@ -11,7 +11,7 @@ class Manager::ExternalDatasController < Manager::HomeController
   end
 
   def csv_input
-    #== 小さい関数
+    #== 小さい関数 Small function
     find_rsw = ->(t_date,user_id){
       return ResultCargoWorker.where(:work_date=>t_date, :user_id=>user_id)
     }
@@ -21,7 +21,7 @@ class Manager::ExternalDatasController < Manager::HomeController
     }
 
 
-    #== メイン処理
+    #== メイン処理 Main processing
     msgs = validate_params(params)
     if msgs.present?
       flash[:error_msgs] = msgs.map{|msg| "・" + msg.html_safe}
@@ -30,13 +30,13 @@ class Manager::ExternalDatasController < Manager::HomeController
       return render :template => "manager/external_datas/work_time_csv/csv_in"
     end
 
-    # 変数
+    # 変数 Variables
     row_datas  = []
     t_date = Date.parse(params["t_date"])
     csv_file = params[:file][:csv].tempfile
 
 
-    # CSV→オブジェクト変換
+    # CSV→オブジェクト変換 CSV to object
     CSV.foreach(csv_file.path, headers: true, encoding: 'SJIS:UTF-8') do |row|
       # create work_time_csv object
       row_data = WorkTimeCsv.create_from_csv_row(row)
@@ -44,7 +44,7 @@ class Manager::ExternalDatasController < Manager::HomeController
     end
 
 
-    # 参照系の変数
+    # 参照系の変数 Reference variables
     vacation_types = VacationType.all.pluck(:time_sheet_name,:base_no,:id)
     names          = row_datas.filter{|d| d.validate_msg.blank?}.map(&:worker_name)
     users          = User.where("REPLACE(REPLACE(name,' ', ''),'　', '') in (?)",names)
@@ -54,7 +54,7 @@ class Manager::ExternalDatasController < Manager::HomeController
       key
     }
 
-    # 行ごとに処理(オブジェクト変換済み)
+    # 行ごとに処理(オブジェクト変換済み) Process each row (object converted)
     row_datas.each do |data_line|
       next if data_line.validate_msg.present?
         worker_name = data_line.worker_name
@@ -66,7 +66,7 @@ class Manager::ExternalDatasController < Manager::HomeController
         work_type = data_line.work_type
         case work_type
         when "通常出勤(8-16)","休日出勤(8-16)","通常出勤(20-4)","休日出勤(20-4)","通常出勤(19-2)","休日出勤(19-2)"
-          # -- ここから（共通部分）
+          # -- ここから（共通部分） Common parts from here
           rcws = find_rsw.call(t_date,user.id)
           if rcws.blank?
             data_line.validate_msg << "[#{worker_name}]の作業配番が登録されていません"; next
@@ -91,13 +91,13 @@ class Manager::ExternalDatasController < Manager::HomeController
             }
             rcw.update(in_data)
           end
-          # -- ここまで
+          # -- ここまで Common parts to here
 
-          # 休暇データが無い場合、新規登録
+          # 休暇データが無い場合、新規登録 If there is no vacation data, new registration
           if ["休日出勤(8-16)","休日出勤(20-4)","休日出勤(19-2)"].include?(work_type)
             t_date_vacation = find_vacation.call(t_date,user.id)
             if t_date_vacation.blank?
-              # 対象日に休暇登録がない（「公○」で新規登録
+              # 対象日に休暇登録がない（「公○」で新規登録 No leave registration has been made for the target date (new registration under "Public ○")
               new_v = Vacation.template(:base_no=>6,:create_user=>User.find(get_uval(:id)))
               in_data = {
                 :user_id => user.id,
@@ -110,18 +110,18 @@ class Manager::ExternalDatasController < Manager::HomeController
               new_v.assign_attributes(in_data)
               v = Vacation.create_vacation(new_v.attributes)
             else
-              # 対象日に休暇登録がある場合 → なにもしない
+              # 対象日に休暇登録がある場合 → なにもしない If there is a leave registration for the target date, do nothing
             end
           end
         else
-          unless work_type.match(/^通常出勤\(.*\)$|^休日出勤\(.*\)$/) # 勤怠が「通常出勤(*)」「休日出勤(*)」以外の場合---
+          unless work_type.match(/^通常出勤\(.*\)$|^休日出勤\(.*\)$/) # 勤怠が「通常出勤(*)」「休日出勤(*)」以外の場合--- If the work is not "normal attendance" or "holiday attendance"
             vt = vacation_types.find{|nm,_| nm==work_type}
             if vt.blank?
               data_line.validate_msg << "[#{worker_name}]の勤怠[#{work_type}]は登録されていません"; next
             end
             t_date_vacation = find_vacation.call(t_date,user.id)
 
-            # 当日の休暇データが存在しない場合は新規登録
+            # 当日の休暇データが存在しない場合は新規登録 If there is no vacation data for the day
             if t_date_vacation.blank?
               t_date_vacation = Vacation.template(:base_no=>vt[1],:create_user=>User.find(get_uval(:id)))
               t_date_vacation.assign_attributes({
@@ -133,7 +133,7 @@ class Manager::ExternalDatasController < Manager::HomeController
               v = Vacation.create_vacation(t_date_vacation.attributes)
             end
 
-            # 該当データが存在し、休暇種別が一致しない場合は更新
+            # 該当データが存在し、休暇種別が一致しない場合は更新 If the corresponding data exists and the vacation type does not match
             if t_date_vacation.base_no!=vt[1]
               t_date_vacation.assign_attributes({
                 :base_no => vt[1],
@@ -147,11 +147,11 @@ class Manager::ExternalDatasController < Manager::HomeController
             end
 
 
-            # 勤怠が「早遅」「遅出」「看Ａ」「看Ｐ」「介Ａ」「介Ｐ」「年Ａ」「年Ｐ」の場合は作業員データを更新
+            # 勤怠が「早遅」「遅出」「看Ａ」「看Ｐ」「介Ａ」「介Ｐ」「年Ａ」「年Ｐ」の場合は作業員データを更新 If the work is "early/late","late arrival","watch 1","watch 2","interview 1","interview 2","year 1","year 2", update worker data
             if VacationType.staggered.pluck(:base_no).include?(t_date_vacation&.base_no&.to_i)
               rcws = find_rsw.call(t_date,user.id)
               if rcws.blank?
-                # data_line.validate_msg << "[#{worker_name}]の作業配番が登録されていません"; 
+                # data_line.validate_msg << "[#{worker_name}]の作業配番が登録されていません";  # data_line.validate_msg << "The work assignment for "[#{worker_name}] is not registered";
                 next
               end
 
@@ -174,7 +174,7 @@ class Manager::ExternalDatasController < Manager::HomeController
                 }
                 rcw.update(in_data)
               end
-              # -- ここまで
+              # -- ここまで to this point
             end
           end
         end
@@ -186,7 +186,7 @@ class Manager::ExternalDatasController < Manager::HomeController
     flash["error_msgs"] = row_datas.filter{|d| d.validate_msg.present?}.map(&:validate_msg).flatten.map{|msg| "・" + msg.html_safe}
     flash["error_msgs"] << "・#{row_datas.filter{|d| d.validate_msg.blank?}.size}件の勤怠データを取り込みました。"
 
-    # バックグラウンドジョブ登録
+    # バックグラウンドジョブ登録 Register background job
     Batche::WorkTimeAggregate.delay.do(t_date.strftime("%Y%m%d"),t_date.strftime("%Y%m%d"))
 
     @title = I18n.t("page_titles.csv_in",:name=>"勤務時間取込（既存連携）")

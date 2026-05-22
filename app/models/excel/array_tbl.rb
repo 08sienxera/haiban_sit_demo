@@ -1,7 +1,7 @@
 # encoding: utf-8
 class Excel::ArrayTbl < Excel::ExcelClass
   #
-  #書式データ生成
+  #書式データ生成 Format data generation
   def set_myformat
     @@myformat = {}
     @@myformat[:h] = @workbook.add_format(@font.merge(:bold=>1,:bg_color=>22,:border=>1,:text_wrap=>0))
@@ -11,17 +11,17 @@ class Excel::ArrayTbl < Excel::ExcelClass
     return @@myformat
   end
   #
-  #Ｅｘｃｅｌ出力
-  # In:array_data : 2次元配列
-  #    header     : １行目ヘッダフラグ
-  #    header_lock     : １行目ヘッダ行を固定
+  #Ｅｘｃｅｌ出力 Excel contributes
+  # In:array_data : 2次元配列 In:array_data: 2-dimensional array
+  #    header     : １行目ヘッダフラグ header: 1st line header flag
+  #    header_lock     : １行目ヘッダ行を固定 header_lock : Fix the first header line
   def mk_excel(array_data,header = false,header_lock = false)
     set_myformat()
     worksheet = @workbook.add_worksheet("一覧")
-    worksheet.set_paper(9)      #A4サイズ
-    worksheet.set_landscape()   #横向き
-    worksheet.hide_gridlines()  #余分な罫線の印刷をさせない
-    worksheet.set_margins(0.2)  #余白を設定
+    worksheet.set_paper(9)      #A4サイズ  #A4 size
+    worksheet.set_landscape()   #横向き Landscape
+    worksheet.hide_gridlines()  #余分な罫線の印刷をさせない Prevent extra ruled lines from being printed
+    worksheet.set_margins(0.2)  #余白を設定 set margins
     worksheet.freeze_panes(1,0) if header_lock
     col_ws = []
     array_data.each_with_index{|datas,row|
@@ -61,7 +61,7 @@ class Excel::ArrayTbl < Excel::ExcelClass
     row = 0
   end
   #
-  #ホテル概要一覧
+  #ホテル概要一覧 Hotel overview list
   def mk_list(evt,inventories)
     #一覧
 
@@ -77,7 +77,7 @@ class Excel::ArrayTbl < Excel::ExcelClass
     }
     worksheet.set_column(3,2+sdc,10)
     worksheet.set_column(3+sdc,3+sdc,1)
-    #表題
+    #表題 title
     worksheet.merge_range(row-1,1,row,1,"ホテル",@@myformat[:tt_c2])
     worksheet.merge_range(row-1,2,row,2,"部屋",@@myformat[:tt_c2])
     if sdc > 1
@@ -85,10 +85,10 @@ class Excel::ArrayTbl < Excel::ExcelClass
     else
       worksheet.write(row-1,3,"宿泊日",@@myformat[:tt_c])
     end
-    #印刷タイトル行設定
+    #印刷タイトル行設定 Print title line settings
     worksheet.repeat_rows(0,row)
     row += 1
-    #枠を固定
+    #枠を固定 fix frame
     worksheet.freeze_panes(row,3)
     inventories[:inventories].each{|hotel_id,evt_hotel|
       evt_hotel[:rooms].each_with_index{|room_data,index|
@@ -115,16 +115,16 @@ class Excel::ArrayTbl < Excel::ExcelClass
     } unless inventories.blank?
   end
   #
-  #ホテル明細一覧
+  #ホテル明細一覧 Hotel details list
   def mkinfo(evt,evt_hotel,guest)
     sheet_name = evt_hotel[:hotel_name]
     sheet_name = sheet_name[0..5] if sheet_name.length > 10
     sheet_name = get_sheet_name(sheet_name)
     worksheet = @workbook.add_worksheet(sheet_name)
-    worksheet.set_paper(9)      #A4サイズ
-    worksheet.set_landscape()   #横向き
-    worksheet.hide_gridlines()  #余分な罫線の印刷をさせない
-    worksheet.set_margins(0.2)  #余白を設定
+    worksheet.set_paper(9)      #A4サイズ A4 size
+    worksheet.set_landscape()   #横向き Landscape
+    worksheet.hide_gridlines()  #余分な罫線の印刷をさせない Prevent extra ruled lines from being printed
+    worksheet.set_margins(0.2)  #余白を設定 set margins
     [1,20,12,10,15,15,7,2,20,1].each_with_index{|w,wi| worksheet.set_column(wi,wi,w) }
     row = 0
     worksheet.set_row(row, 22)
@@ -137,10 +137,10 @@ class Excel::ArrayTbl < Excel::ExcelClass
     worksheet.write(row,5,"食事等",@@myformat[:tt_c])
     worksheet.write(row,6,"数量",@@myformat[:tt_c])
     worksheet.merge_range(row,7,row,8,"利用者",@@myformat[:tt_c2])
-    #印刷タイトル行設定
+    #印刷タイトル行設定 Print title line settings
     worksheet.repeat_rows(0,row)
     row += 1
-    #枠を固定
+    #枠を固定 fix frame
     worksheet.freeze_panes(row,0)
     guest.each{|app_id,app_data|
       app_data[:guest_data].each_with_index{|guest_data,gd_index|

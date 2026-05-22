@@ -4,7 +4,7 @@ class Manager::LunchOrdersController < Manager::HomeController
   before_action :set_my_oth_variable,:except=>:index
   before_action :set_order_lunch_variables,:only=>[:edit,:update]
 
-  #=== 昼食集計画面表示
+  #=== 昼食集計画面表示 Lunch summary screen display
   def index
     @title = "昼食集計"
     @today = LunchOrder.get_today
@@ -28,7 +28,7 @@ class Manager::LunchOrdersController < Manager::HomeController
     
 
   end
-  #=== 注文ロック処理
+  #=== 注文ロック処理 Order lock processing
   def create
     begin
       order_date = Date.strptime(params[:t_date], "%Y%m%d")
@@ -56,12 +56,12 @@ class Manager::LunchOrdersController < Manager::HomeController
     return
   end
 
-  #=== 昼食注文更新画面表示
+  #=== 昼食注文更新画面表示 Lunch order update screen displayed
   def edit
     @title = "昼食更新"
   end
 
-  #=== 昼食注文更新処理
+  #=== 昼食注文更新処理 Lunch order update process
   def update
     begin
       @order[:order_date] = @t_date

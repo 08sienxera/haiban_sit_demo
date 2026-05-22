@@ -12,7 +12,7 @@
 
 class DevMenuController < ApplicationController
   layout "main_layout"
-  #=== デモ用メニューを生成
+  #=== デモ用メニューを生成 Generate a demo menu
   def index
     unless Rails.env.development? || Rails.env.test?
       flash.now[:error_msgs] = "#{I18n.t("system_errors.page_link")}"
@@ -23,7 +23,7 @@ class DevMenuController < ApplicationController
     @title = "デモ用Ｉｎｄｅｘ"
     @disable_link = true
   end
-  #=== データ補正を実行
+  #=== データ補正を実行 Perform data correction
   def create
     ret = ["操作なし"]
     # ret = []

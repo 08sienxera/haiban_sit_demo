@@ -1,9 +1,9 @@
-#= 昼食集計帳票エクセル作成クラス
+#= 昼食集計帳票エクセル作成クラス Lunchtime summary report Excel creation class
 class Manager::LunchSummaryController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_target
 
-  # 昼食集計画面表示
+  # 昼食集計画面表示 Lunch summary screen display
   def index
     @title="昼食集計"
     @today = Date.today
@@ -12,7 +12,7 @@ class Manager::LunchSummaryController < Manager::HomeController
     }
   end
 
-  # 昼食集計エクセルを作成、送信
+  # 昼食集計エクセルを作成、送信 Create and send an Excel spreadsheet summarizing lunch expenses.
   def excel_output
     whs = WhSummary.find_by_tdate(@s_date)
     y = whs.t_year
@@ -21,7 +21,7 @@ class Manager::LunchSummaryController < Manager::HomeController
     excel = Excel::LunchSummaryExcelClass.new(export_file_name)
     workbook = excel.excel
 
-    #== エクセル書式設定
+    #== エクセル書式設定 Excel formatting
     col_width = 4.5
     title_format =  excel.get_format(fweight:true,fsize:14)
     text_format_align_r =  excel.get_format(align:'right')
@@ -47,8 +47,8 @@ class Manager::LunchSummaryController < Manager::HomeController
       sheet_data = {name:nil,data:nil}
       sheet_data[:name] = t_branch[1]
 
-      #== table_data: 2次元配列
-      #== セル情報は配列使用 ["値", "書式設定format型"]
+      #== table_data: 2次元配列 table_data: 2D array
+      #== セル情報は配列使用 ["値", "書式設定format型"] Cell information is used as an array ["value", "format type"]
       table_data = []
       table_data << [[title,title_format]]
       table_data << []
@@ -58,7 +58,7 @@ class Manager::LunchSummaryController < Manager::HomeController
       (@s_date..@e_date).each do |day|
         tmp_line << [day.day,header_format]
       end
-      # メニューごとの集計カラム
+      # メニューごとの集計カラム Aggregate column for each menu
       %w[福(み有 福(み無 土(み無 弁(幕 弁(から 祝(幕 す(牛].each do |d|
         tmp_line << [d,branch_format]
       end
@@ -79,7 +79,7 @@ class Manager::LunchSummaryController < Manager::HomeController
         table_data << tmp_line
       end
 
-      # 日付毎集計
+      # 日付毎集計 Aggregation by date
       temp_line = []
       temp_line << ["合計",branch_format_total_l]
       (@s_date..@e_date).each do |day|
@@ -100,7 +100,7 @@ class Manager::LunchSummaryController < Manager::HomeController
       temp_line << [@order_sum[:monthly_orders][t_branch[0]].present? ? @order_sum[:monthly_orders][t_branch[0]].values.sum : 0 ,branch_format_total_r]
       table_data << temp_line
 
-      # 福祉センターの注文数
+      # 福祉センターの注文数 Number of orders from the welfare center
       temp_line = []
       total = @order_sum.dig(:fukushi_center_orders,t_branch[0]).to_i
       (@s_date..@e_date).to_a.size.times {|n| temp_line << []}
@@ -158,8 +158,8 @@ class Manager::LunchSummaryController < Manager::HomeController
     def_cells = Array.new((@s_date..@e_date).count,"")
     @datas = {}
     @order_sum = {
-      daily_orders: {}, # keyは日付,valueはハッシュ(keyはメニューID,valueは注文数)
-      monthly_orders: {} # keyは日付,valueはハッシュ(keyはメニューID,valueは注文数)
+      daily_orders: {}, # keyは日付,valueはハッシュ(keyはメニューID,valueは注文数) The key is the date, and the value is a hash (key is the menu ID, value is the order quantity).
+      monthly_orders: {} # keyは日付,valueはハッシュ(keyはメニューID,valueは注文数) The key is the date, and the value is a hash (key is the menu ID, value is the order quantity).
     }
 
 
@@ -190,7 +190,7 @@ class Manager::LunchSummaryController < Manager::HomeController
         @order_sum[:monthly_orders][w_brcd] ||= def_order_total.dup
         @order_sum[:monthly_orders][w_brcd][order[:lunch_menu_id]]+= 1
 
-        # 福祉センターの注文数を集計
+        # 福祉センターの注文数を集計 The number of orders from the welfare center has been tallied.
         if fukushi_center_menus.include?(order[:lunch_menu_id])
           @order_sum[:fukushi_center_orders] ||= {}
           @order_sum[:fukushi_center_orders][w_brcd] ||= 0

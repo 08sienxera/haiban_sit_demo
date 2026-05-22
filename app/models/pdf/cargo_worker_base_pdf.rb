@@ -1,18 +1,18 @@
-#= 配番表PDF作成の根底クラス 
+#= 配番表PDF作成の根底クラス  Root class for creating numbering list PDF
 class Pdf::CargoWorkerBasePdf < Pdf::ExpansionPdfCommon
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） Font size (body)
   DefFontSizeB = 8
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） Row height (body)
   TableRowHeight = 12
-  # ページあたりの行数
+  # ページあたりの行数 Number of lines per page
   TableRow = 37
-  # 列幅の比率設定
+  # 列幅の比率設定 Column width ratio settings
   TableColumnRatios = [3,1,5,3,4,4,3,2,2,3,1.3,1.3,1.3,1.3,1.3,1.3]
-  # フッタに入れる企業名
+  # フッタに入れる企業名 Company name in footer
   CompName = "小名浜海陸運送株式会社"  
 
 
-  # 初期設定
+  # 初期設定 Initial settings
   def initialize(cd,page_condition = {},name:nil,title:nil,sub_title:nil)
     super(cd,page_condition,name:name)
     @title = title || "タイトル未設定"
@@ -21,7 +21,7 @@ class Pdf::CargoWorkerBasePdf < Pdf::ExpansionPdfCommon
     @max_width = @pdf.bounds.right
   end
 
-  # ＰＤＦ作成
+  # ＰＤＦ作成 PDF creation
   def create(daily_cargo_list,rel_data,t_scope:)
     @t_scope = t_scope
     t_work_date_list = daily_cargo_list.keys.sort[@t_scope]
@@ -69,7 +69,7 @@ class Pdf::CargoWorkerBasePdf < Pdf::ExpansionPdfCommon
   end
 
   def main_table(table_data,footer_data=nil)
-    # ------ ヘッダ --------
+    # ------ ヘッダ header --------
     t_header = [
       [
         {:content=>"作業日",:colspan=>1,:rowspan=>2},
@@ -96,7 +96,7 @@ class Pdf::CargoWorkerBasePdf < Pdf::ExpansionPdfCommon
       set_border_width(t,1,outer_width:2)
     end
 
-    # ------ ボディ --------
+    # ------ ボディ  body--------
     @pdf.move_down(1)
     def_cell_style = {
       :size=>DefFontSizeB,
@@ -132,7 +132,7 @@ class Pdf::CargoWorkerBasePdf < Pdf::ExpansionPdfCommon
       end
     }
 
-    # ------ フッダ --------
+    # ------ フッダ  footer --------
     def_cell_style = {
       :size=>DefFontSizeB,
       :height=>TableRowHeight,

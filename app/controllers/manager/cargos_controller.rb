@@ -3,21 +3,21 @@ class Manager::CargosController < Manager::HomeController
   before_action :get_set_tdate
   before_action :set_my_global_variable
 
-  #=== 荷役予定(必要人数設定)画面
+  #=== 荷役予定(必要人数設定)画面 Cargo handling schedule (required personnel setting) screen
   def index
     @title="荷役予定(必要人数設定)"
-    #対象日の荷役データを取得
+    #対象日の荷役データを取得 Retrieve cargo handling data for the target day.
     @datas = Cargo.includes(:cargo_request).where(:work_date=>@t_date[:t_date]).order(:desp_index=>:asc)
-    #作業員データの算出
+    #作業員データの算出 Calculation of worker data
     @woker_sum = Woker.sum_competence(@t_date)
-    #指定日コピーの初期値設定
+    #指定日コピーの初期値設定 Default settings for copying on a specified date
     cp_wh = WhCalendar.where(["t_date < ? and wh_flg = ?",@t_date[:t_date],@t_date[:wh_flg]]).order(:t_date=>:desc).first()
     @cp_date = (cp_wh.present? ? cp_wh[:t_date] : (@today-1))
-    #入力フォーマット
+    #入力フォーマット input format
     @cc = Cargo.set_input_form("#{Cargo.model_name.name}_in")
     @inc_js= ["manager/cargos"]
 
-    #配番画面リンク権限チェック
+    #配番画面リンク権限チェック Numbering screen link permission check
     user = User.includes(:user_auth).find(get_uval(:id))
     user_auth = user&.user_auth
     if is_admin? || is_manager?
@@ -28,7 +28,7 @@ class Manager::CargosController < Manager::HomeController
       @cargo_link_enable = false
     end
 
-    #編集可否
+    #編集可否 Editability
     @can_edit = Cargo.can_edit(@t_date[:t_date],get_uval(:login_id))
     @lock_user = Cargo.locked_by(@t_date[:t_date])
     @alert_msg = @lock_user ? "【#{@lock_user[:name]}】が配番作業を始めています。" : ""
@@ -36,18 +36,18 @@ class Manager::CargosController < Manager::HomeController
 
   end
   #
-  #===本船作業依頼を反映＆配番開始or指定日沿岸作業コピー
+  #===本船作業依頼を反映＆配番開始or指定日沿岸作業コピー Reflect the ship's work request and start of assignment or copy of coastal work on the specified date.
   def create
 
-    # 操作制限中はリダイレクト
+    # 操作制限中はリダイレクト Redirect when operation restrictions are in place
     unless @can_edit = Cargo.can_edit(@t_date[:t_date],get_uval(:login_id))
       flash[:msg] = "他ユーザにより配番準備中のため作業依頼取込を中止しました。"
       redirect_to :action=>:index; return
     end
 
     case params[:mord]
-    when "getset"  #作業依頼を反映＆配番開始
-      #作業依頼を反映＆配番開始
+    when "getset"  #作業依頼を反映＆配番開始 Reflect the work request and start of assignment
+      #作業依頼を反映＆配番開始 Reflect the work request and start of assignment
       begin
         Cargo.transaction do
           Cargo.copy_request(@t_date[:t_date])
@@ -58,7 +58,7 @@ class Manager::CargosController < Manager::HomeController
         return
       end
       flash[:msg] = "本船作業依頼を反映し、配番中の状態にしました。"
-    when "docopy"  #指定日沿岸作業コピー
+    when "docopy"  #指定日沿岸作業コピー Copy of coastal work on the specified date
       pc_work_date = params["#{Cargo.model_name.name}_in"][:work_date]
       if pc_work_date.present?
         begin
@@ -68,7 +68,7 @@ class Manager::CargosController < Manager::HomeController
             flash[:msg] = "#{pc_work_date.strftime("%Y/%m/%d")}に沿岸作業の登録が有りません。"
           else
             if params[:do_reset] == "1"
-              #指定日の沿岸作業を論理削除
+              #指定日の沿岸作業を論理削除 Logical deletion of coastal work on the specified date
               Cargo.delete_all(get_uval(:login_id),{:work_date=>@t_date[:t_date],:cargo_request_id=>0})
             end
             desp_index = params[:max_desp_index].to_i + 1
@@ -108,9 +108,9 @@ class Manager::CargosController < Manager::HomeController
   end
   
   #
-  #=== 荷役予定登録処理
+  #=== 荷役予定登録処理 Cargo schedule registration
   def update
-    # 操作制限中はリダイレクト
+    # 操作制限中はリダイレクト Redirect when operation restrictions are in place
     unless @can_edit = Cargo.can_edit(@t_date[:t_date],get_uval(:login_id))
       flash[:msg] = "他ユーザにより配番準備中のため作業依頼の更新を中止しました。"
       redirect_to :action=>:index; return
@@ -121,9 +121,9 @@ class Manager::CargosController < Manager::HomeController
       Cargo.transaction do
         @cc = Cargo.set_input_form("#{Cargo.model_name.name}_in")
         t_date = Date.strptime(params[:id], "%Y%m%d")
-        #一旦指定日の全データを論理削除
+        #一旦指定日の全データを論理削除 Delete all data for the specified day
         Cargo.delete_all(get_uval(:login_id),{:work_date=>t_date})
-        #行数分取込み
+        #行数分取込み Import row count
         1.upto(row_count){|row_index|
           @cc.setgname("#{Cargo.model_name.name}_in_#{row_index}")
           if params[@cc.getgname].present?
@@ -150,7 +150,7 @@ class Manager::CargosController < Manager::HomeController
 
   private
   #
-  #=== 表示対象日付取得：10時以降は翌日(変更)→常に翌日
+  #=== 表示対象日付取得：10時以降は翌日(変更)→常に翌日 Date to display: After 10:00, it will be the next day (changed) → Always the next day
   def get_set_tdate
     @today= Date.today
     t_date = @today+1

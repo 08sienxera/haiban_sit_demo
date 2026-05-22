@@ -2,13 +2,13 @@ class Operator::LunchOrderController < Operator::HomeController
   before_action :set_my_oth_variable,only:[:edit,:update]
   before_action :set_order_history,only:[:edit,:history]
 
-  # 昼食注文画面
+  # 昼食注文画面 | Lunch order screen
   def edit
     @title = "昼食注文"
     @lock = @t_date < Date.today || LunchOrderLock.ck_lock(@t_date,get_uval(:branch_cd))
   end
 
-  # 昼食注文登録、更新処理
+  # 昼食注文登録、更新処理 | Lunch order registration and update processing
   def update
     if @lock||@t_date < Date.today
       flash[:error_msgs] = "注文受付が終了しました"
@@ -32,7 +32,7 @@ class Operator::LunchOrderController < Operator::HomeController
         @my_order[:updated_uid] = get_uval(:login_id)
 
 
-        # バリデーション
+        # バリデーション | validation
         msgs= [] 
         if @my_order[:lunch_location_id].blank?
           msgs << "昼食配送先を選択してください"
@@ -68,7 +68,7 @@ class Operator::LunchOrderController < Operator::HomeController
     end
   end
 
-  # 昼食注文履歴表示
+  # 昼食注文履歴表示 | Lunch order history display
   def history
     @title = "昼食注文履歴"
     @param = params.to_json
@@ -92,22 +92,22 @@ class Operator::LunchOrderController < Operator::HomeController
     @menu = (@wh.present? ? LunchMenu.getdatalist({:order=>:desp_index,:where=>{:lunch_vendor_id=>@wh[:lunch_vendor_id]}}) : [])
     @lunch_menu = LunchMenu.getdatalist({:text=>:name,:order=>:desp_index})
 
-    # 注文状況
+    # 注文状況 | Order status
     vacation = Vacation.find_by(:user_id=>get_uval(:id),:vacation_day=>@t_date)
     vt = vacation.present?  ? VacationType.find_by_base_no(vacation[:base_no]) : nil
     vname = vt.present? ? vt.time_sheet_name : ""
-    if vacation.present? && @my_order.new_record? && @my_order[:lunch_location_id] == -1 # 当日休暇あり、かつ昼食注文なし
+    if vacation.present? && @my_order.new_record? && @my_order[:lunch_location_id] == -1 # 当日休暇あり、かつ昼食注文なし | There is a day off and no lunch order
       @order_sts = {:value=>1, :msg=>"注文しない",:vname=>vname, :color=>'#000000', :btn=>"注文"}
-    elsif @my_order.new_record? # 未注文
-      if @lock #締め処理後
+    elsif @my_order.new_record? # 未注文 | Not ordered
+      if @lock #締め処理後 | After tightening
         @order_sts = {:value=>2, :msg=>"注文しない", :vname=>vname, :color=>'#000000', :btn=>"注文"}
-      else # 締め処理前
+      else # 締め処理前 | Before tightening
         @order_sts = {:value=>3, :msg=>"＊未注文です＊", :vname=>vname, :color=>'#ff0000', :btn=>"注文"}
       end
-    else # 注文済
-      if @lock #締め処理後
+    else # 注文済 | Already ordered
+      if @lock #締め処理後 | After tightening
         @order_sts = {:value=>4, :msg=>"＊申請済みです＊", :vname=>vname, :color=>'#000000', :btn=>"注文"}
-      else # 締め処理前
+      else # 締め処理前 | Before tightening
         @order_sts = {:value=>5, :msg=>"＊申請済みです＊", :vname=>vname, :color=>'#000000', :btn=>"注文変更"}
       end
     end
@@ -116,7 +116,7 @@ class Operator::LunchOrderController < Operator::HomeController
   def set_order_history()
     t_date = @t_date || (params[:id]||params[:t_date]).to_date
     @location_note = LunchLocation.getdatalist({:text=>:note,:where=>"note <> ''",:type=>"hash"})
-    #履歴集計
+    #履歴集計 | History aggregation
 
     @tarm = {
       :current=>get_month(t_date),
@@ -137,7 +137,7 @@ class Operator::LunchOrderController < Operator::HomeController
   end
 
   #
-  #==注文ロックチェック
+  #==注文ロックチェック | order lock check
   # def ck_lock
     # if params[:id].present? && params[:id] =~ /\d{8}/
     #   @t_date = Date.strptime(params[:id], "%Y%m%d")

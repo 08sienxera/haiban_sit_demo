@@ -7,7 +7,7 @@ class Officeworker::LunchOrdersController < Manager::LunchOrdersController
     render :template => 'manager/lunch_orders/index'
   end
 
-  #===昼食更新画面
+  #===昼食更新画面 Lunch update screen
   def edit
     @title = "昼食更新"
     render :template=>"manager/lunch_orders/edit"

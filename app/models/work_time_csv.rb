@@ -27,9 +27,32 @@ class WorkTimeCsv
     #
     # 5. バス（全角日本語）
     #    - 「○」または空欄以外の文字列の場合はエラーとし取込み対象外とする。
+  # CSV item explanation memo 
+    # 
+    # 1. Employee name (full-width Japanese) 
+    # - If the value excluding full-width/half-width spaces is not registered in the employee name on the sea/land portal, it will be treated as an error and will not be imported. 
+    # 
+    # 2. Attendance (full-width Japanese) 
+    # - Must be one of the following: 
+    # "Normal work (8-16)" "Holiday work (8-16)" "Normal work (20-4)" "Holiday work (20-4)" "Normal work (19-2)" "Holiday work (19-2)" 
+    # and notation for attendance timetable of leave type 
+    # (“early or late”, “late”, “public holiday”, “paid leave”, “annual leave”, “special leave”, “summer vacation”, “maternity leave”, “bereavement”, “sick leave”, “public injury”) 
+    # ``Group leave'', ``Marriage'', ``Compensatory leave'', ``Day leave'', ``Delivery leave'', ``Disaster relief'', ``Special year'', ``Absenteeism'', ``Nursing'', ``Nursing care'', ``Childcare leave'' 
+    # "Care A" "Care P" "Care A" "Care P" "Year A" "Year P") 
+    # If the string is other than -, it will be treated as an error and will not be imported. 
+    # 
+    # 3. Attendance (up to 4 half-width numbers) 
+    # - If the value cannot be handled as time (e.g. 0861, etc.), it will be treated as an error and will not be imported. 
+    # 
+    # 4. Closing out (up to 4 half-width numbers) 
+    # - If the value cannot be handled as time (e.g. 0861, etc.), it will be treated as an error and will not be imported. 
+    # - For two shifts, use "0400" and do not use 32-hour notation. 
+    # 
+    # 5. Bus (full-width Japanese) 
+    # - If it is a character string other than "○" or blank, it will be treated as an error and will not be imported.
 
 
-  # 属性
+  # 属性 | attribute
   attribute :worker_name, :string
   attribute :work_type, :string
   attribute :s_time, :string
@@ -60,7 +83,7 @@ class WorkTimeCsv
 
 
 
-  #== クラス関数
+  #== クラス関数 | class function
   def self.create_from_csv_row(row)
     work_time_csv = parse_row(row)
     work_time_csv.validate_msg ||=[]
@@ -70,10 +93,10 @@ class WorkTimeCsv
 
   
   
-  #== オブジェクト関数
+  #== オブジェクト関数 | object function
   def validate()
     msg = []
-    # 出勤
+    # 出勤 | attendance at work
     if self.s_time.present?
       s_match = self.s_time.to_s.match(/^(\d{2})(\d{2})$/)
       if s_match
@@ -84,7 +107,7 @@ class WorkTimeCsv
       end
     end
 
-    # 退勤
+    # 退勤 | leaving work
     if self.e_time.present?
       e_match = self.e_time.to_s.match(/^(\d{2})(\d{2})$/)
       if e_match
@@ -95,7 +118,7 @@ class WorkTimeCsv
       end
     end
 
-    # バス
+    # バス | bus
     unless  ["○",""].include?(self.bus_flg)
       msg << "[#{self.worker_name}]のバス[#{self.bus_flg}]は未定義です"
     end

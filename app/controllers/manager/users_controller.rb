@@ -1,11 +1,11 @@
-#= ユーザマスタ
+#= ユーザマスタ User master
 class Manager::UsersController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable
   before_action :set_my_oth_variable,:except=>:index
   before_action :set_my_csv_variable,:only=>[:csv_in,:csv_input]
 
-  #=== 更新画面を表示
+  #=== 更新画面を表示 Display update screen
   def edit
     @title = I18n.t("page_titles.edit",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_edit_form("#{@my_setting[:table].model_name.name}_in")
@@ -21,14 +21,14 @@ class Manager::UsersController < Manager::HomeController
     @cc.setparam('password','value',"")
   end
 
-  #=== ユーザ操作機能
-  # リクエストパラメータ
-  # opt : 実行内容を指定
-  # id : 対象ユーザID
+  #=== ユーザ操作機能 User operation function
+  # リクエストパラメータ request parameters
+  # opt : 実行内容を指定 Specify execution content
+  # id : 対象ユーザID Target user ID
   def show
     dataline = @my_setting[:table].find(params[:id])
     case params[:opt]
-    # 初回ログイン状態にリセット 
+    # 初回ログイン状態にリセット  Reset to initial login state
     when "reset"
       dataline[:last_logined_at] = nil
       dataline[:remind_question] = nil
@@ -36,7 +36,7 @@ class Manager::UsersController < Manager::HomeController
       dataline.save
       redirect_to :action=>:index
     else
-    # 指定ユーザ情報をjsonで返す
+    # 指定ユーザ情報をjsonで返す Return specified user information in JSON format.
     ret = {}
       dataline.attribute_names.each{|key|
         case key

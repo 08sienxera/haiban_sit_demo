@@ -3,10 +3,10 @@ class Manager::HomeController < ApplicationController
   before_action :login_ck, :except => [:error]
   before_action :ck_manager, :except => [:error]
   
-  #=== メニュー画面
+  #=== メニュー画面 Menu screen
   def menu
     @title="メニュー"
-    #メニューデータの作成
+    #メニューデータの作成 Create menu data
     @linkdata = []
     links = []
     links << {:title=>"昼食集計",:link=>{:controller=>:lunch_orders}}
@@ -96,7 +96,7 @@ class Manager::HomeController < ApplicationController
       #links << {:title=>"テスト用昼食注文登録",:link=>{:action=>:mk_test_lunch_order}}
       @linkdata << ["開発機能",links]
     end
-    #検索データの削除
+    #検索データの削除 Delete search data
     session[:serch_data] = {}
     session[:page_data] = {}
     session[:back_link] = nil
@@ -106,22 +106,22 @@ class Manager::HomeController < ApplicationController
 
   end
 
-  #=== エラー画面
+  #=== エラー画面  error screen
   def error
   end
-  # Jobのエラーを削除
+  # Jobのエラーを削除 delete job error
   def destroy_job_err
     DelayedJob.where("last_error<>''").destroy_all
     flash[:error_msgs] = "エラーのJOBを削除しました。"
     redirect_to :action=>:menu
   end
-  # テスト用休暇日登録
+  # テスト用休暇日登録  Test leave day registration
   def mk_test_vacation
     Vacation.mk_test_vacation(get_month)
     flash[:error_msgs] = "休暇申請をランダムに作成しました。"
     redirect_to :action=>:menu
   end
-  # テスト用昼食注文登録
+  # テスト用昼食注文登録  Test lunch order
   def mk_test_lunch_order
     ret = LunchOrder.mk_test_order(get_month)
     #flash[:error_msgs] = "休暇申請をランダムに作成しました。"
@@ -135,7 +135,7 @@ class Manager::HomeController < ApplicationController
   ######################################################
   #++
 
-  #=== 管理共通（一覧画面表示）
+  #=== 管理共通（一覧画面表示）Common management (list screen display)
   def index
     @title = I18n.t("page_titles.index",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_list_form(@my_setting[:table].model_name.name)
@@ -147,13 +147,13 @@ class Manager::HomeController < ApplicationController
     strselect=@cc.mksqlselect()
     @datas = @my_setting[:table].get_list(get_page(params,@cc),strselect,sql_where,@my_setting[:order])
   end
-  #=== 管理共通（新規登録画面表示）
+  #=== 管理共通（新規登録画面表示）Common administration (New registration screen display)
   def new
     @title = I18n.t("page_titles.new",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_input_form("#{@my_setting[:table].model_name.name}_in")
     cc_adjustment if self.private_methods.include?(:cc_adjustment)
   end
-  #=== 管理共通（新規登録処理）
+  #=== 管理共通（新規登録処理）General administration (new registration process)
   def create
     @title = I18n.t("page_titles.new",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_input_form("#{@my_setting[:table].model_name.name}_in")
@@ -188,7 +188,7 @@ class Manager::HomeController < ApplicationController
     end
     render :action => :new
   end
-  #=== 管理共通（変更登録画面表示）
+  #=== 管理共通（変更登録画面表示）Common administration (change registration screen display)
   def edit
     @title = I18n.t("page_titles.edit",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_edit_form("#{@my_setting[:table].model_name.name}_in")
@@ -203,7 +203,7 @@ class Manager::HomeController < ApplicationController
     @cc.setdbdata(@dataline)
   end
 
-  #=== 管理共通（変更登録処理）
+  #=== 管理共通（変更登録処理）Common administration (change registration process)
   def update
     @title = I18n.t("page_titles.edit",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_edit_form("#{@my_setting[:table].model_name.name}_in")
@@ -246,7 +246,7 @@ class Manager::HomeController < ApplicationController
     render :action => :edit
   end
 
-  #=== 管理共通（削除処理）
+  #=== 管理共通（削除処理）Common management (deletion process)
   def destroy
     begin
       @my_setting[:table].transaction do
@@ -268,14 +268,14 @@ class Manager::HomeController < ApplicationController
     end
     return
   end
-  #=== 管理共通（CSV一括登録画面表示）
+  #=== 管理共通（CSV一括登録画面表示）Common management (CSV bulk registration screen display)
   def csv_in
     @title = I18n.t("page_titles.csv_in",:name=>@my_setting[:table].model_name.human)
     @out_file_name = I18n.t("page_titles.index",:name=>@my_setting[:table].model_name.human)
     @cc = @my_setting[:table].set_csv_form("#{@my_setting[:table].model_name.name}_csv")
     cc_adjustment if self.private_methods.include?(:cc_adjustment)
   end
-  #=== 管理共通（CSVエクスポート）
+  #=== 管理共通（CSVエクスポート）Common management (CSV export)
   def csv_output
     require 'kconv'
     require 'csv'
@@ -287,7 +287,7 @@ class Manager::HomeController < ApplicationController
     send_data(output.join("").kconv(Encoding::CP932,Kconv::UTF8), :type => csv_content_type(),
       :filename => "#{file_name}.csv",:disposition=>'attachment')
   end
-  #=== 管理共通（CSVインポート）
+  #=== 管理共通（CSVインポート）Common administration (CSV import)
   def csv_input
     @title = I18n.t("page_titles.csv_in",:name=>@my_setting[:table].model_name.human)
     @out_file_name = I18n.t("page_titles.index",:name=>@my_setting[:table].model_name.human)
@@ -322,7 +322,7 @@ class Manager::HomeController < ApplicationController
     end
     render :action=> :csv_in
   end
-  #=== 管理共通（詳細画面表示）
+  #=== 管理共通（詳細画面表示）Common management (details screen display)
   def show
     dataline = @my_setting[:table].find(params[:id])
     ret = {}

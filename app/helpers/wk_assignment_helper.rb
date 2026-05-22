@@ -10,7 +10,7 @@ module WkAssignmentHelper
         list.each{|text,val| tmp_str_a << "#{text}" unless value.index("|#{val}|").nil?}
         return tmp_str_a.join("")
     end
-    #タイトル部分
+    #タイトル部分 title part
     def wk_a_head(def_tbl_setting)
         ret_html = ""
         ret_html << "<div id=\"wkAhead\" class=\"hcaltable\"><div class=\"hcalRow\">\n"
@@ -32,7 +32,7 @@ module WkAssignmentHelper
         ret_html << "</div></div>"
         return ret_html.html_safe
     end
-    #メイン部分
+    #メイン部分 main part
     def wk_a_body(def_tbl_setting,cargo,wokers,woker_nmaes,machines,machine_names,branches)
         ret_html = "" ; @conf_flg=1; @lock_flg = false
         block_html = {}
@@ -50,7 +50,7 @@ module WkAssignmentHelper
                     cell_html = ""
                     case rkey
                     when :r_block,:m_block,:l_block
-                        #スキップ
+                        #スキップ skip
                     when :no
                         cell_html = "#{data_row[:work_no]}"
                         cell_html << hidden_field("cargo_#{row_index}","id",:value => data_row[:id])
@@ -155,16 +155,16 @@ module WkAssignmentHelper
         ret_html << "</div></div>\n"  #wkAbody hcaltable,hcalRow
         return ret_html.html_safe
     end
-    #配番設定テーブル
+    #配番設定テーブル Assignment setting table
     def mk_assignment_tbl(box_index,rkey,data_row,col_num,assignment_list,woker_nmaes,machine_names)
         need_count = {}
         max_count = 0
         wk_date = data_row[:work_date]
         unless rkey==:mc
             Cargo::WkTypeXNumKey[rkey].each{|ckey|
-                # UAT-31 | if :mcの場合、max_countとneed_countは1固定
+                # UAT-31 | if :mcの場合、max_countとneed_countは1固定 UAT-31 | If :mc is used, max_count and need_count are fixed at 1.
                 if data_row[ckey].present? && data_row[ckey] > 0
-                    max_count += data_row[ckey] # cargos作業必要人数取得
+                    max_count += data_row[ckey] # cargos作業必要人数取得 Obtaining the required number of personnel for cargo handling operations.
                     need_count[ckey[0..1]] ||= 0
                     need_count[ckey[0..1]] += data_row[ckey]
                 end
@@ -176,33 +176,33 @@ module WkAssignmentHelper
         str_need_count=[] ; str_need_count = need_count.map{|key,num| "#{key.upcase}:#{num}"} unless need_count.blank?
 
 
-        # -- UAT152(描画行数はwork_indexに依存させる) ---
-        # row_max -> 機械行、作業員行のペアを1行とした描画行数
+        # -- UAT152(描画行数はwork_indexに依存させる) --- UAT152 (The number of lines to be drawn depends on work_index)
+        # row_max -> 機械行、作業員行のペアを1行とした描画行数 row_max -> Number of rows to draw, where a pair of machine row and worker row is considered one row.
         worker_assignment_list, machine_assignment_list = assignment_list.values_at(:worker,:machine);
         worker_wk_indexs  = worker_assignment_list.keys.map(&:to_i);
         machine_wk_indexs = machine_assignment_list.keys.map(&:to_i);
         max_wk_index      = [worker_wk_indexs.max.to_i, machine_wk_indexs.max.to_i].max.to_i;
 
-        # 表示行数の計算
+        # 表示行数の計算 Calculation of the number of display lines
         row_max = 1;
         if max_wk_index>0
-            row_max = (max_wk_index.to_f / col_num.to_f).ceil # 必要人数/改行人数
+            row_max = (max_wk_index.to_f / col_num.to_f).ceil # 必要人数/改行人数 Required number of people/number of line breaks
             row_max = 1 if row_max == 0 
             # row_max += 1 if rkey==:wk && (max_count.to_f % col_num.to_f) > 5
-            # row_max = [row_max,str_need_count.size].max if [:wi,:dr].include?(rkey) # 機械種別ごとに行をとる
+            # row_max = [row_max,str_need_count.size].max if [:wi,:dr].include?(rkey) # 機械種別ごとに行をとる Take a row for each machine type.
         end
         # -- --------------------------------------- ---
 
 
         cell_html = ""
         cell_html << "<table class=\"wkATbl\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" id=\"wkATbl_#{box_index}_#{rkey}\">"
-        #注意事項行
+        #注意事項行 Notes line
         str_val = data_row["momo_#{rkey}"]
         cell_html << "<tr id=\"wkAMsgRow_#{box_index}_#{rkey}\" class=\"wkAMsgRow\" #{(str_val.blank? ? " style=\"display:none\"" : "")}><td colspan=\"#{col_num}\">"
         cell_html << text_field("cargo_#{box_index}","momo_#{rkey}",{:style=>"width:96%;",:maxlength => 128,:class=>"wkAnoteField wkAnoteField#{rkey}" ,:value=>str_val})
         cell_html << "</td></tr>"
         1.upto(row_max){|row_index|
-            #機械行
+            #機械行 Machine line
             unless rkey==:fm
                 cell_html << "<tr class=\"wkACargoMachineRow\" >"
                 col_num.times{|wi|
@@ -233,8 +233,8 @@ module WkAssignmentHelper
                 }
                 cell_html << "</tr>"
             end
-            #作業員行
-            # UAT-31 | :mcはスキップ
+            #作業員行 Worker line
+            # UAT-31 | :mcはスキップ UAT-31 | :mc is skipped
 
             unless rkey==:mc
                 cell_html << "<tr class=\"wkACargoWorkerRow\" >"
@@ -248,21 +248,21 @@ module WkAssignmentHelper
                     cell_html << "<div class=\"#{str_class}\" id=\"wkACargoWorker_#{box_index}_#{rkey}_#{wk_index}\" onclick=\"obsWkASetWorker(window,event,this,false)\" ondblclick=\"obsWkASetLock(window,event,this);\">"
                     # cell_html << "<div class=\"#{str_class}\" id=\"wkACargoWorker_#{box_index}_#{rkey}_#{wk_index}\" onclick=\"alert('bow');wkASetWorker(this,false)\" ondblclick=\"wkASetLock(this);\">"
                     cell_html << content_tag(:span,"#{woker_nmaes[worker[:login_id]]}",:id=>"wkACargoWorker_#{box_index}_#{rkey}_#{wk_index}_text")
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_user_id",:value => worker[:user_id])        #作業員の内部ID
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_login_id",:value => worker[:login_id])      #作業員のログインID
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_work_index",:value => worker[:work_index])  #作業員の作業順
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_bus_flg",:value => worker[:bus_flg])        #バスフラグ：→作業時間に影響
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_work_class",:value => worker[:work_class])  #作業区分：1:本船,2:沿岸
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_wk_class",:value => worker[:wk_class])      #担当作業：fm_mとかbl_sとか
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_competence",:value => worker[:competence])  #力量
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_s_time",:value => worker[:s_time])          #開始時刻
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_e_time",:value => worker[:e_time])          #終了時刻
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_work_time",:value => worker[:work_time])    #法定作業時間（分）
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_orver_time",:value => worker[:orver_time])  #法定残業時間（分）
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_p_work_time",:value => -1)   #所定作業時間（分）
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_p_orver_time",:value => -1)  #所定残業時間（分）
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_lock_flg",:value => worker[:lock_flg])      #作業員のロックフラグ
-                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_base_no",:value => worker[:base_no])        #作業員の前日までの累積残業（月
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_user_id",:value => worker[:user_id])        #作業員の内部ID Worker's internal ID
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_login_id",:value => worker[:login_id])      #作業員のログインID Worker's login ID
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_work_index",:value => worker[:work_index])  #作業員の作業順 Worker's work order
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_bus_flg",:value => worker[:bus_flg])        #バスフラグ：→作業時間に影響 Bus flag: → Affects work time
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_work_class",:value => worker[:work_class])  #作業区分：1:本船,2:沿岸 Work classification: 1: Onboard vessel, 2: Coastal work
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_wk_class",:value => worker[:wk_class])      #担当作業：fm_mとかbl_sとか Assigned tasks: fm_m, bl_s, etc.
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_competence",:value => worker[:competence])  #力量 competence
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_s_time",:value => worker[:s_time])          #開始時刻 Start time
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_e_time",:value => worker[:e_time])          #終了時刻 End time
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_work_time",:value => worker[:work_time])    #法定作業時間（分） Statutory working hours (minutes)
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_orver_time",:value => worker[:orver_time])  #法定残業時間（分） Statutory overtime hours (minutes)
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_p_work_time",:value => -1)   #所定作業時間（分） Standard working time (minutes)
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_p_orver_time",:value => -1)  #所定残業時間（分） Standard overtime hours (minutes)
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_lock_flg",:value => worker[:lock_flg])      #作業員のロックフラグ Worker lock flag
+                    cell_html << hidden_field("wkACargoWorker_#{box_index}","#{rkey}_#{wk_index}_base_no",:value => worker[:base_no])        #作業員の前日までの累積残業（月) Cumulative overtime for workers up to the previous day (monthly)
                     cell_html << "</div></td>"
                 }
                 cell_html << "</tr>"
@@ -279,13 +279,13 @@ module WkAssignmentHelper
         }
         return cell_html
     end
-    #フッタ部分-ボタン、パレットリスト
+    #フッタ部分-ボタン、パレットリスト Footer section - Buttons, Palette list
     
     def wk_a_foot(wokers,machines,branches,msgs,vacation_types)
         absentees = {} ; vacation_types.each_key{|base_no| absentees[base_no] = []}; absentees["6"]={"1"=>[],"0"=>[]};
         ret_html = ""
         ret_html << "<div id=\"wkAfoot\">\n"
-        #ボタン
+        #ボタン button
         ret_html << "<div id=\"wkAButtons\"><div class=\"hcaltable\" style=\"width:98%\"><div class=\"hcalRow\">\n"
         ret_html << "<div class=\"hcalCell listL\">"
         ret_html << submit_tag(:button, :value=>'作業員',:type=>'button',:onclick=>"wkAChangeViewWokerGroup('1');",:class=>"wkABtn") + "\n"
@@ -293,7 +293,7 @@ module WkAssignmentHelper
         ret_html << submit_tag(:button, :value=>'休み',:type=>'button',:onclick=>"wkAViewPanelList('Absentee')",:class=>"wkABtn")  + "\n"
         ret_html << "</div>"
 
-        # -----------表示グループ切替-----------------------
+        # -----------表示グループ切替----------------------- Display group switching
         ret_html << "<div class=\"viewselectbutton-wrapper\">"
 
             # 表示切替（作業員グループ
@@ -353,7 +353,7 @@ module WkAssignmentHelper
         
         ret_html << "</div>"
         ret_html << "</div></div></div>\n"
-        #作業員パネル
+        #作業員パネル worker panel
         ret_html << "<div id=\"wkAWorkers\"><div class=\"hcaltable\">\n"
         branches.each{|cd,bdata|
             next if wokers[cd].blank?
@@ -418,7 +418,7 @@ module WkAssignmentHelper
             ret_html << "</div></div>"
         }unless branches.blank?
         ret_html << "</div></div>\n"
-        #機械パネル
+        #機械パネル mechanical panel
         ret_html << "<div id=\"wkAMachines\"><div class=\"hcaltable\">\n"
         today = Date.today
         machines.each{|m_type,m_list|
@@ -485,7 +485,7 @@ module WkAssignmentHelper
             ret_html << "</div></div>"
         }
         ret_html << "</div></div>\n"
-        #欠勤者パネル
+        #欠勤者パネル Absentee Panel
         ret_html << "<div id=\"wkAAbsentee\"><div class=\"hcaltable\">\n"
         absentees_html = ""
         vacation_types.each{|base_no,title|

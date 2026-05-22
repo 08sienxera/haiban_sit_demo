@@ -4,11 +4,11 @@ class MachineMaintenance < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
   belongs_to :machine
 
-  # 分類
+  # 分類 classification
   MaintenancType = [["定期点検","1"],["故障修理","2"]]
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 classification
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     machine_list = Machine.getdatalist({:key=>:id,:text=>:name,:order=>:cd,:where=>{:maintenance=>1}})
@@ -24,17 +24,17 @@ class MachineMaintenance < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     return self.set_input_form(key)
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     form.set_all_param("inputFlg",0)
@@ -47,7 +47,7 @@ class MachineMaintenance < ApplicationRecord
     return form
   end
   #
-  #====メンテナンス中マシンリスト
+  #====メンテナンス中マシンリスト Machine list under maintenance
   def self.get_holiday_4_assignment_list(t_date)
     ret_data = {}
     where = ["(? between s_date and e_date) Or (s_date <= ? And e_date is null)",t_date,t_date]
@@ -56,7 +56,7 @@ class MachineMaintenance < ApplicationRecord
     return ret_data
   end
   #
-  #====メンテナンス予定リスト
+  #====メンテナンス予定リスト Maintenance schedule list
   def self.get_schedule_4_assignment_list
     ret_data = {}
     data_tbl = self.where(:s_date=>[(Date.today+1)..(Date.today+30)])

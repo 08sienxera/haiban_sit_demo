@@ -4,7 +4,7 @@ class Bos::LunchOrderController < Operator::LunchOrderController
   before_action :ck_bos, :except => [:error]
   before_action :set_my_oth_variable,only:[:edit,:update]
 
-  #=== 昼食注文画面
+  #=== 昼食注文画面 Lunch order screen
   def edit
     super()
     render :template=>"operator/lunch_order/edit"

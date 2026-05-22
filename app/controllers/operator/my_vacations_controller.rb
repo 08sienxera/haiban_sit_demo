@@ -4,21 +4,21 @@ class Operator::MyVacationsController < Operator::HomeController
   # before_action :set_my_oth_variable,:only=>[:show,:edit,:update]
   skip_before_action :verify_authenticity_token,:only=>[:create]
   
-  #=== 休暇登録画面
+  #=== 休暇登録画面 | Vacation registration screen
 
   def index
     @title = "休暇登録"
     @inc_js = ['operator/vacations']
-    @post_url = url_for(:action=>:index) # 休暇登録リクエスト先URL
+    @post_url = url_for(:action=>:index) # 休暇登録リクエスト先URL | Leave registration request URL
 
     @my_id = get_uval(:id)
     @today = Date.today
-    @top_message = [] # 表示メッセージ一覧
+    @top_message = [] # 表示メッセージ一覧 | Display message list
 
     
 
 
-    #JS制御用 
+    #JS制御用 | For JS control
     @acquirable_vacation_days = @reserved_vacation_days = 0
     @l_hol_unset_flg = true
     
@@ -53,8 +53,8 @@ class Operator::MyVacationsController < Operator::HomeController
       
       wk_date = s_date
       
-      # 公休日設定と公休日設定下限を取得　※公休日未設定の場合、-1をセット
-      if index==1 #翌月
+      # 公休日設定と公休日設定下限を取得　※公休日未設定の場合、-1をセット | Obtain public holiday setting and public holiday setting lower limit *If public holiday is not set, set -1
+      if index==1 #翌月 | next month
         holi_cnt = Vacation.where(:login_id=>get_uval(:login_id),:vacation_day=>(s_date..e_date),:base_no=>6).count
         if holi_cnt>0
           wh_sum = WhSummary.find_by(t_year:year,t_month:month)
@@ -67,7 +67,7 @@ class Operator::MyVacationsController < Operator::HomeController
 
 
 
-      # s_dateの上方向およびe_dateの下方向に隣接する1公休日を0公休日でサンドイッチしているか調べる
+      # s_dateの上方向およびe_dateの下方向に隣接する1公休日を0公休日でサンドイッチしているか調べる | Check whether 1 public holiday adjacent to the top of s_date and the bottom of e_date is sandwiched with 0 public holidays
       sandwich = {upper: false,under: false}
       tmp_s_date = s_date
       while @wh_flg_list[tmp_s_date.strftime("%Y%m%d")]==1
@@ -99,7 +99,7 @@ class Operator::MyVacationsController < Operator::HomeController
       end
 
 
-      # 曜日表記リスト
+      # 曜日表記リスト | Day of the week list
       day_of_week_list = I18n.t("date.abbr_day_names")
       while wk_date <= e_date do
         wday = wk_date.wday
@@ -122,7 +122,7 @@ class Operator::MyVacationsController < Operator::HomeController
 
 
         @datas[month][key] = day_info
-        # 翌月のユーザ設定済の公休日をカウント
+        # 翌月のユーザ設定済の公休日をカウント | Count public holidays set by the user for the next month
         if index==1
           @reserved_vacation_days +=1 if vacation && (vacation[:base_no] == 6 || vacation[:base_no] == 7 || vacation[:base_no] == 17) && day_info[:wh] && day_info[:wh_flg] == 0
         end
@@ -131,7 +131,7 @@ class Operator::MyVacationsController < Operator::HomeController
     end
 
 
-    # 代休候補リスト：過去3か月までの公休〇（代休取得済は除外
+    # 代休候補リスト：過去3か月までの公休〇（代休取得済は除外 | Compensatory leave candidate list: Public holidays up to the past 3 months (excluding those who have already taken compensatory leave)
     @work_day_onvac = Vacation.where(:base_no=>6,:login_id=>get_uval(:login_id),:at_work=>1).where("vacation_day >= ?",Date.today.ago(3.month)).order(:vacation_day).filter{|v|
       ck = true
       ck = false if v.sts==5
@@ -146,6 +146,12 @@ class Operator::MyVacationsController < Operator::HomeController
     # 形式      ： yyyy-mm-dd（yyyy年m月d日振替）
     # 抽出条件  ： 同月度内の未消化の公休(base6)　および　同月度内の未消化の振休(base7)
     # UAT303   ： 過去日の振休は抽出条件から外すことで再振替不可としている。　管理課側で修正したい場合はコメントアウトしている行を使用する。その際、配番実績との不一致について対策要否を考えること(2025-10-09 大澤)
+    # --- "Transfer New Year's Day" candidate list" --- 
+    # Form format: list 
+    # Attribute: origin_date 
+    # Format: yyyy-mm-dd (transferred to m month d day of yyyy) 
+    # Extraction conditions: Unused public holidays within the same month (base6) and unused public holidays within the same month (base7) 
+    # UAT303: Re-transfer is not possible by removing past days' transfers from the extraction conditions. If the management department wants to modify it, use the commented out line. At that time, consider whether measures are necessary for discrepancies with actual number allocation (2025-10-09 Osawa)
     @unused_vacations_str = {}
     @tarm.each.with_index do |t_tarm,index|
       year = t_tarm[:year]
@@ -154,17 +160,17 @@ class Operator::MyVacationsController < Operator::HomeController
 
       today = Date.today
       base6_list = []
-      # 公休リスト
+      # 公休リスト | Public holiday list
       base6_in_tarm = Vacation.get_base6(get_uval(:id),:wh=>0,:where=>[["vacation_day >= ?",wh_summary.s_date],["vacation_day <= ?",wh_summary.e_date],["vacation_day >= ?",today]]).to_a
       base6_in_tarm = base6_in_tarm.filter{|vacation| vacation.sts!=4 && vacation.sts!=5 && Vacation.find_by(:login_id=>vacation.login_id,:origin_date=>vacation.vacation_day).blank?}
-      # 振休取得済の公休リスト
+      # 振休取得済の公休リスト | List of public holidays that have been taken
       base7_in_tarm = Vacation.where(:user_id=>get_uval(:id),:base_no=>7).where("vacation_day >= ? and vacation_day <= ?",wh_summary.s_date,wh_summary.e_date).where("vacation_day >= ?",today).to_a
     # base7_in_tarm = Vacation.where(:user_id=>@user.id,:base_no=>7).where("vacation_day >= ? and vacation_day <= ?",wh_summary.s_date,wh_summary.e_date).where.not(:id=>nil,:origin_date=>@vacation.origin_date).to_a
 
-      # 公休リストと振休取得済の公休リストを結合
+      # 公休リストと振休取得済の公休リストを結合 | Combine the list of public holidays and the list of public holidays already taken
       base6_list += base6_in_tarm if base6_in_tarm.present?
       base6_list += base7_in_tarm if base7_in_tarm.present?
-      # 選択リスト用のソート、文字列変換
+      # 選択リスト用のソート、文字列変換 | Sorting and string conversion for selection lists
       base6_list = base6_list.sort_by{|vacation| vacation.base_no==6 ? vacation.vacation_day : vacation.origin_date}
         .map{|vacation| 
           str = vacation.base_no==6 ? 
@@ -180,9 +186,9 @@ class Operator::MyVacationsController < Operator::HomeController
 
 
 
-    # 休暇選択フォーム
+    # 休暇選択フォーム | Vacation selection form
     @vacation_type_lists = []
-    # form_str_mapping = {"看Ａ"=>"午前看護","看Ｐ"=>"午後看護","介Ａ"=>"午前介護","介Ｐ"=>"午後介護",""}
+    # form_str_mapping = {"看Ａ"=>"午前看護","看Ｐ"=>"午後看護","介Ａ"=>"午前介護","介Ｐ"=>"午後介護",""} | form_str_mapping = {"Care A"=>"Morning Nursing","Care P"=>"Afternoon Nursing","Care A"=>"Morning Care","Care P"=>"Afternoon Care",""}
     @vacation_type_lists << VacationType.getdatalist({:key=>:base_no,:text=>:time_sheet_name,:order=>:base_no,:where=>"base_no <> 1 and base_no <> 2 and base_no <> 3 and base_no <> 6 and base_no < 31"})
     @vacation_type_lists << VacationType.getdatalist({:key=>:base_no,:text=>:time_sheet_name,:order=>:base_no,:where=>"(base_no >= 31 and base_no < 35) or base_no = 41 or base_no = 42"}).map{|name,base_no| [Vacation::FullNameList.find{|_,cd| cd==base_no}[0],base_no]}
     @sform_setting = []
@@ -192,9 +198,9 @@ class Operator::MyVacationsController < Operator::HomeController
     @sform_setting << {key:"leav_time",title:"退勤希望時刻",group:"0",ess:0,value:Vacation::LeavTimeList,size:1,rel:['0','2','31','33','41'],event:{onchange:"set_time(this)"}}
     @sform_setting << {key:"origin_date",title:"振替元日",group:"0",ess:1,value:[],size:1,rel:["7"],event:{}}
     @sform_setting << {key:"origin_date2",title:"休日出勤日",group:"0",ess:1,value:@work_day_onvac,size:15,rel:["6","17"],event:{onchange:"set_date(this)"}}
-    @sform_setting << {key:"app_origin_date",title:"振替元日",group:"0",ess:0,value:"",size:14,rel:["7"],event:{}} # 休日出勤選択時に表示する振替元日
-    @sform_setting << {key:"app_origin_date2",title:"休日出勤日",group:"0,1",ess:0,value:"",size:14,rel:["6","17"],event:{}} # 休日出勤選択時に表示する振替元日
-    @sform_setting << {key:"com_vacation_day",title:"振替日",group:"1",ess:1,value:nil,size:14,rel:["6","17"],event:{onchange:"set_date(this)"}} # 休日出勤選択時に表示する振替日
+    @sform_setting << {key:"app_origin_date",title:"振替元日",group:"0",ess:0,value:"",size:14,rel:["7"],event:{}} # 休日出勤選択時に表示する振替元日 | Transfer new date to be displayed when selecting holiday work
+    @sform_setting << {key:"app_origin_date2",title:"休日出勤日",group:"0,1",ess:0,value:"",size:14,rel:["6","17"],event:{}} # 休日出勤選択時に表示する振替元日 | Transfer new date to be displayed when selecting holiday work
+    @sform_setting << {key:"com_vacation_day",title:"振替日",group:"1",ess:1,value:nil,size:14,rel:["6","17"],event:{onchange:"set_date(this)"}} # 休日出勤選択時に表示する振替日 Transfer new date to be displayed when selecting holiday work
     @sform_setting << {key:"end_date",title:"終了日",group:"0",ess:0,value:"",size:16,rel:["999"]||VacationType.getdatalist({:key=>:base_no,:text=>:time_sheet_name,:order=>:base_no}).map{|t| t[1]} - ["7"],event:{onchange:"set_date(this)"}}
     @sform_setting << {key:"vacation_type2",title:"半休",group:"0",ess:0,value:@vacation_type_lists[1]}
     @sform_setting << {key:"def_base_no",title:"変更前休暇種別",group:"-1",ess:0,rel:[]}
@@ -203,7 +209,7 @@ class Operator::MyVacationsController < Operator::HomeController
 
 
 
-  #=== 休暇更新処理
+  #=== 休暇更新処理 | Leave update process
   def create
     result = {}
     user  = User.find_by_id(get_uval(:id))
@@ -227,9 +233,9 @@ class Operator::MyVacationsController < Operator::HomeController
     vacations = build_vacations(user,corrected)
     success = false
     Vacation.transaction do
-      # 登録済休暇データの削除
+      # 登録済休暇データの削除 | Deleting registered vacation data
       delete_existing_vacations(vacations)
-      # 休暇データの登録
+      # 休暇データの登録 | Registering vacation data
       regist_vacations(vacations)
       success = true
     end if vacations.present?
@@ -269,16 +275,16 @@ class Operator::MyVacationsController < Operator::HomeController
       else
         @title="休日出勤依頼"
         case @vacation[:sts]
-        when 0  #未承認→振替日入れて承認　or 理由入れて差戻
+        when 0  #未承認→振替日入れて承認　or 理由入れて差戻 | Unapproved → Approve with transfer date or send back with reason
           @form_setting << {:title=>Vacation.human_attribute_name(:sts),:key=>:sts,:io=>0}
           @form_setting << {:title=>"振替日",:key=>:origin_date,:io=>1}
           @form_setting << {:title=>Vacation.human_attribute_name(:reason),:key=>:reason,:io=>1}
           @button_setting << ["差戻(拒否)","addSts('sts',2);doUpdate();","btn-destroy"]
           @button_setting << ["承認","addSts('sts',1);doUpdate();","btn-update"]
-        when 1  #承認済み→振替日表示のみ
+        when 1  #承認済み→振替日表示のみ | Approved → Transfer date display only
           @form_setting << {:title=>"振替日",:key=>:origin_date,:io=>0}
           @button_setting << ["承認を解除","addSts('sts',0);doUpdate();","btn-destroy"]
-        when 2  #差戻→理由表示のみ
+        when 2  #差戻→理由表示のみ | Send back → Reason display only
           @form_setting << {:title=>Vacation.human_attribute_name(:reason),:key=>:reason,:io=>0}
           @button_setting << ["差戻(拒否)を解除","addSts('sts',0);doUpdate();","btn-destroy"]
         end
@@ -293,17 +299,17 @@ class Operator::MyVacationsController < Operator::HomeController
         @button_setting << ["申請","doUpdate();","btn-update"]
       else
         case @vacation[:sts]
-        when 0  #未承認→変更or取り下げ
+        when 0  #未承認→変更or取り下げ | Unapproved → Change or delete
           [:base_no,:at_work,:origin_date,:leav_time].each{|key|
             @form_setting << {:title=>Vacation.human_attribute_name(key),:key=>key,:io=>1}
           }
           @button_setting << ["取下","doDelete();","btn-destroy"]
           @button_setting << ["申請変更","doUpdate();","btn-update"]
-        when 1  #承認済み→表示のみ
+        when 1  #承認済み→表示のみ | Approved → Display only
           [:base_no,:at_work,:origin_date,:leav_time].each{|key|
             @form_setting << {:title=>Vacation.human_attribute_name(key),:key=>key,:io=>0}
           }
-        when 2  #差戻→理由表示 & 変更or取り下げ
+        when 2  #差戻→理由表示 & 変更or取り下げ | Reason display & Change or delete
           [:base_no,:at_work,:origin_date,:leav_time,:reason].each{|key|
             @form_setting << {:title=>Vacation.human_attribute_name(key),:key=>key,:io=>0}
           }
@@ -317,7 +323,7 @@ class Operator::MyVacationsController < Operator::HomeController
 
   private 
   
-  #=== 休暇更新処理（パラメータ正規化
+  #=== 休暇更新処理（パラメータ正規化 | Leave update process (parameter normalization)
   def corrected_params(requests)
     corrected = {}
     requests.each do |key,param|
@@ -345,7 +351,7 @@ class Operator::MyVacationsController < Operator::HomeController
 
   end
 
-  # バリデーション
+  # バリデーション | Validation
   def validate_params(user,corrected)
     alert_messages = {}
     corrected.each do |key,param|

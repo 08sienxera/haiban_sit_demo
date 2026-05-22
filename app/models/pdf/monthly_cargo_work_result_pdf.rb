@@ -1,18 +1,18 @@
-#= 荷役作業実績表PDF作成クラス
+#= 荷役作業実績表PDF作成クラス | Cargo handling work performance sheet PDF creation class
 class Pdf::MonthlyCargoWorkResultPdf < Pdf::ExpansionPdfCommon
-  # フォントサイズ（ボディ）
+  # フォントサイズ（ボディ） | Font size (body)
   DefFontSizeB = 5
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） | Row height (body)
   TableRowHeight = 12
-  # ページあたりの行数
+  # ページあたりの行数 | Number of lines per page
   TableRow = 37
-  # 列幅の比率設定
+  # 列幅の比率設定 | Column width ratio settings
   TableColumnRatios = [1,2] + [1,1]*8
-  # フッタに入れる企業名
+  # フッタに入れる企業名 | Company name in footer
   CompName = "小名浜海陸運送株式会社"  
 
 
-  # 初期設定
+  # 初期設定 | Initial settings
   def initialize(cd,page_condition = {},name:nil,title:nil,sub_title:nil)
     super(cd,page_condition,name:name)
     @title = title || "タイトル未設定"
@@ -21,7 +21,7 @@ class Pdf::MonthlyCargoWorkResultPdf < Pdf::ExpansionPdfCommon
     @max_width = @pdf.bounds.right
   end
 
-  # PDF作成
+  # PDF作成 | PDF creation
   def create(monthly_work_data)
     created_time = Time.now()
     table_header,table_body,table_footer = convert_table_data(monthly_work_data)

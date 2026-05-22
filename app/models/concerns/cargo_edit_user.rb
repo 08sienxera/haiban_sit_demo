@@ -3,10 +3,10 @@ module CargoEditUser extend ActiveSupport::Concern
   included do
   end
 
-  #== クラスメソッド  
+  #== クラスメソッド   class method
   module ClassMethods
 
-    # 配番編集可否
+    # 配番編集可否 Can the numbering system be edited?
     def can_edit(work_date,request_user_login_id)
       return false if work_date.blank? || request_user_login_id.blank?
       cargos = self.where(:work_date=>work_date)
@@ -17,14 +17,14 @@ module CargoEditUser extend ActiveSupport::Concern
       return false
     end
 
-    # ロック可能ユーザ？
+    # ロック可能ユーザ？ Can users be locked?
     def can_lock_user?(login_id)
       user = User.find_by_login_id(login_id)
       return false unless user
       return user[:auth_flg].to_i==4 || user[:auth_flg].to_i==5
     end
 
-    # ロック中のユーザを返す
+    # ロック中のユーザを返す Return the locked user.
     def locked_by(work_date)
       locked_cargo = self.where("work_date = ? and on_edit_at >= ?",work_date,4.hours.ago).where.not(:on_edit_uid=>nil)
       return nil if locked_cargo.blank?
@@ -34,7 +34,7 @@ module CargoEditUser extend ActiveSupport::Concern
 
 
 
-    # 他ユーザの編集を制限
+    # 他ユーザの編集を制限 Restrict other users from editing.
     def confine(work_date,request_user_login_id)
       return false unless self.can_edit(work_date,request_user_login_id)
       req_user = User.find_by_login_id(request_user_login_id)
@@ -47,7 +47,7 @@ module CargoEditUser extend ActiveSupport::Concern
 
     end
 
-    # 制限を解除
+    # 制限を解除 remove restrictions
     def release(work_date,request_user_login_id)
       return false unless self.can_edit(work_date,request_user_login_id)
 

@@ -28,7 +28,7 @@ class Formatter::WorkerWkClassWkPlaceSummaryExcelFormatter < Formatter::Formatte
       user = woker.user
       converted_hash[user.login_id] = []
 
-      # -- まとめられる
+      # -- まとめられる | be put together
       @result_cargo_workers.select{|rcw| rcw.login_id==user.login_id}.each do |rcw|
         rcms = find_my_machine(rcw,@result_cargo_machines)
         datas = Converter::WorkerWkClassWkPlaceSummaryConverter.new(woker,rcw,rcms).call()
@@ -49,7 +49,7 @@ class Formatter::WorkerWkClassWkPlaceSummaryExcelFormatter < Formatter::Formatte
         wk_class,wk_place,text,bg_color,f_color = data.values_at(:wk_class,:wk_place,:text,:bg_color,:f_color)
         wk_class_wk_place_hash[wk_place] ||= {}
         wk_class_wk_place_hash[wk_place][login_id] ||= {}
-        wk_class_wk_place_hash[wk_place][login_id][wk_class] ||= 0 #(仮 : 最終は日付
+        wk_class_wk_place_hash[wk_place][login_id][wk_class] ||= 0 #(仮 : 最終は日付 | (tentative: final date is
         wk_class_wk_place_hash[wk_place][login_id][wk_class] += 1
       end
     end
@@ -100,7 +100,7 @@ class Formatter::WorkerWkClassWkPlaceSummaryExcelFormatter < Formatter::Formatte
     }
   end
   def empty_data
-    return ["","",""] # 値、文字色、背景色
+    return ["","",""] # 値、文字色、背景色 | Value, text color, background color
   end
 
 
@@ -122,7 +122,7 @@ class Formatter::WorkerWkClassWkPlaceSummaryExcelFormatter < Formatter::Formatte
   end
 
   def find_my_machine(work,machine_sources)
-    my_machine = [nil,nil] # 主、副
+    my_machine = [nil,nil] # 主、副 | main, sub
     parent_key = work.class==ResultCargoWorker ? :result_cargo_id : :cargo_id
     machines = machine_sources.select{|cm| cm[parent_key]==work.assigned_cargo.id}
     if machines

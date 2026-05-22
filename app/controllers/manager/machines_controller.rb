@@ -1,4 +1,4 @@
-#= 配番機械マスタ
+#= 配番機械マスタ Machine allocation master
 class Manager::MachinesController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

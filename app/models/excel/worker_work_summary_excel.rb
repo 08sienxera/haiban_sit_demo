@@ -1,5 +1,7 @@
 #= 作業員毎作業一覧エクセル作成クラス
 #(Constants)->エクセルレイアウトの初期設定
+#= Work list Excel creation class for each worker 
+#(Constants)->Initial settings for Excel layout
 class  Excel::WorkerWorkSummaryExcel < Excel::ExcelClass
   require File.expand_path('../../../lib/excel/excel_format_builder.rb', __dir__)
 
@@ -19,7 +21,7 @@ class  Excel::WorkerWorkSummaryExcel < Excel::ExcelClass
     super(name)
   end
 
-  #=== エクセルを作成
+  #=== エクセルを作成 create excel
   def create()
     init_cell_format()
     set_data()
@@ -29,7 +31,7 @@ class  Excel::WorkerWorkSummaryExcel < Excel::ExcelClass
   
   private
 
-  # セルの書式設定オブジェクト
+  # セルの書式設定オブジェクト cell formatting object
   def init_cell_format()
     @default = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(10).align('center').valign('center')
     @border_cell = Excel::ExcelFormatBuilder.new(@workbook).borders([1,1,1,1])
@@ -51,15 +53,15 @@ class  Excel::WorkerWorkSummaryExcel < Excel::ExcelClass
     body_def = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(10).valign('center')
     @table_body = [
       body_def.copy().merge(@bg_colors[:name],@border_cell).get_format(), 
-      body_def.copy().borders([1,1,0,1]).align('left').get_format(), #上
-      body_def.copy().borders([0,0,1,1]).align('left').get_format(), #左中
-      body_def.copy().borders([0,1,1,0]).align('left').get_format(), #右中
-      body_def.copy().borders([1,1,1,1]).align('right').get_format(), #左右下
-      body_def.copy().borders([0,1,1,1]).align('right').get_format(), #計列 上線なし
+      body_def.copy().borders([1,1,0,1]).align('left').get_format(), #上 superior
+      body_def.copy().borders([0,0,1,1]).align('left').get_format(), #左中 middle left
+      body_def.copy().borders([0,1,1,0]).align('left').get_format(), #右中 middle right
+      body_def.copy().borders([1,1,1,1]).align('right').get_format(), #左右下 Left and right
+      body_def.copy().borders([0,1,1,1]).align('right').get_format(), #計列 上線なし No overline
     ]
   end
 
-  # セル結合対応のため、書式設定も本メソッド内で実施
+  # セル結合対応のため、書式設定も本メソッド内で実施 Formatting is also done within this method to support cell merging.
   def set_data()
     @format_data[:sheet_count].times do |index|
       sheet_data = @format_data[:sheets][index] 

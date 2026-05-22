@@ -1,4 +1,4 @@
-#= 貨物分類マスタ
+#= 貨物分類マスタ Cargo classification master
 class Manager::CargoClassMastersController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

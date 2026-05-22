@@ -3,7 +3,7 @@ class WorkerCommon::BoardCommentsController < ApplicationController
   before_action :set_referer_url
   before_action :set_my_oth_variable, :except => [:create]
 
-  #=== 掲示コメントの新規登録
+  #=== 掲示コメントの新規登録 New post comment registration
   def create
     @board = Board.find(params[:board_id])
     if @board.present?
@@ -21,7 +21,7 @@ class WorkerCommon::BoardCommentsController < ApplicationController
     end
   end
 
-  #=== 掲示コメントの更新・削除
+  #=== 掲示コメントの更新・削除 Update/Delete posted comments
   def update
     begin
       if params[:board_comment_body].present?

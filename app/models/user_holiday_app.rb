@@ -4,15 +4,15 @@ class UserHolidayApp < ApplicationRecord
   extend Common::Func
   default_scope {where(:deleted_at => nil)}
 
-  # 休暇種別リスト
+  # 休暇種別リスト Leave type list
   HType = [["公休","2"],["年休","3"],["組休","4"],["振休","5"],["育休","6"],["忌引","7"],["結婚","8"],["看護","9"],["介護","10"],["公傷","11"],["特休","12"],["病欠","13"]]
-  # 申請承認区分リスト
+  # 申請承認区分リスト Application approval classification list
   Sts = [["未承認","0"],["承認済","1"],["差戻","2"],["休日対応実施","9"]]
 
 
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     user_list = User.getdatalist({:key=>:id,:text=>:name,:order=>:id,:all=>''})
@@ -36,17 +36,17 @@ class UserHolidayApp < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     return self.set_input_form(key)
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     %w[reason].each{|pkey| form.unsetparams(pkey)}
@@ -59,7 +59,7 @@ class UserHolidayApp < ApplicationRecord
     return form
   end
   #
-  #===休暇者リスト
+  #===休暇者リスト Vacation list
   def self.get_holiday_4_assignment_list(t_date,t_user=nil?,is_approvaled=true)
     ret_data = {}
     where = ["holiday=?",t_date]

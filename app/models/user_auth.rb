@@ -4,11 +4,11 @@ class UserAuth < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
   belongs_to :user, primary_key: :login_id, foreign_key: :login_id, :optional => true
   
-  # 機能リスト
+  # 機能リスト Feature list
   AuthList = [:view_boards,:lunch_orders,:boards,:vacations,:result_assignment,:cargo_requests,:cargos,:wk_assignment,:sagyo_request,:cargo_request_head_count,:cargo_head_count,:p_orver_time_sheet,:cargo_worker_schedule,:cargo_schedule,:time_sheet,:work_daily_sheet,:time_card,:cargo_result,:sagyo_haiban,:daily_cargo_work_result,:monthly_cargo_work_result,:tax_free_machines_pdf,:cargo_worker_result,:lunch_summary,:work_time_summary,:cargo_work_detail,:worker_work_summary]
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     user_list = User.getdatalist({:key=>:login_id,:text=>:name,:where=>{:auth_flg=>[2,3]},:order=>:login_id})
@@ -22,18 +22,18 @@ class UserAuth < ApplicationRecord
     return form
   end
   #
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===CSVフォームの生成
+  #===CSVフォームの生成 Generate CSV form
   def self.set_csv_form(key)
     form = self.set_input_form(key)
     return form
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate viewing screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     AuthList.each{|pkey| form.unsetparams("#{pkey}")}

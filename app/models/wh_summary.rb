@@ -3,11 +3,11 @@ class WhSummary  < ApplicationRecord
   extend Common::Func
   default_scope {where(:deleted_at => nil)}
   
-  # 祝日API リクエストURL
+  # 祝日API リクエストURL | Holiday API request URL
   HolidaysApi = "https://holidays-jp.github.io/api/v1/%s/date.json"
 
   #
-  #===対象年月のサマリーをロード
+  #===対象年月のサマリーをロード | Load summary for target year/month
   def self.load_calendar(t_year,t_month=nil)
     ret = {}
     #p "--"*20
@@ -47,7 +47,7 @@ class WhSummary  < ApplicationRecord
     return ret
   end
   #
-  #===対象年月のサマリーを作成
+  #===対象年月のサマリーを作成 | Create a summary for the target year and month
   def self.mk_calendar(t_year,t_month,vendors,uid)
     # if t_month==1
     #   s_date = Date.new(t_year-1,12,16)
@@ -82,7 +82,7 @@ class WhSummary  < ApplicationRecord
     return summary
   end
   #
-  #===再計算
+  #===再計算 | recalculation
   def self.recount_by_whc(whc)
     summary = self.find_by(["? between s_date and e_date",whc[:t_date]])
     unless summary.blank?
@@ -92,7 +92,7 @@ class WhSummary  < ApplicationRecord
     end
   end
   #
-  #===ApplicationController.get_monthのreturnから取得
+  #===ApplicationController.get_monthのreturnから取得 | Obtained from return of ApplicationController.get_month
   def self.find_by_get_month(t_tarm)
     return self.find_by(:t_year=>t_tarm[:year],:t_month=>t_tarm[:month]) || {}
   end

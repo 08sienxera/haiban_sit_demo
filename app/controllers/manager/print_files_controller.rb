@@ -9,13 +9,24 @@ class Manager::PrintFilesController < Manager::HomeController
   # t_date : 対象日
   # 
   # パラメータ例1）t_s_date"=>"2024/09/01", "t_e_date"=>"2024/09/30", "mord"=>"MONTHLY_CARGO_WORK_RESULT.PDF"
-  # パラメータ例2）"t_date"=>"2024/10/10", "mord"=>"CARGO_REQUEST_HEAD_COUNT.PDF", 
+  # パラメータ例2）"t_date"=>"2024/10/10", "mord"=>"CARGO_REQUEST_HEAD_COUNT.PDF",
+  #=== Ongoing Report Output
+  # Request Parameters
+  # mord: Specifies the report to output
+  # t_s_date: Start date of the aggregation period
+  # t_e_date: End date of the aggregation period
+  # t_date: Target date
+  #
+  # Parameter Example 1) "t_s_date"=>"2024/09/01", "t_e_date"=>"2024/09/30", "mord"=>"MONTHLY_CARGO_WORK_RESULT.PDF"
+  # Parameter Example 2) "t_date"=>"2024/10/10", "mord"=>"CARGO_REQUEST_HEAD_COUNT.PDF",
   def create
     case params[:mord]
       when "hogehoge"
         #hogehogeはManager::HomeController.menuの  javascript:dlFile(document.f1,'hoge'); のhogeで設定
         #該当する出力ファイルを生成し、send_fileする
-      when "SAGYO_REQUEST.PDF"  #作業依頼書
+        #hogehoge is set in Manager::HomeController.menu's javascript:dlFile(document.f1,'hoge'); using hoge.
+        #Generate the corresponding output file and send_file
+      when "SAGYO_REQUEST.PDF"  #作業依頼書 #Work request form
         t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
         condition1 = CargoRequest.where(:work_date=>t_date,:work_class=>1).order({:work_place=>:asc,:move_no=>:asc,:work_no=>:asc,:serial_no=>:asc})
         sql = Arel.sql("CAST(SUBSTRING(move_no2,3) AS UNSIGNED) ASC")
@@ -34,9 +45,9 @@ class Manager::PrintFilesController < Manager::HomeController
         output = pdf.fin()
         send_file(output,:filename=>"作業依頼書_#{t_date.strftime("%Y%m%d")}.pdf",:status=>200) 
 
-      when "CARGO_REQUEST_HEAD_COUNT.PDF"  #必要人数表（調整用
+      when "CARGO_REQUEST_HEAD_COUNT.PDF"  #必要人数表（調整用 #Required number of people (for adjustment)
         t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
-        # 指定日の作業依頼を指定順に抽出
+        # 指定日の作業依頼を指定順に抽出 # Extract work requests for the specified date in the specified order.
         condition1 = CargoRequest.where(:work_date=>t_date,:work_class=>1).order({:work_place=>:asc,:move_no=>:asc,:work_no=>:asc,:serial_no=>:asc})
         sql = Arel.sql("CAST(SUBSTRING(move_no2,3) AS UNSIGNED) ASC")
         condition2 = CargoRequest.where(:work_date=>t_date,:work_class=>2).order(sql)
@@ -49,7 +60,7 @@ class Manager::PrintFilesController < Manager::HomeController
         output = pdf.fin()
         send_file(output,:filename=>"必要人数表(調整用)_#{t_date.strftime("%Y%m%d")}.pdf",:status=>200) 
         
-      when "CARGO_HEAD_COUNT.PDF"  #配番人数表
+      when "CARGO_HEAD_COUNT.PDF"  #配番人数表 # Number of people assigned
         t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
         condition1 = Cargo.where(:work_date=>t_date,:work_class=>1).order({:work_place=>:asc,:move_no=>:asc,:work_no=>:asc,:serial_no=>:asc})
         sql = Arel.sql("CAST(SUBSTRING(move_no,3) AS UNSIGNED) ASC")
@@ -70,35 +81,35 @@ class Manager::PrintFilesController < Manager::HomeController
         end
         file_name = "勤怠・時間外管理表"
         t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
-        t_tarm = get_month(t_date) #集計月次範囲
+        t_tarm = get_month(t_date) #集計月次範囲 #Monthly aggregation range
         excel_path = Woker.mk_wow_excel(file_name,t_date,t_tarm,t_branch_cd)
         send_file(excel_path,:filename=>"#{file_name}.xls",:status=>200) 
         return
-      when "TIME_SHEET.PDF"  #出勤時間表
+      when "TIME_SHEET.PDF"  #出勤時間表 #Work schedule
         grouping_woker_data = {}; rel_data = {}
-        #== 対象グループ
+        #== 対象グループ  Target Group
         branches = Branche.cargo_work_group.pluck(:cd,:name)
         branches.each do |bch|
           grouping_woker_data[bch[0]] = [] unless grouping_woker_data[bch[0]]
         end
         branches = branches.to_h
         
-        #== 対象作業員
+        #== 対象作業員 Target workers
         wokers = Woker.get_latest(@t_date).where(:branch_cd=>branches.map{|(b_cd,_)| b_cd}).includes(:user)
         wokers.each do |woker|
           grouping_woker_data[woker[:branch_cd]] << woker[:login_id]
         end
         wokers = wokers.pluck(:login_id).zip(wokers).to_h
 
-        #== 当日　荷物作業員
+        #== 当日 荷物作業員 On the day of the event: Luggage handlers
 
         cargo_wokers = CargoWorker.where(work_date:@t_date).joins(:cargo).includes(:cargo).order(:login_id=>:asc,:wk_index=>:asc).group_by{|cw| cw[:login_id]}
         
-        #== 当日　休暇データ
+        #== 当日　休暇データ Day of leave data
         vacations = Vacation.where(vacation_day:@t_date)
         vacations = vacations.pluck(:login_id).zip(vacations).to_h if vacations
 
-        #== 休暇グループ　ID、名称ペア
+        #== 休暇グループ　ID、名称ペア Vacation group ID, name pair
         vacation_types = VacationType.all.pluck(:id,:time_sheet_name).to_h
         
         rel_data[:branches] = branches
@@ -107,23 +118,23 @@ class Manager::PrintFilesController < Manager::HomeController
         rel_data[:vacations] = vacations
         rel_data[:vacation_types] = vacation_types
 
-        #== PDF作成クラス =*=*=*=*=*=*
+        #== PDF作成クラス =*=*=*=*=*=* #== PDF creation class =*=*=*=*=*=*=*
         pdf = Pdf::TimeSheetPdf.new("CargoRequestsPdf",{:page_size => 'A3',:page_layout => :landscape})
         pdf.create(@t_date,grouping_woker_data,rel_data)
         output = pdf.fin()
         send_file(output,:filename=>"出勤時間表_#{@t_date.strftime("%Y%m%d")}.pdf",:status=>200) 
 
         # =*=*=*=*=*=*=*=*=*=*=*=*=*=*
-      when "WORK_DAILY_SHEET.PDF"  #出勤日報 残業届
+      when "WORK_DAILY_SHEET.PDF"  #出勤日報 残業届 #Work attendance report Overtime request
         grouping_woker_data = {}; rel_data = {}
-        #== 対象グループ
+        #== 対象グループ Target group
         branches = Branche.cargo_work_group.pluck(:cd,:name)
         branches.each do |cd,_|
           grouping_woker_data[cd] ||= []
         end
         branches = branches.to_h
         
-        #== 対象作業員
+        #== 対象作業員 Target workers
         t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
         wokers = Woker.get_latest(t_date).where(:branch_cd=>branches.keys).where.not(:login_id=>Woker::WithoutMembers).includes(:user)
         wokers.each do |woker|
@@ -132,7 +143,7 @@ class Manager::PrintFilesController < Manager::HomeController
         end
         wokers = wokers.pluck(:login_id).zip(wokers).to_h
 
-        #== 当日　荷物作業員
+        #== 当日　荷物作業員 On the day of the event: Luggage handlers
         cargo_wokers = CargoWorker.where(work_date:@t_date).includes(:cargo).order(:login_id=>:asc,:wk_index=>:asc).filter{|cw| cw.cargo.present?}
         # cargo_wokers = CargoWorker.where(work_date:@t_date).includes(:cargo).order(:login_id=>:asc,:wk_index=>:asc)
         tmp_hash = {}
@@ -142,11 +153,11 @@ class Manager::PrintFilesController < Manager::HomeController
         end
         cargo_wokers = tmp_hash
 
-        #== 当日　休暇データ
+        #== 当日　休暇データ Day of leave data
         vacations = Vacation.where(vacation_day:@t_date,:deleted_uid=>nil,:deleted_at=>nil)
         vacations = vacations.pluck(:login_id).zip(vacations).to_h if vacations
 
-        #== 休暇グループ　ID、名称ペア
+        #== 休暇グループ　ID、名称ペア Vacation group ID, name pair
         vacation_types = VacationType.all.pluck(:id,:time_sheet_name).to_h
         
         rel_data[:branches] = branches
@@ -155,40 +166,40 @@ class Manager::PrintFilesController < Manager::HomeController
         rel_data[:vacations] = vacations
         rel_data[:vacation_types] = vacation_types
         
-        #== PDF作成クラス =*=*=*=*=*=*
+        #== PDF作成クラス =*=*=*=*=*=* #== PDF creation class =*=*=*=*=*=*=*
         pdf = Pdf::WorkDailySheetPdf.new("CargoRequestsPdf",{:page_size => 'A4', :top_margin => 20})
         pdf.create(@t_date,grouping_woker_data,rel_data)
 
         output = pdf.fin()
         send_file(output,:filename=>"出勤日報・残業届_#{@t_date.strftime("%Y%m%d")}.pdf",:status=>200) 
 
-      when 'CARGO_SCHEDULE.PDF' #配番表(予定)
-        #== 当日配番データ
+      when 'CARGO_SCHEDULE.PDF' #配番表(予定) #Assignment schedule (tentative)
+        #== 当日配番データ Daily assignment data
         cargos = Cargo.includes(:cargo_machine=>:machine,:cargo_worker=>:woker).where(:work_date=>@t_date).order(:desp_index)
         cargos.each{|cargo| cargo.update_np_count}
-        #== cargo_workerの作業順 最小リスト
+        #== cargo_workerの作業順 最小リスト Minimum list of cargo_worker work order
         cw_first_id = build_cw_first_id_list(@t_date,CargoWorker)
-        #== 配番割当　作業員、機械データ
+        #== 配番割当　作業員、機械データ Assignment of worker and machine data
         assigned_data = build_assign_data(@t_date,cargos)
-        #== 対象日の休暇データ
+        #== 対象日の休暇データ Vacation data for the target date
         vacation_wokers = build_vacation_wokers_list(CargoWorker,@t_date)
-        #== PDF作成クラス =*=*=*=*=*=*
+        #== PDF作成クラス =*=*=*=*=*=* PDF creation class =*=*=*=*=*=*
         pdf = Pdf::CargoPdf.new("CargoSchedulePdf",{:page_size => 'A3', :page_layout => :landscape, :top_margin => 20},name:"配番表(予定)_#{@t_date.strftime("%Y%m%d")}",title:"荷役作業予定　及び　配番表")
         pdf.create(@t_date,cargos,assigned_data,vacation_wokers)
         output = pdf.fin()
         send_file(output,:filename=>"#{pdf.name}.pdf",:status=>200) 
-      when 'CARGO_RESULT.PDF' #配番表(実績)
-        #== 当日配番データ
+      when 'CARGO_RESULT.PDF' #配番表(実績) # Assignment list (actual results)
+        #== 当日配番データ Daily assignment data
         cargos = ResultCargo.includes(:result_cargo_machine=>:machine,:result_cargo_worker=>:woker).where(:work_date=>@t_date).order(:desp_index)
         cargos.each{|cargo| cargo.update_np_count}
-        #== cargo_workerの作業順 最小リスト
+        #== cargo_workerの作業順 最小リスト Minimum list of cargo_worker work order
         cw_first_id = build_cw_first_id_list(@t_date,ResultCargoWorker)
-        #== 配番割当　作業員、機械データ
+        #== 配番割当　作業員、機械データ Assignment of worker and machine data
         assigned_data = build_assign_result_data(@t_date,cargos)
         # return
-        #== 対象日の休暇データ
+        #== 対象日の休暇データ Vacation data for the target date
         vacation_wokers = build_vacation_wokers_list(ResultCargoWorker,@t_date)
-        #== PDF作成クラス =*=*=*=*=*=*
+        #== PDF作成クラス =*=*=*=*=*=* PDF creation class =*=*=*=*=*=*
         pdf = Pdf::CargoPdf.new("CargoResultPdf",{:page_size => 'A3', :page_layout => :landscape, :top_margin => 20},name:"配番表(実績)_#{@t_date.strftime("%Y%m%d")}",title:"荷役作業　及び　配番表")
         pdf.create(@t_date,cargos,assigned_data,vacation_wokers)
         output = pdf.fin()
@@ -197,7 +208,7 @@ class Manager::PrintFilesController < Manager::HomeController
         generate_cargo_work_pdf(params[:mord], @t_date)
       when "CARGO_WORKER_RESULT.CSV"
         generate_cargo_work_pdf(params[:mord], nil, params)
-      when "TIME_CARD.CSV"  #タイムカードデータ(既存システム連携データ)
+      when "TIME_CARD.CSV"  #タイムカードデータ(既存システム連携データ) #Time card data (data linked to existing system)
         require 'kconv'
         t_date = Date.strptime(params[:t_date], "%Y/%m/%d")
         output = Woker.get_time_card_data(params[:t_date])
@@ -208,7 +219,7 @@ class Manager::PrintFilesController < Manager::HomeController
           :disposition => 'attachment'
         )
           
-      when "SAGYO_HAIBAN.CSV"  #荷役実績(既存連携データ)
+      when "SAGYO_HAIBAN.CSV"  #荷役実績(既存連携データ)  Cargo handling performance (existing linked data)
         require 'kconv'
         t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
         t_date_str = t_date.strftime("%Y%m%d")
@@ -219,7 +230,7 @@ class Manager::PrintFilesController < Manager::HomeController
         s_date,e_date = get_both_date(params)
         redirect_to(:controller=>:lunch_summary,:action=>:excel_output,:s_date=>s_date,:e_date=>e_date)
       when "TAX_FREE_MACHINES_PDF"
-        # データ集計
+        # データ集計 Data aggregation
         s_date,e_date = get_both_date(params)
         
         lo_machines = Machine.where(:light_oil=>1).pluck(:id,:name).to_h
@@ -232,7 +243,7 @@ class Manager::PrintFilesController < Manager::HomeController
           transform_keys{|machine_cd| lo_machines[machine_cd]}
         calendar = WhCalendar.where(:t_date=>s_date..e_date).pluck(:t_date,:wh_flg).to_h
 
-        # PDF作成クラス
+        # PDF作成クラス PDF creation class
         name_prefix = "TaxFreeMachines"
         main_title = "免税軽油稼働実績表"
         sub_title = "#{s_date.strftime('%Y 年 %m 月 %d 日')} ～ #{e_date.strftime('%Y 年 %m 月 %d 日')}"
@@ -241,10 +252,10 @@ class Manager::PrintFilesController < Manager::HomeController
         output = pdf.fin
         send_file(output, filename: "#{pdf.name}.pdf", status: 200)
       when "DAILY_CARGO_WORK_RESULT.PDF"
-        # データ集計
+        # データ集計 Data aggregation
         s_date,e_date = get_both_date(params)
         daily_work_data = ResultCargo.get_daily_work_data(s_date..e_date)
-        # PDF作成クラス
+        # PDF作成クラス PDF creation class
         name_prefix = "DailyCargoWorkResult"
         main_title = "日別荷役作業実績表"
         sub_title = "#{s_date.strftime('%y 年 %m 月 %d 日')} ～ #{e_date.strftime('%y 年 %m 月 %d 日')}"
@@ -254,11 +265,11 @@ class Manager::PrintFilesController < Manager::HomeController
         send_file(output, filename: "#{pdf.name}.pdf", status: 200)
         
       when "MONTHLY_CARGO_WORK_RESULT.PDF"
-        # データ集計
+        # データ集計 Data aggregation
         s_date,e_date = get_both_date(params)
         monthly_work_data = ResultCargo.get_monthly_work_data(s_date..e_date)
         
-        # PDF作成クラス
+        # PDF作成クラス PDF creation class
         name_prefix = "MonthlyCargoWorkResult"
         main_title = "荷役作業実績表"
         sub_title = "#{s_date.strftime('%y 年 %m 月 %d 日')} ～ #{e_date.strftime('%y 年 %m 月 %d 日')}　　延べ人数(台数)"
@@ -277,7 +288,7 @@ class Manager::PrintFilesController < Manager::HomeController
           aggr_data = woker_group[name] || []
           [name,aggr_data]
         }.to_h
-        # EXCEL作成クラス
+        # EXCEL作成クラス Excel creation class
         name = "現業職労働時間・時間外管理表"
         excel_builder = Excel::WorkTimeSummaryExcel.new(name)
         excel_builder.create(data[:group])
@@ -287,7 +298,7 @@ class Manager::PrintFilesController < Manager::HomeController
       when "CARGO_WORK_DETAIL.EXCEL"
         s_date, e_date = get_both_date(params)
         cargo_work_detail = ResultCargo.get_cargo_work_detail_data(:s_date=>s_date,:e_date=>e_date)
-        # EXCEL作成クラス
+        # EXCEL作成クラス Excel creation class
         name = "荷役作業明細一覧"
         excel = Excel::ArrayTbl.new(name)
         excel.mk_excel(cargo_work_detail,true,true)
@@ -349,7 +360,7 @@ class Manager::PrintFilesController < Manager::HomeController
     @t_date = Date.strptime(params[:t_date],"%Y/%m/%d")
   end
   
-  # 集計期間取得 in) yyyymm => out) yyyy/mm/01:date ~ yyyy/mm/{last}:date
+  # 集計期間取得 in) yyyymm => out) yyyy/mm/01:date ~ yyyy/mm/{last}:date | Get the aggregation period: in) yyyymm => out) yyyy/mm/01:date ~ yyyy/mm/{last}:date
   def get_both_date(params)
     s_date = Date.parse(params[:t_s_date])
     e_date = Date.parse(params[:t_e_date])
@@ -374,7 +385,7 @@ class Manager::PrintFilesController < Manager::HomeController
   end
 
   def generate_cargo_work_pdf(csv_type, t_date = nil, params = {})
-    # 荷役データ集計
+    # 荷役データ集計 Cargo handling data summary
     daily_cargos, s_date, e_date = 
       case csv_type
       when "CARGO_WORKER_SCHEDULE.CSV"
@@ -395,7 +406,7 @@ class Manager::PrintFilesController < Manager::HomeController
     cargo_cd_datas = cargo_cd_datas.transform_values { |cargo_class| cargo_class_datas[cargo_class] }
     rel_data = { cargo_cd_names: cargo_cd_datas }
 
-    # PDF作成クラス
+    # PDF作成クラス PDF creation class
     pdf_class, main_title, sub_title, name_prefix, t_scope =
       case csv_type
       when "CARGO_WORKER_SCHEDULE.CSV"
@@ -438,6 +449,10 @@ class Manager::PrintFilesController < Manager::HomeController
       # 配番機械、配番作業員をすべて抽出　⇒　作業カテゴリをユニークで取得
       # 　どちらも登録されていない場合、assign_dataが作成されないのでメモが表示されない。
       #   Cargo::WkTypeで全作業カテゴリのテンプレートデータ作っちゃう？
+      # Extract all assigned machines and assigned workers ⇒ Get unique work categories
+      # If neither is registered, assign_data will not be created, so the memo will not be displayed.
+      # Should we create template data for all work categories using Cargo::WkType?
+      
       # wk_types = cargo.cargo_machine.pluck(:wk_type).push(cargo.cargo_worker.pluck(:wk_type)).flatten.uniq
       wk_types = Cargo::WkType.map{|ary| ary[1]}
 
@@ -508,14 +523,14 @@ class Manager::PrintFilesController < Manager::HomeController
       .where(:vacation_day=>@t_date,:branch_cd=>%w(1 2 3 4))\
       .where(:wokers=>{:applicable=>Applicable.get_applicable(2,@t_date)})\
       .where.not(:login_id=>cw_cds)\
-      .order('base_no ASC, wokers.branch_cd ASC, wokers.desp_index ASC') #order条件追加　UAT137
+      .order('base_no ASC, wokers.branch_cd ASC, wokers.desp_index ASC') #order条件追加　UAT137 #Added order condition UAT137
 
     v_hash_list = {}
     vacations.each do |vac|
       lid,vt = vac.values_at(:login_id,:vacation_type_id)
       v_name = vacation_types[vt]
       w_name = woker_names[lid]
-      # 公休〇×追加
+      # 公休〇×追加 # Add public holidays〇×
       # if vac[:base_no]==6
       #   case vac[:at_work]
       #   when 1

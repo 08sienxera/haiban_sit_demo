@@ -8,20 +8,20 @@ class Board < ApplicationRecord
   has_many :board_comment, lambda{ order("comment_no asc") }
 
 
-  # モデル名
+  # モデル名 model name
   MY_ATT_DIR="boards"
-  # 添付ファイル形式許可リスト
+  # 添付ファイル形式許可リスト Attachment file format permission list
   # pdf,png,xls,xlsx,doc,docx,ppt,pptx
   FILE_EXTENSIONS = {:document=>%w(pdf),:image=>%w(jpg jpeg png),:msoffice=>%w(xls xlsx doc docx ppt pptx)}
   # FILE_EXTENSIONS = {:document=>%w(pdf),:image=>%w(png),:msoffice=>%w(xls xlsx doc docx ppt pptx)}
   FILE_LOCATION="system/" + MY_ATT_DIR
   #
-  #===コールバック
+  #===コールバック callback
   after_create :set_after_update
   after_update :set_after_update
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     board_category = BoardCategory.getdatalist({:order=>:desp_index})
     form = Common::CommonClass.new(key)
@@ -49,12 +49,12 @@ class Board < ApplicationRecord
   end
   #\
 
-  #===更新画面フォームの生成
+  #===更新画面フォームの生成 Generate update screen form
   def self.set_edit_form(key)
     return self.set_input_form(key)
   end
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = self.set_input_form(key)
     skeys = ["important_flg","view_s_dt","view_e_infin","view_e_dt","board_category_id","subject"]
@@ -80,13 +80,13 @@ class Board < ApplicationRecord
     return form
   end
   #
-  #===重要アイコン取得
+  #===重要アイコン取得 Get important icon
   # 「★」 or 「」
   def important_str
     return (self[:important_flg] == 1 ? "★" : "")
   end
   
-  #===掲示期間を返す
+  #===掲示期間を返す Return the posting period
   def view_tarm_str(format_str)
     ret = "#{self[:view_s_dt].strftime(format_str)}"
     ret << "～"
@@ -98,7 +98,7 @@ class Board < ApplicationRecord
     return ret;
   end
   #
-  #===掲示期間内か真偽値を返す
+  #===掲示期間内か真偽値を返す Returns a true/false value if it is within the posting period
   def in_view_tarm?(t_time=Time.now)
     return false if self[:view_s_dt].blank? || (self[:view_e_infin].blank? && self[:view_e_dt].blank?)
     gte_s_dt = self[:view_s_dt] <= t_time
@@ -106,7 +106,7 @@ class Board < ApplicationRecord
     return gte_s_dt && lte_e_dt
   end
 
-  #===既読？
+  #===既読？ Already read?
   def read?(user_id)
     bt = self.board_target
     return false if bt.blank?
@@ -115,7 +115,7 @@ class Board < ApplicationRecord
   end
   
   
-  #===実ファイルへのパスを返す
+  #===実ファイルへのパスを返す returns the path to the actual file
   def get_pdf_path
     path = File.join(IMG_DIR,FILE_LOCATION,"file_name_#{self[:id]}.pdf")
     # path = File.join(IMG_DIR,MY_ATT_DIR,"file_name_#{self[:id]}.pdf")
@@ -124,7 +124,7 @@ class Board < ApplicationRecord
   end
   
   #
-  #===実ファイルへのパスを返す
+  #===実ファイルへのパスを返す returns the path to the actual file
   def get_file_path(*attribute_keys)
     loop_keys = attribute_keys.empty? ? Board.file_attributes : attribute_keys.map(&:to_sym)
     return loop_keys.map{|key|
@@ -134,14 +134,14 @@ class Board < ApplicationRecord
     }.to_h
   end
 
-  #===実ファイルへのパスを返す
+  #===実ファイルへのパスを返す returns the path to the actual file
   # def get_file_path
   #   path = File.join(IMG_DIR,MY_ATT_DIR,"file_name_#{self[:id]}.#{self.get_file_extention}")
   #   return path if File.exist?(path)
   #   return nil
   # end
   #
-  #===画像ファイルへのパスを返す
+  #===画像ファイルへのパスを返す returns the path to the image file
   def imgs(key=nil)
     file_path = File.join(IMG_DIR,FILE_LOCATION,"#{self[:id]}")
     # file_path = File.join(IMG_DIR,MY_ATT_DIR,"#{self[:id]}")
@@ -158,11 +158,11 @@ class Board < ApplicationRecord
     end
   end
   #
-  #===登録、更新の後処理
+  #===登録、更新の後処理 Post-processing of registration and updates
   def set_after_update(target_users=[])
-    #PDFファイルの画像化
+    #PDFファイルの画像化 Imaging PDF files
     set_images
-    #掲示対象者設定
+    #掲示対象者設定 Post target audience settings
     board_targets = BoardTarget.where(:board_id=>self.id)&.pluck(:login_id) || []
     dif_targets = (target_users-board_targets) + (board_targets-target_users)
     if target_users.present? && dif_targets.present?
@@ -181,10 +181,10 @@ class Board < ApplicationRecord
 
 
   #
-  #===PDFファイルの画像化
+  #===PDFファイルの画像化 Imaging PDF files
   def set_image(path,pre_number=nil)
-    # 画像ファイル名 0000から始まる4桁の数字
-    # pre_number: 先頭の一桁の数字を指定
+    # 画像ファイル名 0000から始まる4桁の数字 Image file name 4-digit number starting from 0000
+    # pre_number: 先頭の一桁の数字を指定 pre_number: Specify the first digit
     if path.present? && File.exist?(path)
       img_path = File.join(IMG_DIR,FILE_LOCATION,"#{self[:id]}")
       do_make_image = false
@@ -194,7 +194,7 @@ class Board < ApplicationRecord
           do_make_image = true
         else
           images.each{|image|
-            do_make_image = true || (File.ctime(path) > File.ctime(image)) #判定：PDFファイル作成日＞画像ファイル作成日
+            do_make_image = true || (File.ctime(path) > File.ctime(image)) #判定：PDFファイル作成日＞画像ファイル作成日 Judgment: PDF file creation date > image file creation date
             break if do_make_image
           }
           images.each{|image| File.unlink(image)} if do_make_image
@@ -216,19 +216,19 @@ class Board < ApplicationRecord
     end
   end
   #
-  #===対象者設定
+  #===対象者設定 Target audience settings
   def set_targets(target_users=[])
-    #一旦全対象者を論理削除
+    #一旦全対象者を論理削除 Logically delete all targets once
     BoardTarget.delete_all(self[:updated_uid],{:board_id=>self[:id]})
-    #基準日を取得
+    #基準日を取得 Get base date
     if self[:view_s_dt] > Time.now()
       applicable = Applicable.get_applicable(2,self[:view_s_dt])
     else
       applicable = Applicable.get_applicable(2)
     end
-    #カウントを初期化
+    #カウントを初期化 Initialize count
     target_count=0 ; confirmation_count=0
-    #対象者設定
+    #対象者設定 Target audience settings
     if target_users.present?
       condition = ["users.login_id in (?)",target_users]
     elsif self.board_group.can_mod_group_type?
@@ -269,7 +269,7 @@ class Board < ApplicationRecord
     self.save!
   end
   #
-  #===再カウント
+  #===再カウント Recount
   def recount_all
     recount()
     recount("comment_count")
@@ -284,7 +284,7 @@ class Board < ApplicationRecord
     end
   end
 
-  #===掲示コメントを追加
+  #===掲示コメントを追加 Add post comment
   def add_comment(user_id,comment_text)
     Board.transaction do
       user = User.find(user_id)
@@ -313,22 +313,22 @@ class Board < ApplicationRecord
 
   end
 
-  # スコープ
-  #===掲示期間のBoardを返す
+  # スコープ scope
+  #===掲示期間のBoardを返す Return the board for the posting period
   scope :find_board_in_view_tarm, -> {
     now = Time.now
     where("view_s_dt <= ?", now).merge(
       Board.where("view_e_dt >= ?",now).or(Board.where(:view_e_infin=>1,))
     ).order(:id)
   }
-  #=== 添付ファイルのファイル拡張子を返す
+  #=== 添付ファイルのファイル拡張子を返す Return file extension of attachment
   def get_file_extention(attribute_key)
     key = attribute_key.to_sym
     return nil if self[key].blank?
     return self[key][self[key].rindex(".")+1..-1]
   end
 
-  #=== 添付ファイルの有無を返す
+  #=== 添付ファイルの有無を返す Returns whether there is an attachment
   def has_file?
     Board.file_attributes.map{|key| self[key]}.any?(&:present?)
   end
@@ -339,7 +339,7 @@ class Board < ApplicationRecord
     return  self.attribute_names.filter{|nm| nm.include?("file_name")}.map(&:to_sym)
   end
 
-  # 画像化時のpngファイル名の1桁目の数字を取得
+  # 画像化時のpngファイル名の1桁目の数字を取得 Get the first digit of the png file name when converting an image
   def self.get_first_number(key)
     return 0 if key==:file_name
     return 1 if key==:file_name2

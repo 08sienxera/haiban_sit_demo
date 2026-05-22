@@ -4,7 +4,7 @@ class Manager::WkAssignmentController < Manager::HomeController
   before_action :set_my_global_variable
 
 
-  #=== 編集画面ロック
+  #=== 編集画面ロック Edit screen lock
     def lock
       err_msgs = []
       work_date_str = params[:work_date].to_s
@@ -43,28 +43,28 @@ class Manager::WkAssignmentController < Manager::HomeController
     end
 
 
-  #=== 配番割当画面
+  #=== 配番割当画面 Number assignment screen
   def index
     @title=I18n.t("page_titles.wk_assignment")
     @cargo = Cargo.where({:work_date=>@t_date[:t_date]}).order(:desp_index).preload([:cargo_worker,:cargo_machine])
-    #配番ユーザデータ取得
+    #配番ユーザデータ取得 Retrieve assigned user data
     this_mm = get_month(@t_date[:t_date])
     @branches = Branche.get_assignment_list(@t_date[:t_date])
     @wokers,@woker_names = Woker.get_assignment_list(@t_date,@branches,this_mm)
-    #休暇種別
+    #休暇種別 Leave type
     @vacation_types = {"0"=>"公休日"}.merge(VacationType.getdatalist({:key=>:base_no,:text=>:name,:type=>"hash"}))
-    #配番機械データ取得
+    #配番機械データ取得 Machine assignment data acquisition
     @machines,@machine_names,@machine_bgc_class = Machine.get_assignment_list(@t_date[:t_date])
-    #言付けデータ取得
+    #言付けデータ取得 Message data acquisition
     @msgs = CargoMsg.get_assignment_list(@t_date[:t_date])
     
-    #表示設定
+    #表示設定 Display settings
     @inc_css = [:wk_assignment]
     @inc_js= ["manager/commn_assignment","manager/wk_assignment","manager/wk_assignment_helper","eventUtil"]
     @def_font_size = 10
     @def_tbl_setting = Cargo.tbl_setting
 
-    #編集可否
+    #編集可否 Editability
     @can_edit = Cargo.can_edit(@t_date[:t_date],get_uval(:login_id))
     @can_lock = Cargo.can_lock_user?(get_uval(:login_id))
     @lock_user = Cargo.locked_by(@t_date[:t_date])
@@ -77,7 +77,7 @@ class Manager::WkAssignmentController < Manager::HomeController
     }
   end
 
-  #=== 自動配番
+  #=== 自動配番 Automatic numbering
   def create
     delay_queue="WkAssignment_#{params[:work_date]}"
     job = DelayedJob.find_by(["queue like ?","WkAssignment_%"])
@@ -116,7 +116,7 @@ class Manager::WkAssignmentController < Manager::HomeController
     render :json => ret.to_json, :status => 200 
   end
 
-  #=== 配番更新
+  #=== 配番更新 Update numbering
   def update
     ret = {:ret=>200,:msg=>""}
     sm = Time.now
@@ -168,7 +168,7 @@ class Manager::WkAssignmentController < Manager::HomeController
     end
   end
   
-  #=== 力量設定
+  #=== 力量設定 Competence setting
   def set_competence
     ret = {:sts=>200,:msg=>nil}
     begin
@@ -183,7 +183,7 @@ class Manager::WkAssignmentController < Manager::HomeController
     render :json => ret.to_json, :status => 200 
   end
   
-  #=== 言付け更新
+  #=== 言付け更新 Update of instructions
   def set_msg
     ret = {:sts=>200,:msg=>nil}
     begin
@@ -208,7 +208,7 @@ class Manager::WkAssignmentController < Manager::HomeController
 
   private
   #
-  #=== 表示対象日付取得：10時以降は翌日(変更)→常に翌日
+  #=== 表示対象日付取得：10時以降は翌日(変更)→常に翌日 Display target date acquisition: After 10:00, it will be the next day (changed) → Always the next day
   def get_set_tdate
     @today= Date.today
     t_date = @today+1

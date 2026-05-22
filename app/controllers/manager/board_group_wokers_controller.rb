@@ -3,7 +3,7 @@ class Manager::BoardGroupWokersController < Manager::HomeController
   before_action :set_my_global_variable
 
 
-  # 掲示対象者設定画面
+  # 掲示対象者設定画面 Target setting
   def edit
     @branche_color = Branche.get_color_list(t_date=Date.today)
     condition = ["board_group_id = ?",@board_group[:id]]
@@ -19,18 +19,18 @@ class Manager::BoardGroupWokersController < Manager::HomeController
     @target_list={}
   end
 
-  # 掲示対象者更新処理
+  # 掲示対象者更新処理 Target update
   def update
     begin
       BoardGroup.transaction do
-        #一旦全対象者を論理削除
+        #一旦全対象者を論理削除 Delete all
         BoardGroupWoker.delete_all(get_uval(:login_id),{:board_group_id=>@board_group[:id]})
         t_count = 0
         params[:login_id].each{|login_id|
           BoardGroupWoker.create_data([:board_group_id,:login_id],{:board_group_id=>@board_group[:id],:login_id=>login_id},get_uval(:login_id),false,true)
           t_count += 1
         }unless params[:login_id].blank?
-        #掲示済みの対象者更新
+        #掲示済みの対象者更新 Update
         if Rails.env.development?
           @board_group.resettting_target
         else
@@ -46,7 +46,7 @@ class Manager::BoardGroupWokersController < Manager::HomeController
     redirect_to :controller => 'manager/board_groups', :action=>:index
   end
 
-  # 掲示対象者を返す
+  # 掲示対象者を返す Return
   def show
     @ss = User.set_serch_form("board_group_serch")
     @ss.setpostdata(params,session[:serch_data])

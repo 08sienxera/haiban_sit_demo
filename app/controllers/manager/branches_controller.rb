@@ -1,4 +1,4 @@
-#=グループマスタ
+#=グループマスタ group master
 class Manager::BranchesController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

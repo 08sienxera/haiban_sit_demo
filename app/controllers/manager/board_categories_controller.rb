@@ -1,4 +1,4 @@
-#= 掲示カテゴリマスタリクエスト処理
+#= 掲示カテゴリマスタリクエスト処理 | Bulletin Category Master Request Processing
 class Manager::BoardCategoriesController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

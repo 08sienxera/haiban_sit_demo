@@ -9,7 +9,7 @@
 #***************************************************************************
 #++
 module ApplicationHelper
-  #表示する
+  #表示する display
   def mkhtmlform(gname,name,palamndata,inputflg = nil)
     retstr = ""
     type = palamndata['viewtype'].present? ? palamndata['viewtype'] : palamndata['type']
@@ -40,7 +40,7 @@ module ApplicationHelper
       else
         retstr << content_tag("span",money_format(value),:id=>"#{name}_view")
       end
-    when 'textA','textAA','textAX','textX','textXX','textMl','textP','textURL','textColor','textImg'  #半角英数入力
+    when 'textA','textAA','textAX','textX','textXX','textMl','textP','textURL','textColor','textImg'  #半角英数入力 Half-width alphanumeric input
       if inputflg == 1
         altstyle << "ime-mode:disabled;"
         retstr << text_field(gname,name,
@@ -56,7 +56,7 @@ module ApplicationHelper
           retstr << h(value)
         end
       end
-    when 'textTEL','textTEL_Fixed'  #電話番号
+    when 'textTEL','textTEL_Fixed'  #電話番号 telephone number
       if inputflg == 1
         altstyle << "ime-mode:disabled;"
         retstr << text_field(gname,name,
@@ -103,7 +103,7 @@ module ApplicationHelper
       else
         retstr << h(value)
       end
-    when 'textTimeTerm' #時間期間
+    when 'textTimeTerm' #時間期間 time period
       if inputflg == 1
         altstyle << "ime-mode:disabled;"
         strjs = ""
@@ -136,7 +136,7 @@ module ApplicationHelper
       else
         retstr << h(value)
       end
-    when 'textPass'  #パスワード
+    when 'textPass'  #パスワード password
       if inputflg == 1
         retstr << password_field(gname,name, :size => palamndata['size'],:maxlength => palamndata['maxlength'],
                                 :style=>"#{altstyle}#{palamndata['style']}",
@@ -145,7 +145,7 @@ module ApplicationHelper
       else
         retstr << "****"
       end
-    when 'textMail' #メール
+    when 'textMail' #メール email
       if inputflg == 1
         altstyle << "ime-mode:disabled;"
         altstyle << "width:#{palamndata['width']};" unless palamndata['width'].blank?
@@ -463,7 +463,7 @@ module ApplicationHelper
     return retstr.html_safe
   end
 
-  #単純なテーブルを表示する
+  #単純なテーブルを表示する display a simple table
   
   def printtable(optins={},cc=@cc)
     return "" if cc.nil?
@@ -507,14 +507,14 @@ module ApplicationHelper
     retstr << "</table>\n"  unless optins[:not_tbl_tag]
     return retstr.html_safe
   end
-  #入力の１セットを表示する
+  #入力の１セットを表示する Display one set of inputs.
   def printtable_cellset(key,cc,title_class="listTitle",colspan=nil)
     retstr = content_tag(:td,cc.getparamdata(key,"title"),:class=>title_class)
     retstr << content_tag(:td,mkhtmlform(cc.getgname,key,cc.getparam(key)),:class=>"listL",:colspan=>colspan)
     return retstr.html_safe
   end
 
-  #リストテーブルを表示する
+  #リストテーブルを表示する Show list table
   def printlisttable(voption = {})
     return "" if @cc.nil?
     gname = @cc::getgname
@@ -618,7 +618,7 @@ module ApplicationHelper
     retstr << hidstr
     return retstr.html_safe
   end
-  #検索テーブル入力の１行を作成
+  #検索テーブル入力の１行を作成 Create a row for the search table input.
   def mk_serchtable_row(gname,key,params)
     retstr = ""
     data = params[key]
@@ -661,7 +661,7 @@ module ApplicationHelper
     return retstr.html_safe
   end
 
-  #CSV登録説明用テーブルを表示する
+  #CSV登録説明用テーブルを表示する Display the table for CSV registration instructions.
   def printcsvtable(cc, cellpadding = 5)
     return "" if cc.nil?
     params = cc::getparams
@@ -694,7 +694,7 @@ module ApplicationHelper
     retstr << "</table>\n"
     return retstr.html_safe
   end
-  #CSV登録説明用テーブルを表示する
+  #CSV登録説明用テーブルを表示する Display the table for CSV registration instructions.
   def getcsvexp(data)
     return "<b style='color:#FF0000;'>data is balnk</b>" if data.blank?
     retstr=""
@@ -770,11 +770,11 @@ module ApplicationHelper
     data['exp'] = "参考データ。表示に使用、データは登録されません。" unless data['ref_flg'].blank?
     return retstr
   end
-  #必須マーク
+  #必須マーク Required mark
   def essstr(essflg,inputflg)
     return (essflg == 1 && inputflg == 1) ? content_tag(:span,"*",{:class=>"ess"}).html_safe : ""
   end
-  #入力チェックのJavaScriptを返す
+  #入力チェックのJavaScriptを返す Return JavaScript for input validation.
   def print_input_js()
     retstr = ""
     unless @inck_js.nil? and @inck_js_const.nil?
@@ -798,7 +798,7 @@ module ApplicationHelper
     end
     return retstr
   end
-  #カンマ編集
+  #カンマ編集 comma edit
   def money_format(num)
     if num.is_a?(Integer)
       strnum = num.to_s
@@ -807,12 +807,12 @@ module ApplicationHelper
     end
     return (strnum =~ /[-+]?\d{4,}/) ? (strnum.reverse.gsub(/\G((?:\d+\.)?\d{3})(?=\d)/, '\1,').reverse) : num
   end
-  #お金単位追加
+  #お金単位追加 Add money unit
   def money_unit(num)
     minus = (num.to_i < 0 ? "-":"")
     return I18n.t("unit.amount",:count=>minus+money_format(num.to_s.scan(/\d+/).join))
   end
-  #文字列の途中カット
+  #文字列の途中カット Cutting a string midway
   def str_cut(value,vmaxlength,bwd= "...")
     return "" if value.blank?
     return value if vmaxlength.blank?
@@ -824,7 +824,7 @@ module ApplicationHelper
       return value
     end
   end
-  #特定文字数で改行する
+  #特定文字数で改行する Insert a line break after a specific number of characters.
   def set_char_num(chernum,value,box_flg = true,str_rn = "<br />")
     ret_a = []
     unless value.blank?
@@ -841,17 +841,17 @@ module ApplicationHelper
     end
     return ret_a.join("").html_safe
   end
-  #改行を<br />に変更
+  #改行を<br />に変更 Change line breaks to <br />
   def nl2br(str)
     return "" if str.blank?
     return str.gsub(/\r\n|\r|\n/,"<br />").html_safe
   end
-  #Listから文字列を取得する
+  #Listから文字列を取得する Get string from List
   def list2str(list,cd)
     list.each{|txt,lcd| return txt if lcd == cd.to_s} unless list.blank?
     return cd
   end
-  #指定日時点の年齢を誕生日から算出する
+  #指定日時点の年齢を誕生日から算出する The age on the specified date is calculated from the birthday.
   def get_age(tdate,birth)
     if tdate.blank? || birth.blank? then return "" end
     dates = {"tdate"=>tdate,"birth"=>birth}
@@ -873,7 +873,7 @@ module ApplicationHelper
       return false
     end
   end
-  #ブランクフォーム追加
+  #ブランクフォーム追加 Add blank form
   def blank_form
     if @evt.nil? || @evt[:language_setting].split(",").length > 1
       return "<td class='blank_form' align=left style='background: #808080;'></td>".html_safe

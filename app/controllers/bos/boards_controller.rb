@@ -3,8 +3,8 @@ class Bos::BoardsController < WorkerCommon::BoardsController
   layout "main_layout"
   before_action :set_my_oth_variable
 
-  #=== 掲示詳細画面 
-  #自身の投稿掲示の場合、本文確認済み更新
+  #=== 掲示詳細画面 Display details screen
+  #自身の投稿掲示の場合、本文確認済み更新  If you are posting your own entry, please indicate that the main text has been reviewed and updated.
   def show
     if @board.created_uid == get_uval(:login_id)
       @board_target&.confirm_m(get_uval(:login_id))

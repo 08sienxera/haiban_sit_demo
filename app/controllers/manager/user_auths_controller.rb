@@ -1,4 +1,4 @@
-#= 親方・事務職 利用可能機能設定リクエスト処理
+#= 親方・事務職 利用可能機能設定リクエスト処理 Request processing for setting available functions for master craftsmen and office staff.
 class Manager::UserAuthsController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

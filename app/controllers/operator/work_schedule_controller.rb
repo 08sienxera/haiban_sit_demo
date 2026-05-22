@@ -2,7 +2,7 @@ class Operator::WorkScheduleController < Operator::HomeController
   # before_action :get_set_tdate
   before_action :set_my_global_variable
 
-  #=== 作業予定画面
+  #=== 作業予定画面 Work schedule screen
   def index
     @title = "作業予定"
     @t_date = Woker.get_today()

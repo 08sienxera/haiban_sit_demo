@@ -1,14 +1,14 @@
 #===WorkerCommon::UsersControllerを継承
 #
 class Operator::UsersController < WorkerCommon::UsersController
-  # 共有レイアウト呼出し
+  # 共有レイアウト呼出し Calling a shared layout
   layout 'operator_layout'
   before_action :set_my_oth_variable, :only =>[:edit,:update_password,:update_setting]
 
   
   private
-  #=== 権限チェック
-  #現場作業員であること
+  #=== 権限チェック Permission check
+  #現場作業員であること Being a field worker
   def auth_ck
     ck_operator
   end

@@ -1,23 +1,23 @@
-#= 出勤時間表PDF作成クラス 
+#= 出勤時間表PDF作成クラス | Work timetable PDF creation class
 class Pdf::TimeSheetPdf < Pdf::ExpansionPdfCommon
-  # 行高さ（ヘッダ）
+  # 行高さ（ヘッダ） | Row height (header)
   HeaderRowHeight = 16
-  # 行高さ（ボディ）
+  # 行高さ（ボディ） | Row height (body)
   BodyRowHeight = 19
-  # ページあたりの行数
+  # ページあたりの行数 | Number of lines per page
   TableRowNum = 35
 
-  # 初期設定
+  # 初期設定 | Initial settings
   def initialize(cd,page_condition = {})
     super(cd,page_condition)
     @title = "業 務 部  出 勤 時 間 表"
     @title_under_line_width = 250
     @max_width = @pdf.bounds.right - @pdf.bounds.left
     @body_top = 0
-    @body_under = 600 # 適当に初期化　最終値は横線の最低高さ
+    @body_under = 600 # 適当に初期化　最終値は横線の最低高さ | Initialize appropriately, the final value is the minimum height of the horizontal line
   end
 
-  # PDF作成
+  # PDF作成 | PDF creation
   def create(t_date,grouping_woker_data,rel_data)
     days = I18n.t("date.abbr_day_names")
     out_line_inner_pos = []
@@ -42,13 +42,13 @@ class Pdf::TimeSheetPdf < Pdf::ExpansionPdfCommon
     width = @pdf.bounds.right - @pdf.bounds.left
     height = @body_top - @body_under
 
-    #= 上下左右
+    #= 上下左右 | up, down, left, right
     u_line(@pdf.bounds.left,@body_top,width,width=line_weight)
     v_line(@pdf.bounds.left,@body_top,height,width=line_weight)
     u_line(@pdf.bounds.left,@body_under,width,width=line_weight)
     v_line(@pdf.bounds.right,@body_top,height,width=line_weight)
 
-    #= 中間線
+    #= 中間線 | median line
     out_line_inner_pos.each do |x_pos|
       v_line(x_pos,@body_top,height,width=line_weight)
     end
@@ -58,13 +58,13 @@ class Pdf::TimeSheetPdf < Pdf::ExpansionPdfCommon
     page_width = @pdf.bounds.right - @pdf.bounds.left
     @pdf.table([
       ["",page_title,""],
-      [sub_title,"","#{Time.now.strftime("%y.%m.%d %H:%M")} 作成"],  #24.04.05 16:17 作成
+      [sub_title,"","#{Time.now.strftime("%y.%m.%d %H:%M")} 作成"],  #24.04.05 16:17 作成 | Created on 24.04.05 16:17
     ],
     :width=>page_width,
     :cell_style=>{
       :width=>page_width/3,
-      :border_color => 'FFFFFF',  # 線を非表示にする
-      :border_width => 0,  # 線の幅を0に設定
+      :border_color => 'FFFFFF',  # 線を非表示にする | hide lines
+      :border_width => 0,  # 線の幅を0に設定 | set line width to 0
       :valign => :bottom
     }
     ) do
@@ -91,20 +91,20 @@ class Pdf::TimeSheetPdf < Pdf::ExpansionPdfCommon
     v_pos = @pdf.cursor - branch_nm_font_size*1.5
     @body_top = v_pos
     header = %w(No 氏名 時間 内容)
-    hcolumn_size = [1,4,2,3] # カラム幅の比率
+    hcolumn_size = [1,4,2,3] # カラム幅の比率 | Column width ratio
     table_data,font_color_setting = convert_worker_table_data(login_id_list,rel_data)
     col_nums.each do |num|
       offset_x = table_width*(num-1)
       offset_x_list << offset_x
-      #== テーブル描画（ヘッダー
+      #== テーブル描画（ヘッダー | Table drawing (header
       @pdf.move_cursor_to(v_pos)
       drow_table_header(columns:header,size:hcolumn_size,width:table_width,offset:[offset_x,0])
 
-      #== テーブル描画（ボディ
+      #== テーブル描画（ボディ | Table drawing (body
       bcolumn_size = hcolumn_size
       range = num%2==1 ? (TableRowNum*0..TableRowNum*1-1) : (TableRowNum*1..TableRowNum*2-1)
-      # 1回目... 0～34
-      # 2回目... 35～69
+      # 1回目... 0～34 | 1st time... 0-34
+      # 2回目... 35～69 | 2nd time...35～69
       t_data = table_data[range] || []
       range.zip(t_data).each.with_index do |data_with_no,index|
         drow_table_row(data_with_no,bcolumn_size,width:table_width,offset:[offset_x,0],font_color_settings:font_color_setting)
@@ -224,7 +224,7 @@ class Pdf::TimeSheetPdf < Pdf::ExpansionPdfCommon
     login_id_list.each do |login_id|
       temp_line = ["","",""]
       woker = rel_data[:wokers][login_id]
-      temp_line[0] = woker&.user.blank? ? woker[:s_name] : woker.user[:name] # userがいない場合の対応
+      temp_line[0] = woker&.user.blank? ? woker[:s_name] : woker.user[:name] # userがいない場合の対応 | What to do when there is no user
       v = rel_data[:vacations][login_id]
       cw = rel_data[:cargo_wokers][login_id]
       if v.present? && cw.blank?

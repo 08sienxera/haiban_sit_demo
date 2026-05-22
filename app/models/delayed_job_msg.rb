@@ -1,5 +1,5 @@
 # coding: utf-8
-#= JOBメッセージ
+#= JOBメッセージ JOB message
 class DelayedJobMsg < ApplicationRecord
   extend Common::Func
 end

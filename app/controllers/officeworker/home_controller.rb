@@ -3,14 +3,14 @@ class Officeworker::HomeController < ApplicationController
     before_action :login_ck, :except => [:error]
     before_action :ck_officeworker, :except => [:error]
 
-    #ホームトップ画面
+    #ホームトップ画面 Home top screen
     def menu
         @title = "トップ"
         @info = session
         @lunch_date = LunchOrder.get_today
         @menu_list = get_menu_list(get_uval(:id))
 
-        # 未読掲示の有無
+        # 未読掲示の有無 Whether or not there are unread messages
         unread_boad = BoardTarget.includes(:board).unread(get_uval(:id)).filter{|bt| 
             if bt.board.blank?
                 false
@@ -24,7 +24,7 @@ class Officeworker::HomeController < ApplicationController
 
     end
 
-    #エラー画面
+    #エラー画面 error screen
     def error
     end
     private

@@ -29,12 +29,12 @@ class Excel::VacationCalendarExcel < Excel::ExcelClass
         end
       end
       max_column_size << column.max
-      # 最下部に更新日時を追加
+      # 最下部に更新日時を追加 Add update date and time at the bottom
       worksheet.write(sheet_data[:sheet_data].length+1, 0, sheet_data[:time_stamp], @common_text)
       @worksheets << worksheet
     end
 
-    # フォーマット調整
+    # フォーマット調整 Format adjustment
     @worksheets.each.with_index do |ws,index|
       ws.set_column(0, 0, 14)
       ws.set_column(1, max_column_size[index], 6)

@@ -4,13 +4,13 @@ class WhCalendar  < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
   belongs_to :lunch_vendor
   
-  # 祝日API リクエストURL
+  # 祝日API リクエストURL | Holiday API request URL
   HolidaysApi = "https://holidays-jp.github.io/api/v1/%s/date.json"
   # 平日公休日フラグ
   WhList = {0=>"平日",1=>"法定休日"}
 
   #
-  #===指定期間中のカレンダーデータを取得
+  #===指定期間中のカレンダーデータを取得 | Get calendar data for specified period
   def self.find_by_term(sd,ed)
     ret = {}
     datalist = self.where(["t_date between ? and ? ",sd,ed])
@@ -33,7 +33,7 @@ class WhCalendar  < ApplicationRecord
     return ret
   end
   #
-  #===指定年の初期値カレンダーデータを作成
+  #===指定年の初期値カレンダーデータを作成 | Create initial value calendar data for the specified year
   def self.mk_def(yyyy,vendors,uid)
     ret = {}
     holidays = get_holidays(yyyy)
@@ -88,7 +88,7 @@ class WhCalendar  < ApplicationRecord
     return def_data
   end
   #
-  #=== HolidaysApiから指定年の祝祭日データを取得
+  #=== HolidaysApiから指定年の祝祭日データを取得 | Get holiday data of specified year from HolidaysApi
   def self.get_holidays(yyyy)
     require 'net/http'
     begin
@@ -100,7 +100,7 @@ class WhCalendar  < ApplicationRecord
     return {}
   end
   #
-  #===日曜・公休日＝赤、土曜日＝青となるstyleを返す
+  #===日曜・公休日＝赤、土曜日＝青となるstyleを返す | Returns a style where Sundays and public holidays = red, Saturdays = blue
   def hd_style
     return "col-cell0" if self[:wh_flg] == 1
     case self[:t_date].strftime("%w")
@@ -110,7 +110,7 @@ class WhCalendar  < ApplicationRecord
     end
   end
   #
-  #===日付文字列の生成
+  #===日付文字列の生成 | Generating a date string
   def str_date_html(io_flg=1)
     if io_flg==1
       return ApplicationController.helpers.date_field_tag("",
@@ -126,12 +126,12 @@ class WhCalendar  < ApplicationRecord
   # end
 
   #
-  #===公休／平日
+  #===公休／平日 | Public holidays/weekdays
   def str_wh_flg
     return (self[:wh_flg] == 1 ? "公休日" : "平日")
   end
 
-  #===対象月度の開始日、終了日を算出
+  #===対象月度の開始日、終了日を算出 | Calculate the start date and end date of the target month
   def self.resolve_term(target_year, target_month)
     base_month = target_month - MonthBoundaryRule
     base_month = 12 if base_month == 0

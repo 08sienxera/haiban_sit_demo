@@ -1,5 +1,7 @@
 #= 作業員毎作業一覧エクセル作成クラス
 #(Constants)->エクセルレイアウトの初期設定
+#= Work list Excel creation class for each worker 
+#(Constants)->Initial settings for Excel layout
 class  Excel::ManagerWowExcel < Excel::ExcelClass
   require File.expand_path('../../../lib/excel/excel_format_builder.rb', __dir__)
 
@@ -17,7 +19,7 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
     super(name)
   end
 
-  #=== エクセルを作成
+  #=== エクセルを作成 create excel
   def create()
     init_cell_format()
     set_data()
@@ -27,7 +29,7 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
   
   private
 
-  # セルの書式設定オブジェクト
+  # セルの書式設定オブジェクト cell formatting object
   def init_cell_format()
     def_style = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(10).align('center').vcenter()
     border = Excel::ExcelFormatBuilder.new(@workbook).font_g().size(10).align('center').vcenter().borders([1,1,1,1])
@@ -50,7 +52,7 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
 
   end
 
-  # セル結合対応のため、書式設定も本メソッド内で実施
+  # セル結合対応のため、書式設定も本メソッド内で実施 Formatting is also done within this method to support cell merging.
   def set_data()
     @format_data[:sheet_count].times do |index|
       start_pos = row_pos = 0
@@ -76,20 +78,20 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
   end
 
   def write_table_header(work_sheet,sheet_data,row_pos)
-    # ["１ｰ１", "１ｰ２", "２ｰ１", "２ｰ２", "全体（所定）", "全体（法定）"]
+    # ["１ｰ１", "１ｰ２", "２ｰ１", "２ｰ２", "全体（所定）", "全体（法定）"] # ["1-1", "1-2", "2-1", "2-2", "whole (prescribed)", "whole (statutory)"]
     td  = str_mmdd(@t_date)
     tdp = str_mmdd(@sum_length[:e])
 
     case sheet_data[:sheet_name]
     when "全体（所定）"
-      # 1行目
+      # 1行目 1st line
       work_sheet.write(row_pos, 0, sheet_data[:sheet_title], @big_20)
       work_sheet.merge_range(row_pos, 11, row_pos, 17, "累計見込時間外が", @big_14_r)
       work_sheet.merge_range(row_pos, 18, row_pos, 20, @threshold_hour.to_s, @big_18_bg_green)
       work_sheet.merge_range(row_pos, 21, row_pos, 22, "以上の者は", @big_14_l)
       work_sheet.merge_range(row_pos, 23, row_pos, 24, "赤字", @big_14_red)
       work_sheet.merge_range(row_pos, 25, row_pos, 27, "で表示", @big_14_l)
-      # 2行目
+      # 2行目 2nd line
       row_pos+=1
       %w[１課１係 １課２係 ２課１係 ２課２係].each.with_index do |head_str,index|
         col_pos = index*7
@@ -97,7 +99,7 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
         work_sheet.merge_range(row_pos, col_pos+1, row_pos, col_pos+3, "#{td}まで", @border_cell)
         work_sheet.merge_range(row_pos, col_pos+4, row_pos, col_pos+6, "公出", @border_cell)
       end
-      # 3行目
+      # 3行目 3rd line
       row_pos+=1
       4.times do |index|
         col_pos = index*7
@@ -110,16 +112,16 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
         work_sheet.write(row_pos, col_pos+6, "合\n計", @border_wrap_cell)
       end
     when "全体（法定）"
-      # 1行目
+      # 1行目 1st line
       work_sheet.write(row_pos, 0, sheet_data[:sheet_title], @big_20)
-      # 2行目
+      # 2行目 2nd line
       row_pos+=1
       %w[１課１係 １課２係 ２課１係 ２課２係].each.with_index do |head_str,index|
         col_pos = index*5
         work_sheet.write(row_pos, col_pos, head_str, @border_cell_12)
         work_sheet.merge_range(row_pos, col_pos+1, row_pos, col_pos+4, "#{td}まで", @border_cell)
       end
-      # 3行目
+      # 3行目 3rd line
       row_pos+=1
       4.times do |index|
         col_pos = index*5
@@ -131,12 +133,12 @@ class  Excel::ManagerWowExcel < Excel::ExcelClass
       end
 
     else
-      # 1行目
+      # 1行目 1st line
       work_sheet.merge_range(row_pos, 0, row_pos, 1, sheet_data[:sheet_title], @border_cell_12)
       work_sheet.merge_range(row_pos, 2, row_pos, 4, tdp+"まで", @border_wrap_cell)
       work_sheet.merge_range(row_pos, 5, row_pos, 6, td+"の予定", @border_wrap_cell)
       work_sheet.merge_range(row_pos, 7, row_pos, 9, "公出", @border_wrap_cell)
-      # 2行目
+      # 2行目 2nd line
       row_pos+=1
       work_sheet.write(row_pos, 0, "氏名", @border_wrap_cell)
       work_sheet.write(row_pos, 1, "#{td}分の勤怠", @border_wrap_cell)

@@ -6,20 +6,20 @@ class Vacation < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
 
 
-  # 状態リスト
+  # 状態リスト Generate list screen form
   Sts = [["未承認","0"],["承認済","1"],["差戻","2"]]
-  # 連続勤務アラート日数
+  # 連続勤務アラート日数 Continuous work alert days
   OverWorkLimit = 13
-  # 公休取得不可日リスト
+  # 公休取得不可日リスト List of days when public holidays cannot be taken
   BaseNo6NgList = ["08-13","08-16","12-29","01-04"]
-  # 遅出　出勤希望時刻　leav_timeに登録
+  # 遅出　出勤希望時刻　leav_timeに登録 List of days when public holidays cannot be taken
   ReachTimeList = ["","07:30","08:00"]
-  # 早退　退勤希望時刻　leav_timeに登録
+  # 早退　退勤希望時刻　leav_timeに登録 Late arrival Preferred work time Register in leav_time
   LeavTimeList = ["","16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
 
   FullNameList = [["午前看護","31"],["午後看護","32"],["午前介護","33"],["午後介護","34"],["午前年休","41"],["午後年休","42"]]
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generation of input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     form.setparams("vacation_day",{"title"=>self.human_attribute_name(:vacation_day),"type"=>"textD",'size'=>"11","maxlength"=>"10","inputFlg"=>1,"essFlg"=>1,"align"=>"L"})
@@ -40,7 +40,7 @@ class Vacation < ApplicationRecord
   end
 
   #
-  #===一覧画面フォームの生成
+  #===一覧画面フォームの生成 Generate list screen form
   def self.set_list_form(key)
     form = Common::CommonClass.new(key)
     vacation_list = VacationType.getdatalist({:key=>:base_no,:text=>:time_sheet_name,:order=>:base_no})
@@ -61,7 +61,7 @@ class Vacation < ApplicationRecord
     return form
   end
   #
-  #===休暇カレンダーデータ取得
+  #===休暇カレンダーデータ取得 Vacation calendar data acquisition
   def self.load_calendar(s_date,e_date,branche_cd=nil,my_id=nil,t_date:nil)
     load_s_date = s_date-OverWorkLimit-1
     menbers = Woker.get_menber_list(t_date||s_date,branche_cd,my_id)
@@ -92,7 +92,7 @@ class Vacation < ApplicationRecord
   end
   
   #
-  #===公休日データ作成
+  #===公休日データ作成 Public holiday data creation
   def self.create_vacation(indata)
     vacation = self.unscoped.find_by(:vacation_day=>indata[:vacation_day],:user_id=>indata[:user_id]) || self.new(indata)
     if vacation[:deleted_at].present?
@@ -108,9 +108,9 @@ class Vacation < ApplicationRecord
 
   def auto_fill()
     case self.base_no
-    when 31,33,41 # AM leav_time追加
+    when 31,33,41 # AM leav_time追加 AM leav_time added
       self.arriv_time = '13:00' if self.arriv_time.blank?
-    when 32,34,42 # PM leav_time追加
+    when 32,34,42 # PM leav_time追加 PM leav_time added
       self.leav_time = '12:00' if self.leav_time.blank?
     end
   end
@@ -128,8 +128,8 @@ class Vacation < ApplicationRecord
     return ret
   end
 
-  # base_no== 7(振休)  ⇒元休暇の復活 and self.vacation_idをnil更新
-  # base_no==17(代休)  ⇒元休暇のstsを5->4に戻す and self.vacation_idをnil更新
+  # base_no== 7(振休)  ⇒元休暇の復活 and self.vacation_idをnil更新 | base_no== 7(Shinkyu) ⇒Restoring the original vacation and updating self.vacation_id to nil
+  # base_no==17(代休)  ⇒元休暇のstsを5->4に戻す and self.vacation_idをnil更新 | base_no==17 (compensatory day off) ⇒ Return sts of original vacation to 5->4 and update self.vacation_id to nil
   def restore_origin_vacation()
     result = nil
     return result if self.vacation_id.blank?
@@ -166,7 +166,7 @@ class Vacation < ApplicationRecord
 
   end
 
-  # 不要項目の削除（base_noに依存
+  # 不要項目の削除（base_noに依存) | Delete unnecessary items (depends on base_no)
   def clear_unused_fields(do_update=false)
     clear_fields = {}
     common_fields = [
@@ -195,7 +195,7 @@ class Vacation < ApplicationRecord
 
 
   #
-  #===公休日初期設定
+  #===公休日初期設定 | Public holiday initial settings
   def self.set_init6(queue,t_year,t_month,uid)
     job = DelayedJob.find_by_queue(queue)
     msg = DelayedJobMsg.find_by_delayed_job_id(job[:id])
@@ -252,7 +252,7 @@ class Vacation < ApplicationRecord
   #
 
 
-  #===不足公休日の自動割当_改修用
+  #===不足公休日の自動割当_改修用 | Automatic allocation of missing public holidays_for modification
   def self.set_add6(queue,t_year,t_month,uid,branche_cd=nil)
     job = DelayedJob.find_by_queue(queue)
     msg = DelayedJobMsg.find_by_delayed_job_id(job[:id])
@@ -280,31 +280,31 @@ class Vacation < ApplicationRecord
     end
 
 
-    holidaies = whcs.map{|w|w[:t_date]} # 法定休日リスト
+    holidaies = whcs.map{|w|w[:t_date]} # 法定休日リスト | Legal holiday list
     msg[:msg] = "不足公休日の自動割り当て開始\n法定休日をロード\n" ; msg.save!
-    w_branches = menbers.group_by{|row| row["branch_cd"]}.transform_values{|rows| rows.map{|row| row["login_id"]}} # グループ別ログインIDリスト
+    w_branches = menbers.group_by{|row| row["branch_cd"]}.transform_values{|rows| rows.map{|row| row["login_id"]}} # グループ別ログインIDリスト | Login ID list by group
       
-    #乱数初期化
+    #乱数初期化 | Random number initialization
     random = Random.new()
-    #作業変数の初期化
+    #作業変数の初期化 | Initializing work variables
     base_no = 6
     vtype = VacationType.select(:id).find_by_base_no(base_no)
     vacation_type_id = vtype[:id]
-    login_ids = []   #作業員のlogin_id
-    c_can_day = []   #連休の候補日
-    i_can_day = []   #連休の以外の候補日
-    wokers_hd={}     #作業員毎の全休日
-    wokers_ad={}     #作業員毎の追加公休日
-    date_hwokers={}  #日付毎の休暇作業員
+    login_ids = []   #作業員のlogin_id | Worker login_id
+    c_can_day = []   #連休の候補日 | Candidate days for consecutive holidays
+    i_can_day = []   #連休の以外の候補日 | Candidate days other than consecutive holidays
+    wokers_hd={}     #作業員毎の全休日 | Total holidays for each worker
+    wokers_ad={}     #作業員毎の追加公休日 | Additional public holidays for each worker
+    date_hwokers={}  #日付毎の休暇作業員 | Vacation workers by date
     menbers.each{|m|
       login_ids << m["login_id"]
       wokers_hd[m["login_id"]]={}
       wokers_ad[m["login_id"]]=[]
     }
 
-    #休暇取得日重み計算用
+    #休暇取得日重み計算用 | For calculating vacation days weight
     week_weight = self.init_week_weight(whs[:s_date],whs[:e_date],whs[:h_setting_min])
-    # 月度の前後が公休日の場合を考慮
+    # 月度の前後が公休日の場合を考慮 | Consider cases where there is a public holiday before or after the month.
     tmp_holidaies = holidaies
     WhCalendar.where(:t_date=>[whs[:s_date]-1,whs[:e_date]+1],:wh_flg=>1).each {|wh|
       tmp_holidaies << wh[:t_date]
@@ -326,17 +326,17 @@ class Vacation < ApplicationRecord
     vacations = self.where(:vacation_day=>[whs[:s_date]..whs[:e_date]],:login_id=>login_ids)
     vacations.each{|v|
       wokers_hd[v[:login_id]][v[:vacation_day]] = v[:base_no]
-      wokers_ad[v[:login_id]] << v[:vacation_day] if v[:base_no] == 6 && !holidaies.include?(v[:vacation_day])  #base_no6ではなく、法定休リストに含まれない
+      wokers_ad[v[:login_id]] << v[:vacation_day] if v[:base_no] == 6 && !holidaies.include?(v[:vacation_day])  #base_no6ではなく、法定休リストに含まれない | Not base_no6 and not included in the statutory holiday list
       date_hwokers[v[:vacation_day]][v[:login_id]] = v[:base_no]
     } unless vacations.blank?
 
     menbers.each{|m|
-      # 重み付け初期化
+      # 重み付け初期化 | weight initialization
       d_week_weight =  Marshal.load(Marshal.dump(week_weight))
       vac_days = wokers_ad[m["login_id"]]
       vac_days = [vac_days] if vac_days.is_a?(Date)
       vac_days.each {|day| find_and_increment_taken_vacation_count(day,week_weight)}
-      #下限に満たない場合
+      #下限に満たない場合 | If it does not meet the lower limit
       if wokers_ad[m["login_id"]].size < whs[:h_setting_min]
         msg[:msg] += "#{m["name"]}(#{m["login_id"]})の割り当て開始\n" ; msg.save!
         def_vacation = {
@@ -351,17 +351,17 @@ class Vacation < ApplicationRecord
           :updated_uid => uid,
         }
         hcontinuous = 0
-        wk_c_can_day = Marshal.load(Marshal.dump(c_can_day)) #連休候補
-        wk_i_can_day = Marshal.load(Marshal.dump(i_can_day)) #バラ候補
-        wokers_hd[m["login_id"]].each{|wk_date,base_no|  #候補日から除外
+        wk_c_can_day = Marshal.load(Marshal.dump(c_can_day)) #連休候補 | Candidates for consecutive holidays
+        wk_i_can_day = Marshal.load(Marshal.dump(i_can_day)) #バラ候補 | Candidates for non-consecutive holidays
+        wokers_hd[m["login_id"]].each{|wk_date,base_no|  #候補日から除外 | Exclude candidate days
           if wk_c_can_day.include?(wk_date)
             wk_c_can_day.delete(wk_date)
             hcontinuous += 1 if base_no==6 
-            #連休にならないように前後を候補から削除
+            #連休にならないように前後を候補から削除 | Delete the preceding and subsequent days so that they do not become consecutive holidays
             wk_i_can_day.delete(wk_date-1)
             wk_i_can_day.delete(wk_date+1)
 
-            #法定休を挟んで休暇を取得しないように候補から削除
+            #法定休を挟んで休暇を取得しないように候補から削除 | Do not get vacations that do not include statutory holidays
             tmp_d = wk_date - 1
             while holidaies.include?(tmp_d) && whs[:s_date] <= tmp_d do
               tmp_d -= 1
@@ -386,7 +386,7 @@ class Vacation < ApplicationRecord
           end
         }unless wokers_hd[m["login_id"]].blank?
 
-        #公休設定不可の日付を候補日から除外
+        #公休設定不可の日付を候補日から除外 | Exclude days where public holidays are not set
         (t_month == 1 ? [t_year-1,t_year] : [t_year]).each{|yyyy|
           BaseNo6NgList.each{|mmdd|
             wk_date = Date.parse("#{yyyy}-#{mmdd}")
@@ -396,7 +396,7 @@ class Vacation < ApplicationRecord
         }
 
 
-        #連休設定（上限２）
+        #連休設定（上限２） | Consecutive holidays (upper limit 2)
         (2 - hcontinuous).times{|wi|
           if wk_c_can_day.present?
             if wk_c_can_day.size < 3
@@ -416,13 +416,13 @@ class Vacation < ApplicationRecord
 
             self.create_vacation(def_vacation.merge({:vacation_day=>vacation_day}))
             wk_c_can_day.delete(vacation_day)
-            # 月曜日と土曜日の連休は各1回　候補から削除する
+            # 月曜日と土曜日の連休は各1回　候補から削除する | Delete candidates for consecutive holidays on Mondays and Fridays
             [wk_c_can_day,wk_i_can_day].each do |can_day|
               can_day.filter!{|wk_date| wk_date.wday()!=vacation_day.wday()}
             end if [1,6].include?(vacation_day.wday)
 
 
-            #連休にならないように前後を候補から削除
+            #連休にならないように前後を候補から削除 | Delete the preceding and subsequent days so that they do not become consecutive holidays
             wk_i_can_day.delete(vacation_day-1)
             wk_i_can_day.delete(vacation_day+1)
             tmp_d = vacation_day - 1
@@ -443,11 +443,11 @@ class Vacation < ApplicationRecord
           end
         }
 
-        #他公休日設定
+        #他公休日設定 | Other public holidays
         (whs[:h_setting_min] - wokers_ad[m["login_id"]].size).times{|wi|
           if wk_i_can_day.present?
             if wk_i_can_day.size < 3
-              vacation_day =  wk_i_can_day[random.rand(wk_i_can_day.size)] # << ここでランダムにバラ休候補から日付を指定している
+              vacation_day =  wk_i_can_day[random.rand(wk_i_can_day.size)] # << ここでランダムにバラ休候補から日付を指定している | Specify a date at random from the holiday candidate
             else
 
               r_candidacy = wk_i_can_day.shuffle.map{|wk_date|
@@ -463,7 +463,7 @@ class Vacation < ApplicationRecord
             end
 
             self.create_vacation(def_vacation.merge({:vacation_day=>vacation_day}))
-            #連休にならないように前後を候補から削除
+            #連休にならないように前後を候補から削除 | Delete the preceding and subsequent days so that they do not become consecutive holidays
             wk_i_can_day.delete(vacation_day-1)
             wk_i_can_day.delete(vacation_day)
             wk_i_can_day.delete(vacation_day+1)
@@ -477,7 +477,7 @@ class Vacation < ApplicationRecord
       end
 
       d_week_weight = nil
-    }  #menbersのループ
+    }  #menbersのループ | menbers loop
     msg[:msg] += "不足公休日の自動割り当てが完了しました。\n" ; msg.save!
   end
 
@@ -507,24 +507,24 @@ class Vacation < ApplicationRecord
 
   end
 
-  # 休暇取得日候補　優先度計算
+  # 休暇取得日候補　優先度計算 | Vacation acquisition day candidate priority calculation
   def self.calc_priority_score(t_date,member,wokers_ad,date_hwokers,w_branches)
 
-    # A: 全体の休暇者数
+    # A: 全体の休暇者数 | All day count
     all_day_count = date_hwokers[t_date].size
   
-    # B: グループ内の休暇者数
+    # B: グループ内の休暇者数 | Group day count
     lid = member["login_id"]
     b = member["branch_cd"]
     branch_members = w_branches[b]
     group_day_count = date_hwokers[t_date].filter{|l,_| branch_members.include?(l)}.size
     
-    # C: 自分の週の休暇数
+    # C: 自分の週の休暇数 | Self week count
     iso_week = t_date.cweek
     self_week_count = wokers_ad[lid].filter{|d| d.cweek==iso_week}.size
 
     
-    # スコア計算（小さい方が優先）
+    # スコア計算（小さい方が優先） | Score calculation (the smaller the priority)
     score = 1.0 * all_day_count + 2.5 * group_day_count + 10.0 * self_week_count
     wdayw = weekday_weight(t_date.wday)
     return score*wdayw
@@ -542,7 +542,7 @@ class Vacation < ApplicationRecord
   end
 
   def self.set_vacation_priority_weight(week_weight_value)
-    # --- 係数(重み付けの調整) ---
+    # --- 係数(重み付けの調整) --- | Coefficient (adjustment of weight)
     vacation_multiplier = 1
     days_multiplier     = 1
     days, week_days_count, taken_vacation_count, max_vacation_limit \
@@ -574,12 +574,12 @@ class Vacation < ApplicationRecord
 
 
   #
-  #===休暇承認済みか返す
+  #===休暇承認済みか返す | Return whether the vacation has been approved
   def is_authorize?
     return (self[:sts] == 1)
   end
   #
-  #===カレンダー表示文言
+  #===カレンダー表示文言 | Calendar display text
   def str_col_vacation_type(type_list=nil?)
     if type_list.present?
       str_vacation_type = type_list["#{self[:vacation_type_id]}"]
@@ -589,38 +589,38 @@ class Vacation < ApplicationRecord
     case self[:base_no]
     when 2,3
       ret = str_vacation_type.slice(0,2)
-    when 14,16,19,20   #14=公傷、16=結婚、19=出停、20=通災
+    when 14,16,19,20   #14=公傷、16=結婚、19=出停、20=通災 | 14=Public injury, 16=Wedding, 19=Accident, 20=Disaster
       ret = str_vacation_type.slice(-1,1)
-    when 9,21 #「特」はじまり判別のため
+    when 9,21 #「特」はじまり判別のため | The beginning of "special" is determined
       ret = str_vacation_type.slice(0,2)
     when 31,32,33,34,41,42
       ret = str_vacation_type.slice(0,2)
     else
       ret = str_vacation_type.slice(0,1)
     end
-    if self[:base_no] == 6  #公休
+    if self[:base_no] == 6  #公休 | Public holiday
       ret << Vacation.list_to_str(KAFUKA_MARK,"#{self[:at_work]}")
     end
     return ret
   end
   #
-  #===ステータス文字列
+  #===ステータス文字列 | Status string
   def str_sts
     return Vacation.list_to_str(Sts,"#{self[:sts]}")
   end
 
-  #===休日出勤?
+  #===休日出勤? | Holiday work?
   def holiday_work?()
     return self.base_no == 6 && (self.sts == 4 || self.sts == 5)    
   end
-  #===代休取得済?
+  #===代休取得済? | Compensatory day off acquired?
   def holiday_work_with_subvacation?()
     return self.base_no == 6 && self.sts == 5    
   end
   
 
   # 
-  #===当日の出勤有無 
+  #===当日の出勤有無 | Attendance on the day
   def works_on?()
     base_no = self[:base_no]
     return false if base_no.blank?
@@ -628,7 +628,7 @@ class Vacation < ApplicationRecord
 
   end
   #
-  #===配番用休暇申請リスト
+  #===配番用休暇申請リスト | Vacation list for numbering
   def self.get_assignment_list(t_date)
     ret = {}
     vacations = self.where({:vacation_day=>t_date})
@@ -643,10 +643,10 @@ class Vacation < ApplicationRecord
   end
 
 
-  #===必要人数表、配番人数表の休暇集計表用データ
+  #===必要人数表、配番人数表の休暇集計表用データ | Vacation data for the required personnel table and the assignment personnel table
   def self.get_wokers_vacation_totalling_list(t_date)
     vac_table_data = {}
-    temp_vacation_list = [0,0,0,0,0,0] # 在籍,公休,明休,年休,出勤,公出
+    temp_vacation_list = [0,0,0,0,0,0] # 在籍,公休,明休,年休,出勤,公出 | Presence, public holiday, unpaid leave, annual leave, work, public work
     branches =  Branche.cargo_work_group.map{ |branch| [branch.cd, branch] }.to_h
     branches.each do |b_cd,branch|
       template = {}
@@ -658,10 +658,10 @@ class Vacation < ApplicationRecord
     all_wokers.each do |woker|
       woker_type = woker.get_woker_type()
       if vac_table_data[woker[:branch_cd]] && woker_type.present?
-        vac_table_data[woker[:branch_cd]][:datas][woker_type][0] +=1 #在籍に＋１
+        vac_table_data[woker[:branch_cd]][:datas][woker_type][0] +=1 #在籍に＋１ | +1 to presence
         vac_state = Vacation.get_vac_stat(t_date_vacations[woker[:login_id]])
         vac_table_data[woker[:branch_cd]][:datas][woker_type][vac_state] +=1 if vac_state
-        vac_table_data[woker[:branch_cd]][:datas][woker_type][1] +=1 if vac_state==5 # UAT-221 「公出」の場合、「公休」もカウントアップ
+        vac_table_data[woker[:branch_cd]][:datas][woker_type][1] +=1 if vac_state==5 # UAT-221 「公出」の場合、「公休」もカウントアップ | If "public work", also count up "public holiday"
       end
     end
     return vac_table_data
@@ -670,25 +670,25 @@ class Vacation < ApplicationRecord
 
 
 #
-  #===テスト用休暇日登録
+  #===テスト用休暇日登録  | Vacation registration for test
   def self.mk_test_vacation(tdates,is_authorized = true)
     ret = {}
-    #乱数初期化
+    #乱数初期化 | Random initialization
     random = Random.new()
-    #期間
+    #期間 | Period
     term =[tdates[:length][:begin_date]..tdates[:length][:end_date]]
-    #従業員No->ユーザIDのリスト
+    #従業員No->ユーザIDのリスト | Employee No.->List of user IDs
     userid_list = User.getdatalist({:key=>:login_id,:text=>:id,:type=>'hash'})
-    #休暇種別No→IDのリスト
+    #休暇種別No→IDのリスト | Vacation type No.->ID list
     vtype_list = VacationType.getdatalist({:key=>:base_no,:text=>:id,:type=>'hash'})
-    #休暇種別ランダム用
+    #休暇種別ランダム用 | Vacation type random
     base_nos = vtype_list.keys
     base_nos.delete("1")
     base_nos.delete("2")
     
-    #登録済み休暇申請をロード
-    vacation_data={}    #日付毎の休暇申請
-    woker_vacation={}   #ユーザ毎の休暇申請件数
+    #登録済み休暇申請をロード | Load registered vacation applications
+    vacation_data={}    #日付毎の休暇申請 | Vacation applications by date
+    woker_vacation={}   #ユーザ毎の休暇申請件数 | Number of vacation applications by user
     vacations = self.where({:vacation_day=>term})
     vacations.each{|vacation|
       vacation_data[vacation[:vacation_day]] ||= {}
@@ -700,22 +700,22 @@ class Vacation < ApplicationRecord
         woker_vacation[vacation[:login_id]][:hd]+=1
       end
     }unless vacations.blank?
-    #休暇日をロード
+    #休暇日をロード | Load holidays
     holidaies = WhCalendar.where(:wh_flg=>1,:t_date=>term).map{|wh| wh[:t_date]}
-    #グループ毎に
-    #おおよそ１G50名
-    #公休日は100名ほど必要＝25名/1G出勤要請(3回まで
-    #平日は200名ほど必要＝10名/1G休暇、1名早退とする（5回まで
+    #グループ毎に | By group
+    #おおよそ１G50名 | About 1G 50 people
+    #公休日は100名ほど必要＝25名/1G出勤要請(3回まで | Approximately 100 people are required on public holidays = 25 people/1G work request (up to 3 times)
+    #平日は200名ほど必要＝10名/1G休暇、1名早退とする（5回まで | About 200 people are required on weekdays = 10 people/1G vacation, 1 person to leave early (up to 5 times)
     Branche::WorkerBranchCd.each{|branch_cd|
       wokers = Woker.select(:login_id).where(:applicable=>Applicable.get_applicable(2,tdates[:length][:begin_date]),:branch_cd=>branch_cd).map{|woker|woker[:login_id]}
-      #公休日出勤依頼を設定
+      #公休日出勤依頼を設定 | Set public holiday work requests
       holidaies.each{|holiday|
         l_wokers = Marshal.load(Marshal.dump(wokers))
-        #該当日に休暇申請を行っている作業員を候補者から除外
+        #該当日に休暇申請を行っている作業員を候補者から除外 | Exclude workers who have applied for vacations on the day
         vacation_data[holiday].each{|login_id,vd|
           l_wokers.delete(login_id) if vd[:base_no]==1
         } if vacation_data.has_key?(holiday)
-        #10名を休日出勤させるまで繰り返す
+        #10名を休日出勤させるまで繰り返す | Repeat until 10 people
         while wokers.size - l_wokers.size < 25 do
           t_woker =  l_wokers[random.rand(l_wokers.size)]
           is_create = false
@@ -750,18 +750,18 @@ class Vacation < ApplicationRecord
           end
         end
       }unless holidaies.blank?
-      #休暇申請を実行
+      #休暇申請を実行 | Execute vacation applications
       wk_date=tdates[:length][:begin_date]
       while wk_date<=tdates[:length][:end_date] do
         unless holidaies.include?(wk_date)
           l_wokers = Marshal.load(Marshal.dump(wokers))
           has_early = false
-          #該当日に休暇申請を行っている作業員を候補者から除外
+          #該当日に休暇申請を行っている作業員を候補者から除外 | Exclude workers who have applied for leave on the relevant day from candidates.
           vacation_data[wk_date].each{|login_id,vd|
             l_wokers.delete(login_id)
             has_early = true if vd[:base_no]==2
           } if vacation_data.has_key?(wk_date)
-          #5名を休暇申請させるまで繰り返す
+          #5名を休暇申請させるまで繰り返す | Repeat until 5 people have requested leave.
           while wokers.size - l_wokers.size < 5 do
             t_woker =  l_wokers[random.rand(l_wokers.size)]
             is_create = false
@@ -800,7 +800,7 @@ class Vacation < ApplicationRecord
               woker_vacation[t_woker][:hd] += 1
             end
           end
-          #1名を早退にしたりしなかったり
+          #1名を早退にしたりしなかったり | Whether or not one person leaves early
           if has_early==false && random.rand(3) == 1
             t_woker =  l_wokers[random.rand(l_wokers.size)]
             leav_time = 14 - random.rand(3)
@@ -831,17 +831,17 @@ class Vacation < ApplicationRecord
     return ret
   end
 
-  #== 振休、代休取得可否チェック
+  #==振休、代休取得可否チェック | Check whether you can take paid leave or compensatory time off.
   # 
   def can_take_vacation(to_date,base_no,is_manager=false,over_write=false)
-    # エラーコード一覧（HTTPライクなコードに変更）
-    # code: 400, msg: "「振休」または「代休」以外が選択されています。"  # 7,17以外のbase_noが選択された場合
-    # code: 422, msg: "休暇取得日は本日以降を指定してください。"           # 取得日が未来日でない場合（管理者以外）
-    # code: 409, msg: "指定の休暇取得日(#{to_date.strftime("%m/%d")})には既に『#{vt[:time_sheet_name]}』が登録されています。" # 取得日に既に休暇が登録されている場合
-    # code: 403, msg: "公休のみ#{vt[:time_sheet_name]}の取得が可能です。" # 公休以外から振休・代休を取得しようとした場合
-    # code: 422, msg: "指定の#{sub_vac_col_name[base_no]}は法定休日です。" # 振休元日が法定休日の場合
-    # is_manager => trueの場合、チェック条件が緩和
-    # over_write => trueの場合、取得日に休暇が登録されている場合もチェックをスキップ
+    # エラーコード一覧（HTTPライクなコードに変更）| Error code list (changed to HTTP-like code)
+    # code: 400, msg: "「振休」または「代休」以外が選択されています。"  # 7,17以外のbase_noが選択された場合 | code: 400, msg: "An option other than 'Senkyu' or 'Compensatory time off' has been selected. " # If base_no other than 7,17 is selected
+    # code: 422, msg: "休暇取得日は本日以降を指定してください。"           # 取得日が未来日でない場合（管理者以外） | code: 422, msg: "Please specify a date after today for the vacation date." # If the vacation date is not in the future (other than administrators)
+    # code: 409, msg: "指定の休暇取得日(#{to_date.strftime("%m/%d")})には既に『#{vt[:time_sheet_name]}』が登録されています。" # 取得日に既に休暇が登録されている場合 | code: 409, msg: "#{vt[:time_sheet_name]}" is already registered on the specified vacation acquisition date (#{to_date.strftime("%m/%d")})." # If vacation is already registered on the acquisition date
+    # code: 403, msg: "公休のみ#{vt[:time_sheet_name]}の取得が可能です。" # 公休以外から振休・代休を取得しようとした場合 | code: 403, msg: "#{vt[:time_sheet_name]} can only be taken during public holidays." # If you try to take paid leave/compensatory leave from a period other than public holidays
+    # code: 422, msg: "指定の#{sub_vac_col_name[base_no]}は法定休日です。" # 振休元日が法定休日の場合 | code: 422, msg: "The specified #{sub_vac_col_name[base_no]} is a legal holiday." # If Shinkyu New Year's Day is a legal holiday
+    # is_manager => trueの場合、チェック条件が緩和 | If is_manager => true, check conditions are relaxed
+    # over_write => trueの場合、取得日に休暇が登録されている場合もチェックをスキップ | over_write => If true, skip check even if vacation is registered on the acquisition date
     
     ret = {:result=>200, :msg=>""}
 
@@ -850,12 +850,12 @@ class Vacation < ApplicationRecord
     sub_vac_col_name = {7=>"振替元日",17=>"休日出勤日"}
     t_user = User.find(self[:user_id])
 
-    # 取得日が未来日であること　---(1)
+    # 取得日が未来日であること　---(1) | The acquisition date must be in the future (1)
     if !is_manager && to_date < Date.today()
       ret = {result: 422, msg:"休暇取得日は本日以降を指定してください。"}; return ret
     end
 
-    # 取得日に休暇が登録されていないこと
+    # 取得日に休暇が登録されていないこと | Vacation is not registered on the acquisition date
     unless over_write
       t_date_vacation = Vacation.find_by(:user_id=>t_user[:id],:vacation_day=>to_date)
       if t_date_vacation.present?
@@ -870,18 +870,18 @@ class Vacation < ApplicationRecord
     end
 
     case base_no.to_i
-    when 7 # 振休
-      # 「振休」の設定のルール
+    when 7 # 振休 | Shinkyu
+      # 「振休」の設定のルール | Rules for setting “Shinkyu”
       wh = WhCalendar.find_by(:t_date=>self[:vacation_day])
       if wh[:wh_flg]==1
         ret = {result: 422, msg:"指定の#{sub_vac_col_name[base_no]}は法定休日です。"}; return ret
       end
 
       
-      # 連動は連動、バラはバラ
+      # 連動は連動、バラはバラ | Interlocking is interlocking, rose is rose
       adjacent_vacations = [1,-1].map{|offset| Vacation.find_by(:user_id=>t_user[:id],:vacation_day=>(self[:vacation_day]+offset),:base_no=>6)}
-      # バラ------
-      # バラはバラにのみ⇒前後に法定休および指定休がないこと
+      # バラ------ | Rose------
+      # バラはバラにのみ⇒前後に法定休および指定休がないこと | A rose is only a rose ⇒ There are no statutory holidays or designated holidays before or after
       if adjacent_vacations.all?(&:nil?)
         adjacent_to_vacations = [1,-1].map{|offset| 
           found_vac = Vacation.find_by(:user_id=>t_user[:id],:vacation_day=>(to_date+offset),:base_no=>6)
@@ -893,16 +893,16 @@ class Vacation < ApplicationRecord
         }
         unless adjacent_to_vacations.all?(&:nil?)
           wday = self[:vacation_day].wday
-          # ret = {result: false, msg:"法定休前後日の#{to_date.strftime("%m/%d(#{I18n.t("date.abbr_day_names")[to_date.wday]})")}に#{self[:vacation_day].strftime("%m/%d(#{I18n.t("date.abbr_day_names")[wday]})")}の振休は登録できません。"}; return ret
+          # ret = {result: false, msg:"法定休前後日の#{to_date.strftime("%m/%d(#{I18n.t("date.abbr_day_names")[to_date.wday]})")}に#{self[:vacation_day].strftime("%m/%d(#{I18n.t("date.abbr_day_names")[wday]})")}の振休は登録できません。"}; return ret ret = {result: false, msg:"#{to_date.strftime("%m/%d(#{I18n.t("date.abbr_day_names")[to_date.wday]})")} on the days before and after legal holidays. elf[:vacation_day].strftime("%m/%d(#{I18n.t("date.abbr_day_names")[wday]})")} cannot be registered. "}; return ret
           # 
-          # ret = {result: false, msg:"法定休日と連続しない#{sub_vac_col_name[base_no]}を指定しています。\n取得対象日は法定休日と連続しない日を指定してください。"}; return ret
+          # ret = {result: false, msg:"法定休日と連続しない#{sub_vac_col_name[base_no]}を指定しています。\n取得対象日は法定休日と連続しない日を指定してください。"}; return ret | ret = {result: false, msg:"You have specified #{sub_vac_col_name[base_no]} that is not consecutive to a legal holiday.\nPlease specify a day that is not consecutive to a legal holiday for the acquisition target date."}; return ret
 
         end
       end
 
 
-      # 連動------
-      # 前後の法定休取得
+      # 連動------ | Interlocking------
+      # 前後の法定休取得 | Legal leave taken before and after
       adjacent_legal_vacations = adjacent_vacations.map do |vacation|
         next nil if vacation.blank?
         wh = WhCalendar.find_by(:t_date=>vacation[:vacation_day], :wh_flg=>1)
@@ -913,9 +913,9 @@ class Vacation < ApplicationRecord
         end
       end
 
-      # 元休暇が連動指定休の場合
+      # 元休暇が連動指定休の場合 | If the original vacation is a linked designated vacation
       if adjacent_legal_vacations.any?(&:present?)
-        # 振替先の前後に法定休があるか調べる
+        # 振替先の前後に法定休があるか調べる | Check whether there are any statutory holidays before or after the transfer destination.
         to_date_adjacent_legal_vacations = [1,-1].map do |offset|
           v = Vacation.find_by(:user_id=>t_user[:id],:vacation_day=>(to_date+offset),:base_no=>6)
           next nil if v.blank?
@@ -924,20 +924,23 @@ class Vacation < ApplicationRecord
           next v
         end
 
-        # ↓ない場合、エラー
+        # ↓ない場合、エラー | ↓If not, error
         if to_date_adjacent_legal_vacations.all?(&:nil?)
           wday = self[:vacation_day].wday()
           # msg = "火曜日～金曜日に"
           # msg += "法定休前後日の#{self[:vacation_day].strftime("%m/%d(#{I18n.t("date.abbr_day_names")[wday]})")}の振休は登録できません。"
+          # ret = {result: false, msg:msg}; return ret
+          # msg = "Tuesday-Friday" 
+          # msg += "You cannot register #{self[:vacation_day].strftime("%m/%d(#{I18n.t("date.abbr_day_names")[wday]})")} holidays on the days before and after legal holidays." 
           # ret = {result: false, msg:msg}; return ret
         end
 
         
         to_date_adjacent_legal_vacations.each.with_index do |vac,index|
           step = [1,-1][index]
-          next if vac.blank? # 公休登録なし⇒nil
+          next if vac.blank? # 公休登録なし⇒nil | No public holiday registration ⇒ nil
   
-          # 公休登録かつ法定休日の場合↓
+          # 公休登録かつ法定休日の場合↓ | If registered as a public holiday and is a legal holiday↓
           next_wk_day = nil; wk_day = vac[:vacation_day] + step
           while next_wk_day.blank? do
             wh = WhCalendar.find_by(:t_date=>wk_day,:wh_flg=>0)
@@ -956,11 +959,11 @@ class Vacation < ApplicationRecord
         
       end
       return ret
-    when 17 # 代休
-      unless self.holiday_work? # 休日出勤であるか？
+    when 17 # 代休 | Compensatory leave
+      unless self.holiday_work? # 休日出勤であるか？ | Are you working on holidays?
         ret = {result: 422, msg:"指定の#{sub_vac_col_name[base_no]}に休日出勤の登録がありません。"}; return ret
       end
-      if self.holiday_work_with_subvacation? # 代休未取得であるか？
+      if self.holiday_work_with_subvacation? # 代休未取得であるか？ | Have you not taken compensatory leave?
         sub_vac = Vacation.find_by(:user_id=>self.user_id,:vacation_id=>self.id)
         if sub_vac.present?
           ret = {result: 409, msg:"指定の休日出勤(#{self.vacation_day.strftime("%m/%d")})は#{sub_vac.vacation_day.strftime("%m/%d")}に代休取得済です。"}; return ret
@@ -980,6 +983,8 @@ class Vacation < ApplicationRecord
   def self.get_hol_work_vacation(user_id,include_with_subvacation=false)
     # 3か月以上前の休日出勤は振替不可とした（2024-12-6 大澤)
     # include_with_subvacation=>trueで代休取得済の休日出勤を含む
+    # Work on holidays that occurred more than 3 months ago cannot be transferred (2024-12-6 Osawa) 
+    # include_with_subvacation=>true to include work on holidays for which compensatory leave has been taken
     t_sts = include_with_subvacation ? [4,5] : [4]
     limit = Date.today.ago(3.month)
     ret_vacation = Vacation.where(:user_id=>user_id,:base_no=>6,:sts=>t_sts).where("vacation_day >= ?",limit).order(:vacation_day)
@@ -997,12 +1002,12 @@ class Vacation < ApplicationRecord
     end
     ret_vacation
   end
-  #== 必要人数表、配番人数表用
+  #== 必要人数表、配番人数表用 | Required personnel table, allocation table
   def self.get_vac_stat(vac)
-    # 1から順に　公休,明休,年休,出勤,公出
+    # 1から順に　公休,明休,年休,出勤,公出 | In order from 1: public holidays, day holidays, annual holidays, work attendance, public attendance
     sts_1_list = [["6","公休"],["7","振休"],["9","特休"],["10","夏休"],["17","代休"]]
     sts_2_list = [["18", "明休"]]
-    # UAT-279: 看護・介護・年休の分類を4から3に変更
+    # UAT-279: 看護・介護・年休の分類を4から3に変更 | UAT-279: Change classification of nursing/nursing care/annual leave from 4 to 3
     sts_3_list = [["8", "年休"],["11", "産休"],["12", "忌引"],["13", "病欠"],["14", "公傷"],["15", "組休"],["16", "結婚"],["19", "出停"],["20", "通災"],["21", "特年"],["22", "欠勤"],["23", "看護"],["24", "介護"],["25", "育休"]] + [["31", "看Ａ"], ["32", "看Ｐ"], ["33", "介Ａ"], ["34", "介Ｐ"], ["41", "年Ａ"], ["42", "年Ｐ"]]
     sts_4_list = [["2", "早遅"],["3", "遅出"]]
 

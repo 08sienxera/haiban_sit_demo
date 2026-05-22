@@ -1,4 +1,4 @@
-#= 貨物コードマスタ
+#= 貨物コードマスタ Freight code master
 class Manager::CargoCdMastersController < Manager::HomeController
   before_action :set_my_global_variable
   before_action :set_my_index_variable

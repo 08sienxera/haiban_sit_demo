@@ -1,4 +1,4 @@
-#= 掲示対象者
+#= 掲示対象者 Target audience
 class BoardGroupWoker < ApplicationRecord
     extend Common::Func
     default_scope {where(:deleted_at => nil)}

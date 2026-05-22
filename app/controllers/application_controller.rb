@@ -33,8 +33,8 @@ class ApplicationController < ActionController::Base
     render :template=>"/application/exception",:layout=>"main_layout",:status=>500
   end
   
-  # メニュー画面に表示するメニューリストを取得
-  # 引数ユーザの権限による
+  # メニュー画面に表示するメニューリストを取得 | Get the menu list to display on the menu screen
+  # 引数ユーザの権限による | Arguments according to the authority of the user
   def get_menu_list(login_user_id)
     user = User.find(login_user_id)
     uo = params[:user_auth] || UserAuth.find_by_login_id(user.login_id)
@@ -45,7 +45,7 @@ class ApplicationController < ActionController::Base
     menu_list = []
     return menu_list if is_operator?
 
-    #メニューデータの作成
+    #メニューデータの作成 | Create menu data
     links = []
     links << {:title=>"昼食集計",:link=>{:controller=>:lunch_orders}} if manager_flg || uo.lunch_orders==1
     links << {:title=>"掲示管理",:link=>{:controller=>:m_boards}} if manager_flg || uo.boards==1
@@ -119,11 +119,11 @@ class ApplicationController < ActionController::Base
   
   
   ###############################################################
-  #共通関数
+  #共通関数 | common functions
   ###############################################################
   private
   #
-  #====ページ番号の取得
+  #====ページ番号の取得 | Get page number
   def get_page(params,cc)
     return 1 if (params.nil? || cc.nil?)
     session[:page_data] ||= {}
@@ -141,7 +141,7 @@ class ApplicationController < ActionController::Base
     end
   end
   #
-  #====エラーメッセージ、ログをSet
+  #====エラーメッセージ、ログをSet | Set error message and log
   def set_error(error_no, e = $! , now = false ,replace = {},is_user=false)
     f = (now ? flash.now : flash)
     f[:error_no] = error_no
@@ -162,19 +162,19 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # =CSVのcontent-typeを返します。
+  # =CSVのcontent-typeを返します。| Return CSV content-type
   # Author  :: EC-One ValiTech arima
   def csv_content_type
     if request.user_agent =~ /windows/i then
-      #クライアント環境がWindowsの場合はExcel形式で返す
+      #クライアント環境がWindowsの場合はExcel形式で返す | Return Excel format if client environment is Windows
       "application/vnd.ms-excel"
     else
-      #それ以外の場合にはCSV形式で返す
+      #それ以外の場合にはCSV形式で返す | Return CSV format otherwise
       "text/csv"
     end
   end
   #
-  #====指定キー以外のセッションデータをクリア
+  #====指定キー以外のセッションデータをクリア | Clear session data except the specified key
   def session_clear(ikeys = [])
     tmp = {}
     ikeys.each{|key|
@@ -184,7 +184,7 @@ class ApplicationController < ActionController::Base
     ikeys.each{|key| session[key] = tmp[key] }unless ikeys.blank?
   end
   #
-  #====自画面以外の検索データをクリア
+  #====自画面以外の検索データをクリア | Clear search data except the current screen
   def serch_data_clear(gname)
     unless session[:serch_data].blank?
       session[:serch_data].each_key do |key|
@@ -193,7 +193,7 @@ class ApplicationController < ActionController::Base
     end
   end
   #
-  #====接続元IPチェック
+  #====接続元IPチェック | Check connection source IP
   def check_ip
     unless ENV[ALLOW_IP_ENV_KEY].nil?
       ip_check = false
@@ -218,7 +218,7 @@ class ApplicationController < ActionController::Base
     end
   end
   #
-  #=== IPアドレスチェック
+  #=== IPアドレスチェック | IP address check
   def ip_match(r_ip,ck_ip1,ck_ip2 = nil)
     ret = false
     if r_ip =~ /\s*,\s*/
@@ -245,14 +245,14 @@ class ApplicationController < ActionController::Base
     end
     return ret
   end
-  #====Session内のユーザデータを取得
+  #====Session内のユーザデータを取得 | Get user data in the session
   def get_uval(key)
     return session[UserSessionKey][key] unless session[UserSessionKey].nil?
     return nil
   end
-  #====ログインチェック
-  #引数::なし
-  #対象セッションが無い場合エラー画面にリダイレクト
+  #====ログインチェック | Login check
+  #引数::なし | Argument::None
+  #対象セッションが無い場合エラー画面にリダイレクト | If there is no target session, redirect to error screen
   def login_ck
     if get_uval(:login_id).nil?
       set_error("system_errors.session")
@@ -260,11 +260,11 @@ class ApplicationController < ActionController::Base
       return
     end
   end
-  #====管理者か？
+  #====管理者か？ | Is admin?
   def is_admin?
     return (get_uval(:auth_flg) == 5)
   end
-  #====管理課か？
+  #====管理課か？ | Is manager?
   def is_manager?
     return is_admin? || (get_uval(:auth_flg) == 4)
   end
@@ -275,7 +275,7 @@ class ApplicationController < ActionController::Base
       return
     end
   end
-  #====親方か？
+  #====親方か？ | Is boss?
   def is_bos?
     return (get_uval(:auth_flg) == 3)
   end
@@ -286,7 +286,7 @@ class ApplicationController < ActionController::Base
       return
     end
   end
-  #====事務職か？
+  #====事務職か？ | Is officeworker?
   def is_officeworker?
     return [1,2].include?(get_uval(:auth_flg))
   end
@@ -297,7 +297,7 @@ class ApplicationController < ActionController::Base
       return
     end
   end
-  #====現場職か？
+  #====現場職か？ | Is operator?
   def is_operator?
     return (get_uval(:auth_flg) == 0)
   end
@@ -311,7 +311,7 @@ class ApplicationController < ActionController::Base
 
   
   #
-  #=== 表示対象日付取得
+  #=== 表示対象日付取得 | Display target date
   def get_set_tdate 
     if params[:t_date].blank? && session[:t_date].blank?
       session[:t_date] = Date.today.strftime("%Y%m%d")
@@ -321,7 +321,7 @@ class ApplicationController < ActionController::Base
     @t_date = Date.strptime(session[:t_date], "%Y%m%d")
   end
   
-  #=== 表示対象日付取得
+  #=== 表示対象日付取得 | Display target date
     # 関数名 : get_month
     # 説明 : t_dateの営業月と日付範囲を返す
     # 引数 :  

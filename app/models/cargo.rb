@@ -11,21 +11,21 @@ class Cargo < ApplicationRecord
   default_scope {where(:deleted_at => nil)}
 
 
-  # 作業カテゴリリスト
+  # 作業カテゴリリスト Work category list
   WkType = [["FM","fm"],["DM","dm"],["機械","mc"],["ウィンチ","wi"],["取扱者","dr"],["船内／沿岸","wk"]]
-  # 技量グループリスト
+  # 技量グループリスト Skill group list
   WkTypeXNumKey = {:fm=>["fm_m"],:dm=>["dm_m"],:wi=>["wm_m","cr_m"],:dr=>["ld_m","ld_s","bh_m","bh_s","sl_m","sl_s","bl_m","bl_s","lf_m","lf_s","sc_m","sc_s","tl_m","tl_s","ot_m"],:wk=>["hd_w","db_w","hs_w","sn_w","eg_w","ot_w"]}
-  # 作業人数合計　集計フィールドリスト
+  # 作業人数合計　集計フィールドリスト Total number of workers Summary field list
   WokerNumKey = %w[fm_m dm_m wm_m cr_m ld_m ld_s bh_m bh_s sl_m sl_s bl_m bl_s lf_m lf_s sc_m sc_s tl_m tl_s ot_m hd_w db_w hs_w sn_w eg_w ot_w]
-  # 基本出勤時刻
+  # 基本出勤時刻 Basic attendance time
   RegularITime = "07:00"
-  # 基本開始時刻
+  # 基本開始時刻 basic start time
   RegularSTime = "07:30"
-  # 基本終了時刻
+  # 基本終了時刻 basic end time
   RegularETime = "16:30"
 
   #
-  #===コールバック
+  #===コールバック Callbacks
   before_create do
     calc_wk_time
   end
@@ -37,7 +37,7 @@ class Cargo < ApplicationRecord
   end
 
   #
-  #===入力画面フォームの生成
+  #===入力画面フォームの生成 Generate input screen form
   def self.set_input_form(key)
     form = Common::CommonClass.new(key)
     form.setparams("id",{"title"=>"id","type"=>"hidden",'size'=>"8","maxlength"=>"8","inputFlg"=>1,"essFlg"=>0,"align"=>"R"})
@@ -73,11 +73,11 @@ class Cargo < ApplicationRecord
   end
 
   #
-  #===本船作業依頼を反映＆配番開始
+  #===本船作業依頼を反映＆配番開始 Copy request and start numbering
   def self.copy_request(t_date)
     cp_key = [:work_class,:serial_no,:move_no,:work_name,:work_cd,:cargo_name,:work_place,:i_time,:s_time,:e_time,:machine_nm,:io_flg,:quantity,:note,:dirt_flg,:matter1,:matter2,:updated_at,:updated_uid]
     work_no = 0; desp_index = 1;
-    #本船作業
+    #本船作業 Onboard work
     pre_data={:move_no=>nil,:work_place=>nil}
     data_tbl = CargoRequest.includes(:cargo).where(:work_date=>t_date,:work_class=>1).order(:work_place=>:asc,:move_no=>:asc,:work_no=>:asc,:serial_no=>:asc)
     data_tbl.each{|request|
@@ -111,7 +111,7 @@ class Cargo < ApplicationRecord
       request[:esta_flg] = 1
       request.save!
     }unless data_tbl.blank?
-    #沿岸作業
+    #沿岸作業 coastal work
     pre_data={:move_no2=>nil,:work_place=>nil}
     sql = Arel.sql("CAST(SUBSTRING(move_no2,3) AS UNSIGNED) ASC, work_place ASC")
     # data_tbl = CargoRequest.includes(:cargo).where(:work_date=>t_date,:work_class=>2).order(:move_no2=>:asc,:work_place=>:asc)
@@ -146,7 +146,7 @@ class Cargo < ApplicationRecord
       request[:esta_flg] = 1
       request.save!
     }unless data_tbl.blank?
-    #お休み
+    #お休み rest
     data_tbl = CargoRequest.includes(:cargo).where(:work_date=>t_date,:work_class=>9).order(:work_no=>:asc,:serial_no=>:asc)
     data_tbl.each{|request|
       if request[:serial_no] == 0
@@ -177,7 +177,7 @@ class Cargo < ApplicationRecord
     }unless data_tbl.blank?
   end
   #
-  #=== 作業時間(開始-終了（機械用）)、超過時間を算出して保持
+  #=== 作業時間(開始-終了（機械用）)、超過時間を算出して保持  Calculate and maintain working time (start-end (for machines)) and excess time
   def calc_wk_time
     s_time = WorkTimeAggregate.mk_time(self[:work_date],self[:s_time],RegularSTime)
     e_time = WorkTimeAggregate.mk_time(self[:work_date],self[:e_time],RegularETime)
@@ -185,7 +185,7 @@ class Cargo < ApplicationRecord
     self[:work_time] , self[:orver_time] = WorkTimeAggregate.calc_prescribed_work_time(self[:work_date],self[:s_time],self[:e_time])
   end
   #
-  #=== 荷役成立を作業依頼に反映
+  #=== 荷役成立を作業依頼に反映 Reflect completion of cargo handling in work request
   def cargo_request_status_link
     if self[:conf_flg]==1 && self[:cargo_request_id]!=0
       unless self.cargo_request[:esta_flg] == self[:esta_flg]
@@ -197,7 +197,7 @@ class Cargo < ApplicationRecord
   end
 
   #
-  #=== 配番用割当データリストを返す
+  #=== 配番用割当データリストを返す Return the allocation data list for numbering
   def get_assignment_list
     assignment_list = {}
     WkType.each{|text,wk_type| 
@@ -231,12 +231,12 @@ class Cargo < ApplicationRecord
     return assignment_list
   end
 
-  # 人数カラムの更新(*_np
+  # 人数カラムの更新(*_np Update the number of people column (*_np
   def update_np_count
     cargo_id = self[:id]
     cargo_wokers = CargoWorker.where(:cargo_id=>cargo_id)
     return if cargo_wokers.blank?
-    # 0初期化 
+    # 0初期化  0 initialization
     count_fields = [:ob_np,:hh_np,:wk_np]
     count_fields.each {|key| self[key]=0}
     
@@ -248,7 +248,7 @@ class Cargo < ApplicationRecord
       self[:wk_np]+=1 unless login_id.include?("ROKYO")
     end
 
-    # 変更があればsave
+    # 変更があればsave Save any changes
     self.save if self.changes.any?{|key,(bef,aft)| bef!=aft}
 
   end
@@ -263,24 +263,24 @@ class Cargo < ApplicationRecord
   end
 
   #
-  #=== 配番データ登録
+  #=== 配番データ登録 Number allocation data registration
   def self.update_assignment(login_id,work_date,conf_flg,cargo,worker,machine)
-    #従事データを一旦論理削除
+    #従事データを一旦論理削除 Logically delete engagement data once
     cargo_data = self.find_by({:id=>cargo[:id],:work_date=>work_date})
     # cargo_data = self.find_by({:id=>cargo[:id],:load_lists=>work_date})
     raise NotFoundError.new("cargo_data cargo.id=[#{cargo[:id]}] and work_date=[#{work_date.try(:strftime,"%Y/%m/%d")}] is NotFound") if cargo_data.nil?
     CargoWorker.delete_all(login_id,["cargo_id=? ",cargo_data[:id]])
     CargoMachine.delete_all(login_id,["cargo_id=? ",cargo_data[:id]])
-    #作業予定を更新
+    #作業予定を更新 Update work schedule
     cargo.each{|key,val|
       case key
-      when "id" #スキップ
+      when "id" #スキップ skip
       else ; cargo_data[key] = (val.blank? ? nil : val)
       end
     }
     cargo_data[:conf_flg] = (conf_flg.blank? ? 0 : 1)
     cargo_data.save! if cargo_data.changed?
-    #荷役従事者を更新
+    #荷役従事者を更新 Update cargo handling personnel
     worker.each{|key,val|
       if key =~ /^(\w+)_(\d+)_login_id$/ && val.present?
         wk_type = $1
@@ -302,7 +302,7 @@ class Cargo < ApplicationRecord
         CargoWorker.create_data([:cargo_id,:wk_type,:wk_index],datas,login_id,false,true)
       end
     }unless worker.blank?
-    #荷役従事機械
+    #荷役従事機械 Update cargo handling personnel
     machine.each{|key,val|
       if key =~ /^(\w+)_(\d+)_machine_id$/ && val.present?
         wk_type = $1
@@ -319,7 +319,7 @@ class Cargo < ApplicationRecord
     }unless machine.blank?
   end
   #
-  #=== 自動配番他
+  #=== 自動配番他 Automatic numbering etc.
   def self.mk_assignment(queue,work_date,mord)
     extend MkAssignment
     case mord
@@ -330,7 +330,7 @@ class Cargo < ApplicationRecord
   end
 
   #
-  #=== 作業時間を再計算
+  #=== 作業時間を再計算 Recalculate working time
   def recalculate_work_time(user_login_id)
     cargo_i_time = self[:i_time]
     cargo_s_time = self[:s_time]
@@ -339,7 +339,7 @@ class Cargo < ApplicationRecord
     cws = self.cargo_worker
     return if cws.blank?
     cws.each do |cw|
-      # UAT-305: lock_flgが1の場合は再計算しない
+      # UAT-305: lock_flgが1の場合は再計算しない UAT-305: Do not recalculate if lock_flg is 1
       next if cw[:lock_flg]==1
       next if cw[:s_time]==cargo_i_time && cw[:e_time]==cargo_e_time
       
@@ -374,7 +374,7 @@ class Cargo < ApplicationRecord
 
 
   #
-  #=== 指定日に指定ユーザが割当されている配番リストを返す
+  #=== 指定日に指定ユーザが割当されている配番リストを返す Returns the numbered list to which the specified user is assigned on the specified date
   def self.get_assignment_cargo(t_date:,user_id:nil,login_id:nil)
     cargos = Cargo.where(:work_date=>t_date)
     ids = []
@@ -387,14 +387,14 @@ class Cargo < ApplicationRecord
     return cargos
   end
   #
-  #=== 作業カテゴリ名を返す
-  # 例）"fm"→"FM"、"dr"→"取扱者"
+  #=== 作業カテゴリ名を返す Return work category name
+  # 例）"fm"→"FM"、"dr"→"取扱者" Example) "fm" → "FM", "dr" → "handler"
   def self.wk_type_str(key)
     wk_type_pair = WkType.find { |ary| key == ary[1] }
     wk_type_pair ? wk_type_pair[0] : nil
   end
   #
-  #=== 配番画面設定
+  #=== 配番画面設定 Numbering screen settings
   def self.tbl_setting
     return { :no => {:title=>"No",:w_size=>2,:align=>"R"},
              :work_name => {:w_size=>8},
@@ -416,8 +416,4 @@ class Cargo < ApplicationRecord
              :l_block => [:np, :wk_np, :i_time, :note],
              }
   end
-
-    
-  
-
 end
