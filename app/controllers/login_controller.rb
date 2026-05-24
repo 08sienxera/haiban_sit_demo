@@ -48,7 +48,7 @@ class LoginController < ApplicationController
       if !(is_manager?) && not_login_flg
         session[UserSessionKey][:first_login] = true
         flash[:error_msgs] = "ログイン用のパスワードを再設定してください"
-        # 初回ログイン対応後、最終ログイン日時を更新のため、nil設定 Update last login date after first login
+        # 初回ログイン対応後、最終ログイン日時を更新のため、nil設定 | After the first login, set to nil to update the last login date and time.
         user.update(:last_logined_at=>nil)
         redirect_to :controller=>"#{name_space}/users", :action=>:edit, :target=>'password' 
         return
@@ -65,7 +65,7 @@ class LoginController < ApplicationController
     render :action => :login
   end
 
-  # リマインドフォーム（ログインＩＤ入力) Reminder form (Login ID input)
+  # リマインドフォーム（ログインＩＤ入力) | Reminder form (Login ID input)
   def remind
     @title = "パスワードリマインド"
     @cc = User.set_remind_form()
@@ -73,14 +73,14 @@ class LoginController < ApplicationController
     @my_setting[:back_links] =[{:txt=>"ログイン画面へ",:path=>{:controller=>"/login",:action=>:login}}]
   end
 
-  # リマインドフォーム（回答) Reminder form (Answer)
+  # リマインドフォーム（回答) | Reminder form (Answer)
   def answer
     @title = "質問に回答"
     @param_login_id = params[:remind][:login_id]
-    # 指定ＩＤのユーザを取得 Get user
+    # 指定ＩＤのユーザを取得 Get user with specified ID
     user = User.find_by(login_id: @param_login_id)
     @cc = User.set_answer_form()
-    # リマインド処理中のユーザをセッションに追加 Add user to session
+    # リマインド処理中のユーザをセッションに追加 Add user to session during reminder process
     session[:remind_user_id] = user&.login_id
     @question = User.get_remind_question(@param_login_id)
   end
@@ -88,7 +88,7 @@ class LoginController < ApplicationController
 
   # 回答の答合せとパスワード初期化 Answer check and password reset
   def reset_password
-    # セッションにリマインド処理中のユーザ情報が無い場合、エラー No user in session
+    # セッションにリマインド処理中のユーザ情報が無い場合、エラー If there is no user information in the session that is being reminded, an error will occur.
     unless remind_user_id = session[:remind_user_id]
       flash[:error_msgs] = ["認証できませんでした。","従業員Noと質問の答えをご確認ください。"]
       redirect_to :action=>:remind
@@ -97,7 +97,7 @@ class LoginController < ApplicationController
     user = User.find_by(login_id: remind_user_id)
     session.delete(:remind_user_id)
 
-    # リマインド回答が不一致の場合、やりおなし Wrong answer
+    # リマインド回答が不一致の場合、やりおなし If the reminder answers do not match, try again.
     unless user.answer_remind_question(params[:answer][:remind_answer])
       flash[:error_msgs] = ["認証できませんでした。","従業員Noと質問の答えをご確認ください。"]
       redirect_to :action=>:remind

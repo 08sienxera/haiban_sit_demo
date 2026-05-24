@@ -11,7 +11,7 @@ MY_NAME = "seeds"
 GApplicable = "2005/06/16"
 UApplicable = "2024/03/16"
 #
-#===改定日
+#===改定日 | Revision date
 p "applicable"
 [
     {:section=>1,:applicable=>"2004/06/01"},
@@ -20,7 +20,7 @@ p "applicable"
     {:section=>2,:applicable=>UApplicable},
 ].each{|data|Applicable.create_data([:section,:applicable],data,MY_NAME,true)}
 
-#=== 部署
+#=== 部署 | Department
 p "branches"
 [
     {:applicable=>GApplicable,:cd=>"1",:name=>"１-１",:color=>"#ffffc6",:desp_index=>"1"},
@@ -31,7 +31,7 @@ p "branches"
     {:applicable=>GApplicable,:cd=>"6",:name=>"事 務",:color=>"",:desp_index=>"6"},
 ].each{|data|Branche.create_data([:applicable,:cd],data,MY_NAME,true)}
 
-#=== 掲示-公開対象グループ
+#=== 掲示-公開対象グループ | Bulletin board - Public target group
 p "board_groups"
 [
     {:name=>"全員",:desp_index=>1,:group_type=>"all"},
@@ -43,11 +43,10 @@ p "board_groups"
     {:name=>"２課２係",:desp_index=>7,:group_type=>"4"},
 ].each{|data|BoardGroup.create_data(:id,data,MY_NAME,true)}
 #
-#=== ユーザマスタ
+#=== ユーザマスタ | User master
 p "users"
 [
     {:login_id=>"xadmin",:name=>"正興管理者",:password=>"admin",
      :bbs_max_count=>10,:bbs_mail_flg=>2,:holiday_mail_flg=>1,:mail=>"08sienxera@gmail.com",
      :tel=>"03-5835-1012",:auth_flg=>5},
 ].each{|data|User.create_data(:login_id,data,MY_NAME,true)}
-

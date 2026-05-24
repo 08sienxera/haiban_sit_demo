@@ -979,5 +979,4 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_13_035643) do
     t.index ["t_id"], name: "work_time_summaries_2"
     t.index ["work_date", "aggr_flg", "t_cd"], name: "work_time_summaries_1", unique: true
   end
-
 end
